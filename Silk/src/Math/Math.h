@@ -1,7 +1,8 @@
 #ifndef SILK_MATH_H
 #define SILK_MATH_H
 
-#include <Silk.h>
+#include <System/SilkTypes.h>
+
 #define PI_OVER_180 0.01745329251
 #define PI_UNDER_180 57.2957795131
 #define PI 3.14159265
