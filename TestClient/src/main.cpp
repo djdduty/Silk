@@ -7,7 +7,7 @@
     #include <Windows.h>
 #endif
 
-int main(i32 ArgC,Literal ArgV[])
+int main(int ArgC,char ArgV[])
 {
     printf("Hello World\n");
     return 0;

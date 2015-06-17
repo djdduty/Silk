@@ -5,12 +5,13 @@
  *
  */
 
-#include <Utils/Math/Functions.h>
+#include <Math/Math.h>
 
 #include <math.h>
 #include <random>
+#include <ctime>
 
-namespace SandboxSimulator
+namespace Silk
 {
     Vec2::Vec2()
     {
@@ -149,9 +150,6 @@ namespace SandboxSimulator
     {
     }
     Vec3::Vec3(const Vec3& xyz) : x(xyz.x), y(xyz.y), z(xyz.z)
-    {
-    }
-    Vec3::Vec3(const btVector3& xyz) : x(xyz.x()), y(xyz.y()), z(xyz.z())
     {
     }
     Vec3& Vec3::operator=(const Vec3& rval)
@@ -1122,13 +1120,6 @@ namespace SandboxSimulator
         y = q.y;
         z = q.z;
         w = q.w;
-    }
-    Quat::Quat(const btQuaternion& q)
-    {
-        x = q.x();
-        y = q.y();
-        z = q.z();
-        w = q.w();
     }
     Quat::~Quat()
     {
