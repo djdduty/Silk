@@ -33,4 +33,9 @@ cmake_install.cmake
 CMakeCache.txt
 CMakeFiles/*.*
 CMakeScripts/*.*
+.DS_Store
+Dependencies/glfw/CMakeScripts/*.*
+Dependencies/glfw/GLFW.xcodeproj/*.*
+Silk.xcodeproj/
+
 
