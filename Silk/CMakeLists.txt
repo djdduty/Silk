@@ -16,7 +16,7 @@ target_link_libraries(Silk Glew Glfw ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES})
 
 source_group("Silk" FILES ${ss_top_SOURCES})
 
-source_group("Silk\\Rasterization" FILES ${ss_rast_SOURCES})
+source_group("Silk\\Raster" FILES ${ss_rast_SOURCES})
 
 source_group("Silk\\Math" FILES ${ss_math_SOURCES})
 
