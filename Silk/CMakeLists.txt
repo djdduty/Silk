@@ -12,11 +12,11 @@ endif()
 
 add_library(Silk ${BUILD_MODE} ${ss_top_SOURCES} ${ss_rast_SOURCES} ${ss_math_SOURCES})
 
-target_link_libraries(Silk Glew Glfw ${OPENGL_LIBRARIES} ${GLFW_LIBRARIES})
+target_link_libraries(Silk Glew ${OPENGL_LIBRARIES})
 
 source_group("Silk" FILES ${ss_top_SOURCES})
 
-source_group("Silk\\Rasterization" FILES ${ss_rast_SOURCES})
+source_group("Silk\\Raster" FILES ${ss_rast_SOURCES})
 
 source_group("Silk\\Math" FILES ${ss_math_SOURCES})
 
