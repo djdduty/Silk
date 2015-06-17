@@ -7,7 +7,9 @@
     #include <Windows.h>
 #endif
 
-int main(int ArgC,char ArgV[])
+#include <Silk.h>
+
+int main(int ArgC,char *ArgV[])
 {
     printf("Hello World\n");
     return 0;
