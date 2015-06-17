@@ -55,8 +55,8 @@ typedef u32                 UID;
     #define INDEX_NULL  INT16_MAX
 #endif
 
-#endif
 
 #define LOG(...) printf(__VA_ARGS__)
 #define ERROR(...) fprintf(stderr,__VA_ARGS__)
 
+#endif

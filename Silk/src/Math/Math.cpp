@@ -1,10 +1,3 @@
-/*
- *  EngineMath.cpp
- *
- *  Created by Michael DeCicco on 7/5/14.
- *
- */
-
 #include <Math/Math.h>
 
 #include <math.h>

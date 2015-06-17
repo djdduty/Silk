@@ -43,14 +43,19 @@ namespace Silk
             u8 graybits;
     };
     
+    class Rasterizer;
     class RasterContext
     {
         public:
-            RasterContext() { }
+            RasterContext(Rasterizer* Parent) : m_Parent(Parent) { }
             virtual ~RasterContext() { }
-        
-            Vec2 m_Resolution;
             ColorFormat m_Format;
+            void SetResolution(const Vec2& Resolution);
+        
+        protected:
+            Rasterizer* m_Parent;
+            Vec2 m_Resolution;
+            
     };
     
     class Rasterizer
@@ -69,7 +74,7 @@ namespace Silk
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
         
-        
+            virtual RasterContext* CreateContext() = 0;
         protected:
             RasterContext* m_GraphicsContext;
             Vec4 m_ClearColor;

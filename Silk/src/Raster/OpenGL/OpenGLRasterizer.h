@@ -7,7 +7,7 @@ namespace Silk
     class OpenGLRasterizerContext : public RasterContext
     {
         public:
-            OpenGLRasterizerContext();
+            OpenGLRasterizerContext(Rasterizer* Parent) : RasterContext(Parent) {}
             ~OpenGLRasterizerContext();
     };
     
@@ -28,6 +28,7 @@ namespace Silk
             virtual void ClearActiveFramebuffer()               { glClearColor(m_ClearColor.x,m_ClearColor.y,m_ClearColor.z,m_ClearColor.w);
                                                                   glClear(m_ClearBuffers); }
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h)   { glViewport(x,y,w,h);     }
+            virtual RasterContext* CreateContext()              { return new OpenGLRasterizerContext(this); }
         
         protected:
             GLuint m_ColorFormat;

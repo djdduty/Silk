@@ -2,9 +2,6 @@
 
 namespace Silk
 {
-    OpenGLRasterizerContext::OpenGLRasterizerContext()
-    {
-    }
     OpenGLRasterizerContext::~OpenGLRasterizerContext()
     {
     }

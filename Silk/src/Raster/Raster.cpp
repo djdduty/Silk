@@ -2,11 +2,20 @@
 
 namespace Silk
 {
+    void RasterContext::SetResolution(const Vec2& Resolution) 
+    {
+        m_Resolution = Resolution;
+        if(m_Parent)
+            m_Parent->SetViewport(0,0,m_Resolution.x, m_Resolution.y);
+    }
+
     Rasterizer::Rasterizer()
     {
     }
     Rasterizer::~Rasterizer()
     {
+        if(m_GraphicsContext)
+            delete m_GraphicsContext;
     }
     
     bool Rasterizer::ValidateContext(RasterContext *Ctx)

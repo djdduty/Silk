@@ -14,7 +14,7 @@ namespace TestClient {
         public:
             Window();
             ~Window();
-            bool Create(OpenGLRasterizerContext* Rasterizer,Vec2 Resolution, string Title, bool Resizable = false, int Major = 3, int Minor = 2, bool Fullscreen = false);
+            bool Create(Vec2 Resolution, string Title, bool Resizable = false, int Major = 3, int Minor = 2, bool Fullscreen = false);
             void MakeCurrent();
             bool GetCloseRequested();
             Vec2 GetWindowSize();

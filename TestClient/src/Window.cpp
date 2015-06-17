@@ -11,12 +11,12 @@ namespace TestClient {
         Destroy();
     }
 
-    bool Window::Create(OpenGLRasterizerContext* Context, Vec2 Resolution, string Title, bool Resizable, int Major, int Minor, bool Fullscreen)
+    bool Window::Create(Vec2 Resolution, string Title, bool Resizable, int Major, int Minor, bool Fullscreen)
     {
-        if(!Context) return false;
         m_Rasterizer = new OpenGLRasterizer();
+        RasterContext* Context = m_Rasterizer->CreateContext();
+
         if(!m_Rasterizer->SetContext(Context)) return false;
-        Context->m_Resolution = Resolution;
         
         if(!glfwInit())
         {
@@ -35,9 +35,7 @@ namespace TestClient {
         glfwWindowHint(GLFW_BLUE_BITS            ,Context->m_Format.bbits);
         glfwWindowHint(GLFW_ALPHA_BITS           ,Context->m_Format.abits);
         
-        #ifdef __APPLE__
-        if(Context->m_Format.Channels == ColorFormat::CC_GRAYSCALE) ERROR("GLFW does not support grayscale rendering on $pple devices, and probably Windows.\n");
-        #endif
+        if(Context->m_Format.Channels == ColorFormat::CC_GRAYSCALE) ERROR("GLFW Does not have clear grayscale support\n");
 
         m_Window = glfwCreateWindow(Resolution.x, Resolution.y, Title.c_str(), Fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
         if(!m_Window)
@@ -51,6 +49,7 @@ namespace TestClient {
         glGetError();
         
         m_Rasterizer->InitializeContext();
+        Context->SetResolution(Resolution);
         return true;
     }
 
@@ -92,7 +91,7 @@ namespace TestClient {
     void Window::PollEvents()
     {
         glfwPollEvents();
-        m_Rasterizer->GetContext()->m_Resolution = GetWindowSize();
+        m_Rasterizer->GetContext()->SetResolution(GetWindowSize());
     }
 
     void Window::SwapBuffers()
