@@ -1,6 +1,6 @@
 file(GLOB ss_top_SOURCES src/*.*)
 
-file(GLOB ss_rast_SOURCES src/Rasterization/*.*)
+file(GLOB ss_rast_SOURCES src/Raster/*.*)
 
 file(GLOB ss_math_SOURCES src/Math/*.*)
 
