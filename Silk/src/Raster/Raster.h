@@ -32,7 +32,7 @@ namespace Silk
         
             void SetRGB (u8 r,u8 g,u8 b)      { Channels = CC_RGB      ; rbits = r; gbits = g; bbits = b; abits = 0; graybits = 0; }
             void SetRGBA(u8 r,u8 g,u8 b,u8 a) { Channels = CC_RGBA     ; rbits = r; gbits = g; bbits = b; abits = a; graybits = 0; }
-            void SetGrayscale(u8 g)           { Channels = CC_GRAYSCALE; rbits = 0; gbits = 0; bbits = 0; abits = 0; graybits = g; }
+            void SetGrayscale(u8 g,u8 a = 0)  { Channels = CC_GRAYSCALE; rbits = 0; gbits = 0; bbits = 0; abits = a; graybits = g; }
             
             COLOR_CHANNELS Channels;
             
@@ -46,8 +46,8 @@ namespace Silk
     class RasterContext
     {
         public:
-            RasterContext();
-            ~RasterContext();
+            RasterContext() { }
+            virtual ~RasterContext() { }
         
             Vec2 m_Resolution;
             ColorFormat m_Format;
@@ -57,13 +57,22 @@ namespace Silk
     {
         public:
             Rasterizer();
-            ~Rasterizer();
+            virtual ~Rasterizer();
         
             virtual bool ValidateContext(RasterContext* Ctx);
             bool SetContext(RasterContext* Ctx);
+            RasterContext* GetContext() const { return m_GraphicsContext; }
+            virtual void InitializeContext() = 0;
+        
+            void SetClearColor(const Vec4& c) { m_ClearColor = c; }
+        
+            virtual void ClearActiveFramebuffer() = 0;
+            virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
+        
         
         protected:
             RasterContext* m_GraphicsContext;
+            Vec4 m_ClearColor;
     };
 }
 

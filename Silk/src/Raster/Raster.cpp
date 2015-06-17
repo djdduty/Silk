@@ -11,7 +11,7 @@ namespace Silk
     
     bool Rasterizer::ValidateContext(RasterContext *Ctx)
     {
-        fprintf(stderr,"Cannot validate graphics context: Null rasterizer.\n");
+        ERROR("Cannot validate graphics context: Null rasterizer.\n");
         return false;
     }
     bool Rasterizer::SetContext(RasterContext *Ctx)
@@ -19,7 +19,7 @@ namespace Silk
         if(ValidateContext(Ctx))
         {
             m_GraphicsContext = Ctx;
-            //printf("Valid graphics context.\n");
+            LOG("Valid graphics context.\n");
             return true;
         }
         return false;

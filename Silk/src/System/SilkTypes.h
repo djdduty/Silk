@@ -56,3 +56,7 @@ typedef u32                 UID;
 #endif
 
 #endif
+
+#define LOG(...) printf(__VA_ARGS__)
+#define ERROR(...) fprintf(stderr,__VA_ARGS__)
+
