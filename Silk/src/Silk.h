@@ -7,8 +7,8 @@
 #include <stdio.h>
 
 
-#define SSENGINE_VERSION_MAJOR 0
-#define SSENGINE_VERSION_MINOR 2
+#define SILK_VERSION_MAJOR 0
+#define SILK_VERSION_MINOR 1
 
 #define MakeCString(s) new char[s]
 #define FreeCString(s) delete [] s

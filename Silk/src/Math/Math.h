@@ -1,5 +1,5 @@
-#ifndef FUNCTIONS_H
-#define FUNCTIONS_H
+#ifndef SILK_MATH_H
+#define SILK_MATH_H
 
 #include <Silk.h>
 #define PI_OVER_180 0.01745329251
