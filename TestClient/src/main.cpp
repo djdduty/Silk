@@ -27,12 +27,14 @@ int main(int ArgC,char *ArgV[])
         Win->PollEvents();
 
         Shader* Shdr = new OpenGLShader();
-        Shdr->Load("#version 330\n in vec3 a_Position; void main() {gl_Position = vec4(a_Position,1);}", 0, "#version 330\n out vec4 o_Out0; void main() {o_Out0 = vec4(1,0,0,1);}");
+        Shdr->Load("#version 330\n in  vec3 a_Position; void main() { gl_Position = vec4(a_Position,1);}", 0,
+                   "#version 330\n out vec4 o_Out0    ; void main() { o_Out0      = vec4(1,0,0,1);     }");
 
         Mesh* mesh = new Mesh();
-        Vec3 vertBuff [3] = {Vec3(0, 1, 0), Vec3(1, -1, 0), Vec3(-1, -1, 0)};
+        Vec3 vertBuff [3] = { Vec3(0, 0.75f, 0), Vec3(0.75f, -0.75f, 0), Vec3(-0.75f, -0.75f, 0) };
         mesh->SetVertexBuffer(3, vertBuff);
         OpenGLObjectIdentifier* Object = new OpenGLObjectIdentifier();
+        
         Object->SetMesh(mesh);
 
         while(!Win->GetCloseRequested())
@@ -44,6 +46,7 @@ int main(int ArgC,char *ArgV[])
             Shdr->Enable();
             Object->Render(GL_TRIANGLES, 0, 3);
             Shdr->Disable();
+            
 
             Win->SwapBuffers();
         }

@@ -18,6 +18,7 @@ namespace Silk
                 GLuint BufferID;
                 GLuint Index;
                 GLint Size;
+                GLint ComponentCount;
                 GLenum Type;
                 GLboolean Normalized;
                 GLsizei Stride;
@@ -35,8 +36,8 @@ namespace Silk
             void ClearData();
             virtual void SetMesh(Mesh* m);
         
-            void AddAttribute    (GLuint AttributeIndex,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer);
-            void SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLsizeiptr Size,GLvoid* Data,GLenum Usage);
+            void AddAttribute    (GLuint AttributeIndex,GLint ComponentCount,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer);
+            void SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLint ComponentCount,GLsizeiptr Size,GLvoid* Data,GLenum Usage);
             void SetIndexBufferAttributeIndex(GLuint AttributeIndex);
         
             void* MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access);

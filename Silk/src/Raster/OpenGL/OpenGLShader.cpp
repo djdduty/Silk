@@ -12,11 +12,9 @@ namespace Silk
 
     i32 OpenGLShader::Load(CString VertexCode,CString GeometryCode,CString FragmentCode)
     {
-        /*
         GLuint ugh;
         glGenVertexArrays(1,&ugh);
         glBindVertexArray(ugh);
-        */
         
         m_VS = glCreateShader(GL_VERTEX_SHADER);
         m_PS = glCreateShader(GL_FRAGMENT_SHADER);
@@ -40,8 +38,8 @@ namespace Silk
             glDeleteShader(m_VS);
             glDeleteShader(m_PS);
             m_VS = m_PS = 0;
-            //glBindVertexArray(0);
-            //glDeleteVertexArrays(1,&ugh);
+            glBindVertexArray(0);
+            glDeleteVertexArrays(1,&ugh);
             delete [] iLog;
             return false;
         }
@@ -68,8 +66,8 @@ namespace Silk
                 glDeleteShader(m_GS);
                 glDeleteShader(m_PS);
                 m_VS = m_GS = m_PS = 0;
-                //glBindVertexArray(0);
-                //glDeleteVertexArrays(1,&ugh);
+                glBindVertexArray(0);
+                glDeleteVertexArrays(1,&ugh);
                 delete [] iLog;
                 return false;
             }
@@ -93,8 +91,8 @@ namespace Silk
             if(m_GS) glDeleteShader(m_GS);
             glDeleteShader(m_PS);
             m_VS = m_GS = m_PS = 0;
-            //glBindVertexArray(0);
-            //glDeleteVertexArrays(1,&ugh);
+            glBindVertexArray(0);
+            glDeleteVertexArrays(1,&ugh);
             delete [] iLog;
             return false;
         }
@@ -139,8 +137,8 @@ namespace Silk
             glDeleteShader(m_VS);
             glDeleteShader(m_PS);
             m_PID = m_VS = m_PS = 0;
-            //glBindVertexArray(0);
-            //glDeleteVertexArrays(1,&ugh);
+            glBindVertexArray(0);
+            glDeleteVertexArrays(1,&ugh);
             delete [] iLog;
             return false;
         }
@@ -159,16 +157,16 @@ namespace Silk
             glDeleteShader(m_VS);
             glDeleteShader(m_PS);
             m_PID = m_VS = m_PS = 0;
-            //glBindVertexArray(0);
-            //glDeleteVertexArrays(1,&ugh);
+            glBindVertexArray(0);
+            glDeleteVertexArrays(1,&ugh);
             delete [] iLog;
             return false;
         }
         
         //for(i32 i = 0;i < SU_COUNT;i++) m_UniformLocs[i] = glGetUniformLocation(m_PID,UniformNames[i]);
         
-        //glBindVertexArray(0);
-        //glDeleteVertexArrays(1,&ugh);
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1,&ugh);
         return true;
     }
 

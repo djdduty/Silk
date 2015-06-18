@@ -25,22 +25,25 @@ namespace Silk
     {
         ClearData();
         glGenVertexArrays(1, &m_VAO);
+        glBindVertexArray(m_VAO);
 
         i32 AttribCount = m->GetAttributeCount();
         for(i32 i = 0;i < AttribCount;i++)
         {
             const Mesh::MeshAttribute* Attrib = m->GetAttribute(i);
-            AddAttribute(Attrib->ShaderIndex,
-                         Attrib->Size       ,
-                         Attrib->Type       ,
-                         GL_TRUE            ,
-                         Attrib->Stride     ,
+            AddAttribute(Attrib->ShaderIndex   ,
+                         Attrib->ComponentCount,
+                         Attrib->Size          ,
+                         Attrib->Type          ,
+                         GL_TRUE               ,
+                         Attrib->Stride        ,
                          0);
             
-            SupplyBufferData(Attrib->ShaderIndex,GL_ARRAY_BUFFER,Attrib->Size,Attrib->Pointer,Attrib->IsStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+            SupplyBufferData(Attrib->ShaderIndex,GL_ARRAY_BUFFER,Attrib->ComponentCount,Attrib->Size,Attrib->Pointer,Attrib->IsStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
         }
+        glBindVertexArray(0);
     }
-    void OpenGLObjectIdentifier::AddAttribute(GLuint AttribIndex,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer)
+    void OpenGLObjectIdentifier::AddAttribute(GLuint AttribIndex,GLint ComponentCount,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer)
     {
         if(GetAttributeBufferIndex(AttribIndex) != -1)
         {
@@ -56,12 +59,13 @@ namespace Silk
             return;
         }
         
-        b.Index      = AttribIndex;
-        b.Size       = Size;
-        b.Type       = Type;
-        b.Normalized = Normalized;
-        b.Stride     = Stride;
-        b.Pointer    = Pointer;
+        b.Index          = AttribIndex   ;
+        b.Size           = Size          ;
+        b.ComponentCount = ComponentCount;
+        b.Type           = Type          ;
+        b.Normalized     = Normalized    ;
+        b.Stride         = Stride        ;
+        b.Pointer        = Pointer       ;
         
         switch(Type)
         {
@@ -83,7 +87,7 @@ namespace Silk
         
         m_Attributes.push_back(b);
     }
-    void OpenGLObjectIdentifier::SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLsizeiptr Size,GLvoid* Data,GLenum Usage)
+    void OpenGLObjectIdentifier::SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLint ComponentCount,GLsizeiptr Size,GLvoid* Data,GLenum Usage)
     {
         i32 Index = GetAttributeBufferIndex(AttributeIndex);
         if(Index == -1)
@@ -92,8 +96,9 @@ namespace Silk
             return;
         }
         
-        glBindVertexArray(m_VAO);
-        glBindBuffer(m_Attributes[Index].BufferID,GL_ARRAY_BUFFER);
+        glBindBuffer(GL_ARRAY_BUFFER,m_Attributes[Index].BufferID);
+        glEnableVertexAttribArray(AttributeIndex);
+        glVertexAttribPointer(AttributeIndex,ComponentCount,m_Attributes[Index].Type,m_Attributes[Index].Normalized,m_Attributes[Index].Stride,0);
         glBufferData(Target,Size,Data,Usage);
     }
     void OpenGLObjectIdentifier::SetIndexBufferAttributeIndex(GLuint AttributeIndex)
