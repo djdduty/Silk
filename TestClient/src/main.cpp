@@ -5,7 +5,7 @@
 #include <Window.h>
 
 #ifdef WIN32
-    #include <vld.h>
+    //#include <vld.h>
     #include <Windows.h>
 #endif
 
