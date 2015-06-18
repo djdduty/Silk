@@ -5,11 +5,14 @@
 
 namespace Silk
 {
+    class Mesh;
     class RasterObjectIdentifier
     {
         public:
-            RasterObjectIdentifier();
-            ~RasterObjectIdentifier();
+            RasterObjectIdentifier() { }
+            virtual ~RasterObjectIdentifier() { }
+        
+            virtual void SetMesh(Mesh* m) = 0;
     };
     
     class ColorFormat

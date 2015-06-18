@@ -1,16 +1,62 @@
 #pragma once
 #include <Raster/Raster.h>
-#include <GLFW/glfw3.h>
+#include <Raster/OpenGL/PlatformSpecificOpenGL.h>
+
+#include <vector>
+using namespace std;
 
 namespace Silk
 {
+    class OpenGLObjectIdentifier : public RasterObjectIdentifier
+    {
+        public:
+            OpenGLObjectIdentifier();
+            ~OpenGLObjectIdentifier();
+            
+            struct AttributeBuffer
+            {
+                GLuint BufferID;
+                GLuint Index;
+                GLint Size;
+                GLenum Type;
+                GLboolean Normalized;
+                GLsizei Stride;
+                GLvoid* Pointer;
+                size_t TypeSize;
+            };
+        
+            enum BUFFER_MAP_ACCESS
+            {
+                BMA_READ,
+                BMA_WRITE,
+                BMA_READWRITE,
+            };
+        
+            void ClearData();
+            virtual void SetMesh(Mesh* m);
+        
+            void AddAttribute    (GLuint AttributeIndex,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer);
+            void SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLsizeiptr Size,GLvoid* Data,GLenum Usage);
+            void SetIndexBufferAttributeIndex(GLuint AttributeIndex);
+        
+            void* MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access);
+            void UnmapBuffer(GLuint AttributeIndex);
+        
+            void Render(GLenum PrimitiveType,i32 Start,i32 Count);
+        
+        protected:
+            i32 GetAttributeBufferIndex(i32 AttribIndex) const;
+            GLuint m_VAO;
+            i32 m_IBIndex;
+            vector<struct AttributeBuffer> m_Attributes;
+    };
+    
     class OpenGLRasterizerContext : public RasterContext
     {
         public:
-            OpenGLRasterizerContext(Rasterizer* Parent) : RasterContext(Parent) {}
+            OpenGLRasterizerContext(Rasterizer* Parent) : RasterContext(Parent) { }
             ~OpenGLRasterizerContext();
     };
-    
     
     class OpenGLRasterizer : public Rasterizer
     {
