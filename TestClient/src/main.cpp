@@ -50,6 +50,10 @@ int main(int ArgC,char *ArgV[])
 
             Win->SwapBuffers();
         }
+
+        delete Object;
+        delete mesh;
+        delete Shdr;
     }
     
     delete Win;
