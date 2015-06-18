@@ -3,6 +3,9 @@
 
 #include <Math/Math.h>
 
+#include <vector>
+using namespace std;
+
 namespace Silk
 {
     class Mesh;
@@ -59,6 +62,74 @@ namespace Silk
             Rasterizer* m_Parent;
             Vec2 m_Resolution;
             
+    };
+    
+    class Shader;
+    class UniformBuffer
+    {
+        public:
+            UniformBuffer() { }
+            ~UniformBuffer() { ClearData(); }
+            
+            enum UNIFORM_TYPE
+            {
+                UT_BOOL,
+                UT_INT,
+                UT_UINT,
+                UT_FLOAT,
+                UT_DOUBLE,
+                UT_VEC2,
+                UT_VEC3,
+                UT_VEC4,
+                UT_MAT4
+            };
+        
+            struct UniformDef
+            {
+                string Name;
+                UNIFORM_TYPE Type;
+            };
+        
+            void ClearData();
+        
+            i32 DefineUniform(string Name);
+            void SetUniform(i32 UID,const bool& Value);
+            void SetUniform(i32 UID,const i32 &  Value);
+            void SetUniform(i32 UID,const u32 &  Value);
+            void SetUniform(i32 UID,const f32 &  Value);
+            void SetUniform(i32 UID,const f64 &  Value);
+            void SetUniform(i32 UID,const Vec2&  Value);
+            void SetUniform(i32 UID,const Vec3&  Value);
+            void SetUniform(i32 UID,const Vec4&  Value);
+            void SetUniform(i32 UID,const Mat4&  Value);
+        
+        protected:
+            friend class Shader;
+            vector<void*> m_UniformBuffer;
+            vector<UniformDef> m_UniformInfo;
+            i32 m_ParentIndex;
+            Shader* m_Parent;
+    };
+    
+    class Shader
+    {
+        public:
+            Shader();
+            virtual ~Shader();
+        
+            virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode) = 0;
+        
+            void AddUniformBuffer(UniformBuffer* Uniforms);
+            void RemoveUniformBuffer(UniformBuffer* Uniforms);
+        
+            i32 GetUniformBufferCount() const { return m_UniformBuffers.size(); }
+            UniformBuffer* GetUniformBuffer(i32 Index) const { return m_UniformBuffers[Index]; }
+        
+            virtual void Enable() = 0;
+            virtual void Disable() = 0;
+        
+        protected:
+            vector<UniformBuffer*> m_UniformBuffers;
     };
     
     class Rasterizer
