@@ -24,7 +24,8 @@ namespace Silk
     void OpenGLObjectIdentifier::SetMesh(Mesh* m)
     {
         ClearData();
-        
+        glGenVertexArrays(1, &m_VAO);
+
         i32 AttribCount = m->GetAttributeCount();
         for(i32 i = 0;i < AttribCount;i++)
         {
@@ -64,14 +65,14 @@ namespace Silk
         
         switch(Type)
         {
-            case GL_BYTE:           { b.TypeSize = sizeof(GLbyte  ); break; }
-            case GL_UNSIGNED_BYTE:  { b.TypeSize = sizeof(GLubyte ); break; }
-            case GL_SHORT:          { b.TypeSize = sizeof(GLshort ); break; }
-            case GL_UNSIGNED_SHORT: { b.TypeSize = sizeof(GLushort); break; }
-            case GL_INT:            { b.TypeSize = sizeof(GLint   ); break; }
-            case GL_UNSIGNED_INT:   { b.TypeSize = sizeof(GLuint  ); break; }
-            case GL_FLOAT:          { b.TypeSize = sizeof(GLfloat ); break; }
-            case GL_DOUBLE:         { b.TypeSize = sizeof(GLdouble); break; }
+            case Mesh::AT_BYTE  : { b.TypeSize = sizeof(GLbyte  );b.Type = GL_BYTE          ; break; }
+            case Mesh::AT_UBYTE : { b.TypeSize = sizeof(GLubyte );b.Type = GL_UNSIGNED_BYTE ; break; }
+            case Mesh::AT_SHORT : { b.TypeSize = sizeof(GLshort );b.Type = GL_SHORT         ; break; }
+            case Mesh::AT_USHORT: { b.TypeSize = sizeof(GLushort);b.Type = GL_UNSIGNED_SHORT; break; }
+            case Mesh::AT_INT   : { b.TypeSize = sizeof(GLint   );b.Type = GL_INT           ; break; }
+            case Mesh::AT_UINT  : { b.TypeSize = sizeof(GLuint  );b.Type = GL_UNSIGNED_INT  ; break; }
+            case Mesh::AT_FLOAT : { b.TypeSize = sizeof(GLfloat );b.Type = GL_FLOAT         ; break; }
+            case Mesh::AT_DOUBLE: { b.TypeSize = sizeof(GLdouble);b.Type = GL_DOUBLE        ; break; }
             default:
             {
                 ERROR("Invalid attribute type 0x%X. (Object: 0x%lX)\n",Type,(intptr_t)this);
@@ -147,7 +148,7 @@ namespace Silk
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER,0);
     }
-    void OpenGLObjectIdentifier::Render(GLenum PrimitiveType,i32 Start,i32 Count)
+    void OpenGLObjectIdentifier::Render(i32 PrimitiveType,i32 Start,i32 Count)
     {
         if(m_VAO == 0 || m_Attributes.size() == 0) return;
 
@@ -253,5 +254,12 @@ namespace Silk
     }
     void OpenGLRasterizer::InitializeContext()
     {  
+        glewExperimental = GL_TRUE;
+        GLenum err = glewInit();
+        if(err != GLEW_OK)
+        {
+            ERROR("Glew initialization failed: %s\n", glewGetErrorString(err));
+        }
+        glGetError();
     }
 };

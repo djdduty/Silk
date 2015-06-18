@@ -16,6 +16,7 @@ namespace Silk
             virtual ~RasterObjectIdentifier() { }
         
             virtual void SetMesh(Mesh* m) = 0;
+            virtual void Render(i32 PrimitiveType,i32 Start,i32 Count) = 0;
     };
     
     class ColorFormat
@@ -114,8 +115,8 @@ namespace Silk
     class Shader
     {
         public:
-            Shader();
-            virtual ~Shader();
+            Shader() {}
+            virtual ~Shader() {}
         
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode) = 0;
         

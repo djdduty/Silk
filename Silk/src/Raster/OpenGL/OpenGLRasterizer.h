@@ -42,7 +42,7 @@ namespace Silk
             void* MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access);
             void UnmapBuffer(GLuint AttributeIndex);
         
-            void Render(GLenum PrimitiveType,i32 Start,i32 Count);
+            virtual void Render(i32 PrimitiveType,i32 Start,i32 Count);
         
         protected:
             i32 GetAttributeBufferIndex(i32 AttribIndex) const;

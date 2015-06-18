@@ -23,7 +23,7 @@ namespace Silk
         
         /* Compile sources */
         i32 VtxLen = strlen(VertexCode);
-        glShaderSource(m_VS,1,&VertexCode,&VtxLen);
+        glShaderSource(m_VS,1,const_cast<const GLchar**>(&VertexCode),&VtxLen);
         glCompileShader(m_VS);
         GLint Status;
         
@@ -32,7 +32,7 @@ namespace Silk
         {
             GLint LogLen;
             glGetShaderiv(m_VS,GL_INFO_LOG_LENGTH,&LogLen);
-            char iLog[LogLen];
+            char* iLog = new char [LogLen];
             glGetShaderInfoLog(m_VS,LogLen,&LogLen,iLog);
         
             ERROR("Unable to compile vertex shader. (Shader: 0x%lX)\n",(intptr_t)this);
@@ -42,6 +42,7 @@ namespace Silk
             m_VS = m_PS = 0;
             //glBindVertexArray(0);
             //glDeleteVertexArrays(1,&ugh);
+            delete [] iLog;
             return false;
         }
         
@@ -49,7 +50,7 @@ namespace Silk
         {
             m_GS = glCreateShader(GL_GEOMETRY_SHADER);
             i32 GeoLen = strlen(GeometryCode);
-            glShaderSource(m_GS,1,&GeometryCode,&GeoLen);
+            glShaderSource(m_GS,1,const_cast<const GLchar**>(&GeometryCode),&GeoLen);
             glCompileShader(m_GS);
             GLint Status;
             
@@ -58,7 +59,7 @@ namespace Silk
             {
                 GLint LogLen;
                 glGetShaderiv(m_GS,GL_INFO_LOG_LENGTH,&LogLen);
-                char iLog[LogLen];
+                char* iLog = new char [LogLen];
                 glGetShaderInfoLog(m_GS,LogLen,&LogLen,iLog);
             
                 ERROR("Unable to compile geometry shader. (Shader: 0x%lX)\n",(intptr_t)this);
@@ -69,12 +70,13 @@ namespace Silk
                 m_VS = m_GS = m_PS = 0;
                 //glBindVertexArray(0);
                 //glDeleteVertexArrays(1,&ugh);
+                delete [] iLog;
                 return false;
             }
         }
         
         i32 FrgLen = strlen(FragmentCode);
-        glShaderSource(m_PS,1,&FragmentCode,&FrgLen);
+        glShaderSource(m_PS,1,const_cast<const GLchar**>(&FragmentCode),&FrgLen);
         glCompileShader(m_PS);
         
         glGetShaderiv(m_PS,GL_COMPILE_STATUS,&Status);
@@ -82,7 +84,7 @@ namespace Silk
         {
             GLint LogLen;
             glGetShaderiv(m_PS,GL_INFO_LOG_LENGTH,&LogLen);
-            char iLog[LogLen];
+            char* iLog = new char [LogLen];
             glGetShaderInfoLog(m_PS,LogLen,&LogLen,iLog);
         
             ERROR("Unable to compile fragment shader. (Shader: 0x%lX)\n",(intptr_t)this);
@@ -93,6 +95,7 @@ namespace Silk
             m_VS = m_GS = m_PS = 0;
             //glBindVertexArray(0);
             //glDeleteVertexArrays(1,&ugh);
+            delete [] iLog;
             return false;
         }
         
@@ -101,6 +104,8 @@ namespace Silk
         glAttachShader(m_PID,m_VS);
         if(m_GS) glAttachShader(m_PID,m_GS);
         glAttachShader(m_PID,m_PS);
+
+        glBindFragDataLocation(m_PID,0,"o_Out0");
         
         /*
         for(i32 i = 0;i < MAX_TEXTURES;i++)
@@ -108,7 +113,7 @@ namespace Silk
             char OutName[8];
             memset(OutName,0,8);
             snprintf(OutName,8,"Out%d",i);
-            glBindFragDataLocation(m_PID,i,OutName);
+            
         }
         */
         
@@ -126,7 +131,7 @@ namespace Silk
         {
             GLint LogLen;
             glGetProgramiv(m_PS,GL_INFO_LOG_LENGTH,&LogLen);
-            char iLog[LogLen];
+            char* iLog = new char [LogLen];
             glGetProgramInfoLog(m_PID,LogLen,&LogLen,iLog);
             ERROR("Unable to link shader. (Shader: 0x%lX)\n",(intptr_t)this);
             ERROR("Info: %s\n",iLog);
@@ -136,6 +141,7 @@ namespace Silk
             m_PID = m_VS = m_PS = 0;
             //glBindVertexArray(0);
             //glDeleteVertexArrays(1,&ugh);
+            delete [] iLog;
             return false;
         }
         
@@ -145,7 +151,7 @@ namespace Silk
         {
             GLint LogLen;
             glGetProgramiv(m_PID,GL_INFO_LOG_LENGTH,&LogLen);
-            char iLog[LogLen];
+            char* iLog = new char [LogLen];
             glGetProgramInfoLog(m_PID,LogLen,&LogLen,iLog);
             ERROR("Unable to validate shader. (Shader: 0x%lX)\n",(intptr_t)this);
             ERROR("Info: %s\n",iLog);
@@ -155,6 +161,7 @@ namespace Silk
             m_PID = m_VS = m_PS = 0;
             //glBindVertexArray(0);
             //glDeleteVertexArrays(1,&ugh);
+            delete [] iLog;
             return false;
         }
         

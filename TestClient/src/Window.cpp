@@ -50,6 +50,7 @@ namespace TestClient {
         
         m_Rasterizer->InitializeContext();
         Context->SetResolution(Resolution);
+        glViewport(0,0,Resolution.x, Resolution.y);
         return true;
     }
 
