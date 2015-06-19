@@ -15,7 +15,11 @@
 #include <Renderer/Mesh.h>
 #include <Raster/OpenGL/OpenGLShader.h>
 
+<<<<<<< HEAD
 #include <Renderer/ShaderSystem.h>
+=======
+#include <Renderer/Renderer.h>
+>>>>>>> 70aa414345c205ff8357e85426718a917763f0e5
 
 using namespace TestClient;
 
@@ -78,9 +82,11 @@ int main(int ArgC,char *ArgV[])
         Mesh* mesh = new Mesh();
         Vec3 vertBuff [3] = { Vec3(0, 0.75f, 0), Vec3(0.75f, -0.75f, 0), Vec3(-0.75f, -0.75f, 0) };
         mesh->SetVertexBuffer(3, vertBuff);
-        OpenGLObjectIdentifier* Object = new OpenGLObjectIdentifier();
-        
-        Object->SetMesh(mesh);
+
+        Renderer* Render = new Renderer(r);
+        RenderObject* rObj = Render->CreateRenderObject(ROT_MESH);
+        Material* mat = new Material();
+        rObj->SetMesh(mesh, mat);
 
         while(!Win->GetCloseRequested())
         {
@@ -89,13 +95,15 @@ int main(int ArgC,char *ArgV[])
             r->ClearActiveFramebuffer();
             
             Shdr->Enable();
-            Object->Render(GL_TRIANGLES, 0, 3);
+            Render->Render(GL_TRIANGLES);
             Shdr->Disable();
             
             Win->SwapBuffers();
         }
 
-        delete Object;
+        delete Render;
+        delete rObj;
+        delete mat;
         delete mesh;
         delete Shdr;
     }

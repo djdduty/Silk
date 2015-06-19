@@ -26,10 +26,10 @@ namespace Silk
                 MT_CUSTOM8,
                 MT_COUNT,
             };
-            Material();
-            ~Material();
+            Material() {}
+            ~Material() {}
         
-            void SetMap(MAP_TYPE Type,Texture* Map);
+            void SetMap(MAP_TYPE Type,Texture* Map) {}
             Texture* GetMap(MAP_TYPE Type) const { return m_Maps[Type]; }
         
         protected:

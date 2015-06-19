@@ -151,6 +151,8 @@ namespace Silk
         
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
+
+            virtual RasterObjectIdentifier* CreateObjectIdentifier() = 0;
         
             virtual RasterContext* CreateContext() = 0;
         protected:
