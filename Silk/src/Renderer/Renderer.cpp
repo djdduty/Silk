@@ -3,16 +3,8 @@
 
 namespace Silk
 {
-<<<<<<< HEAD
-    Renderer::Renderer() : m_EngineUniforms(new UniformBuffer()), m_RendererUniforms(new UniformBuffer())
-    {
-    }
-    Renderer::~Renderer()
-    {
-        delete m_EngineUniforms;
-        delete m_RendererUniforms;
-=======
-    Renderer::Renderer(Rasterizer* Raster) : m_ObjectList(new ObjectList()), m_UpdatedObjects(new ObjectList), m_Raster(Raster)
+    Renderer::Renderer(Rasterizer* Raster) : 
+        m_ObjectList(new ObjectList()), m_UpdatedObjects(new ObjectList), m_Raster(Raster), m_EngineUniforms(new UniformBuffer()), m_RendererUniforms(new UniformBuffer())
     {}
 
     Renderer::~Renderer() 
@@ -22,6 +14,9 @@ namespace Silk
 
         m_UpdatedObjects->Clear();
         delete m_UpdatedObjects;
+
+        delete m_EngineUniforms;
+        delete m_RendererUniforms;
     }
 
     void Renderer::Render(i32 PrimType)
@@ -49,6 +44,5 @@ namespace Silk
             AddRenderObject(Object);
 
         return Object;
->>>>>>> 70aa414345c205ff8357e85426718a917763f0e5
     }
 };
