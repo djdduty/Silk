@@ -13,6 +13,8 @@ namespace Silk
                 MT_SPECULAR,
                 MT_EMISSIVE,
                 MT_DISPLACEMENT,
+                MT_ROUGHNESS,
+                MT_METALNESS,
                 MT_CUSTOM0,
                 MT_CUSTOM1,
                 MT_CUSTOM2,

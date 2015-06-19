@@ -104,6 +104,9 @@ namespace Silk
             void SetUniform(i32 UID,const Vec4&  Value);
             void SetUniform(i32 UID,const Mat4&  Value);
         
+            i32 GetUniformCount() const { return m_UniformBuffer.size(); }
+            const UniformDef* GetUniformInfo(i32 Index) const { return &m_UniformInfo[Index]; }
+        
         protected:
             friend class Shader;
             vector<void*> m_UniformBuffer;

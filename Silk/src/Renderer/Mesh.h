@@ -15,6 +15,14 @@ namespace Silk
     #define BoneWeightAttribName "a_Weights"
     #define BoneIndexAttribName  "a_BoneIDs"
     
+    #define PositionOutName   "o_Position"
+    #define NormalOutName     "o_Normal"
+    #define TangentOutName    "o_Tangent"
+    #define ColorOutName      "o_Color"
+    #define TexCoordOutName   "o_TexCoord"
+    #define RoughnessOutName  "o_Roughness"
+    #define MetalnessOutName  "o_Metalness"
+    
     #define PositionAttribIndex   0
     #define NormalAttribIndex     1
     #define TangentAttribIndex    2
