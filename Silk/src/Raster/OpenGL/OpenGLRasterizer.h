@@ -76,6 +76,8 @@ namespace Silk
                                                                   glClear(m_ClearBuffers); }
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h)   { glViewport(x,y,w,h);     }
             virtual RasterContext* CreateContext()              { return new OpenGLRasterizerContext(this); }
+
+            virtual RasterObjectIdentifier* CreateObjectIdentifier() { return new OpenGLObjectIdentifier(); }
         
         protected:
             GLuint m_ColorFormat;
