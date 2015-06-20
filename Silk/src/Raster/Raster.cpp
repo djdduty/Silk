@@ -77,6 +77,7 @@ namespace Silk
             m_UniformInfo[UID].Type = Enum; \
             m_UniformInfo[UID].Size = Sz; \
             m_UniformInfo[UID].Offset = GetUniformOffset(UID); \
+            m_TotalSize += Sz; \
         } \
         if(m_UniformInfo[UID].Type != Enum) \
         { \

@@ -15,6 +15,7 @@ namespace TestClient {
     {
         m_Rasterizer = new OpenGLRasterizer();
         RasterContext* Context = m_Rasterizer->CreateContext();
+        Context->m_Format.SetRGBA(2,2,2,2);
 
         if(!m_Rasterizer->SetContext(Context)) return false;
         
