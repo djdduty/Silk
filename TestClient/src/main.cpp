@@ -6,7 +6,6 @@
 
 #ifdef WIN32
     //#include <vld.h>
-    #include <Windows.h>
 #endif
 
 #include <Silk.h>

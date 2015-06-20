@@ -110,7 +110,7 @@ namespace Silk {
 
     void ObjectList::RemoveObject(RenderObject* Obj)
     {
-        ObjectVector TypeVector;
+        SilkObjectVector TypeVector;
         switch(Obj->m_Type) {
             case ROT_MESH:   { TypeVector = m_MeshObjects  ; break; }
             case ROT_LIGHT:  { TypeVector = m_LightObjects ; break; }
