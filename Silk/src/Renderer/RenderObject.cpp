@@ -3,7 +3,8 @@
 
 namespace Silk {
     RenderObject::RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObjectIdentifier* ObjectIdentifier) : 
-        m_Mesh(0), m_Material(0), m_Renderer(Renderer), m_Type(Type), m_Transform(Mat4()), m_Enabled(true), m_List(0), m_ListIndex(0), m_ObjectIdentifier(ObjectIdentifier)
+        m_Mesh(0), m_Material(0), m_Renderer(Renderer), m_Type(Type), m_Transform(Mat4()), m_Enabled(true), m_List(0), m_ListIndex(0), m_ObjectIdentifier(ObjectIdentifier),
+        m_Light(0)
     {
     }
 
