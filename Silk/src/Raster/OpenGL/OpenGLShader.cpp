@@ -1,5 +1,7 @@
 #include <Raster/OpenGL/OpenGLShader.h>
+#include <Raster/OpenGL/OpenGLRasterizer.h>
 #include <Renderer/Mesh.h>
+#include <Renderer/ShaderSystem.h>
 
 namespace Silk
 {
@@ -103,7 +105,12 @@ namespace Silk
         if(m_GS) glAttachShader(m_PID,m_GS);
         glAttachShader(m_PID,m_PS);
 
-        glBindFragDataLocation(m_PID,0,"o_Out0");
+        glBindFragDataLocation(m_PID,FragmentColorOutputIndex    ,FragmentColorOutputName);
+        glBindFragDataLocation(m_PID,FragmentPositionOutputIndex ,FragmentPositionOutputName);
+        glBindFragDataLocation(m_PID,FragmentNormalOutputIndex   ,FragmentNormalOutputName);
+        glBindFragDataLocation(m_PID,FragmentTangentOutputIndex  ,FragmentTangentOutputName);
+        glBindFragDataLocation(m_PID,FragmentMaterial0OutputIndex,FragmentMaterial0OutputName);
+        glBindFragDataLocation(m_PID,FragmentMaterial1OutputIndex,FragmentMaterial1OutputName);
         
         /*
         for(i32 i = 0;i < MAX_TEXTURES;i++)
@@ -173,6 +180,29 @@ namespace Silk
     void OpenGLShader::Enable()
     {
         glUseProgram(m_PID);
+        
+        for(i32 i = 0;i < m_UniformBuffers.size();i++)
+        {
+            OpenGLUniformBuffer* Uniforms = (OpenGLUniformBuffer*)m_UniformBuffers[i];
+            ShaderGenerator::INPUT_UNIFORM_TYPE ID = Uniforms->GetUniformBlockID();
+            if(ID == ShaderGenerator::IUT_COUNT)
+            {
+                ERROR("Could not bind uniform buffer \"%s\", invalid block ID (%d).\n",Uniforms->GetUniformBlockName().c_str(),Uniforms->GetUniformBlockID());
+                continue;
+            }
+            
+            i32 Index = glGetUniformBlockIndex(m_PID,Uniforms->GetUniformBlockName().c_str());
+            glBindBufferBase(GL_UNIFORM_BUFFER,Uniforms->GetUniformBlockID(),Uniforms->m_Buffer);
+            glUniformBlockBinding(m_PID,Index,Uniforms->GetUniformBlockID());
+        }
+        
+        GLenum Buffers[ShaderGenerator::OFT_COUNT];
+        for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++)
+        {
+            if(m_FragmentOutputs[i]) Buffers[i] = GL_COLOR_ATTACHMENT0 + i;
+            else Buffers[i] = GL_NONE;
+        }
+        glDrawBuffers(ShaderGenerator::OFT_COUNT,Buffers);
     }
     void OpenGLShader::Disable()
     {

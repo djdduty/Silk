@@ -1,4 +1,6 @@
 #include <Raster/Raster.h>
+#include <Raster/OpenGL/OpenGLShader.h>
+#include <Raster/OpenGL/OpenGLRasterizer.h>
 
 namespace Silk
 {
@@ -66,13 +68,15 @@ namespace Silk
         m_UniformBuffer.push_back(0);
         return m_UniformInfo.size() - 1;
     }
-    #define SetUniformFunc(T,Enum) \
+    #define SetUniformFunc(T,Enum,Sz) \
     void UniformBuffer::SetUniform(i32 UID,const T& Value) \
     { \
         if(m_UniformBuffer[UID] == 0) \
         { \
             m_UniformBuffer[UID] = new T(Value); \
             m_UniformInfo[UID].Type = Enum; \
+            m_UniformInfo[UID].Size = Sz; \
+            m_UniformInfo[UID].Offset = GetUniformOffset(UID); \
         } \
         if(m_UniformInfo[UID].Type != Enum) \
         { \
@@ -82,15 +86,22 @@ namespace Silk
         (*(T*)m_UniformBuffer[UID]) = Value; \
     }
     
-    SetUniformFunc(bool,UT_BOOL  );
-    SetUniformFunc(i32 ,UT_INT   );
-    SetUniformFunc(u32 ,UT_UINT  );
-    SetUniformFunc(f32 ,UT_FLOAT );
-    SetUniformFunc(f64 ,UT_DOUBLE);
-    SetUniformFunc(Vec2,UT_VEC2  );
-    SetUniformFunc(Vec3,UT_VEC3  );
-    SetUniformFunc(Vec4,UT_VEC4  );
-    SetUniformFunc(Mat4,UT_MAT4  );
+    SetUniformFunc(bool,UT_BOOL  ,sizeof(bool));
+    SetUniformFunc(i32 ,UT_INT   ,sizeof(i32 ));
+    SetUniformFunc(u32 ,UT_UINT  ,sizeof(u32 ));
+    SetUniformFunc(f32 ,UT_FLOAT ,sizeof(f32 ));
+    SetUniformFunc(f64 ,UT_DOUBLE,sizeof(f64 ));
+    SetUniformFunc(Vec2,UT_VEC2  ,sizeof(Vec2));
+    SetUniformFunc(Vec3,UT_VEC3  ,sizeof(Vec3));
+    SetUniformFunc(Vec4,UT_VEC4  ,sizeof(Vec4));
+    SetUniformFunc(Mat4,UT_MAT4  ,sizeof(Mat4));
+    
+    i32 UniformBuffer::GetUniformOffset(i32 UID) const
+    {
+        i32 Offset = 0;
+        for(i32 i = 0;i < UID;i++) Offset += m_UniformInfo[i].Size;
+        return Offset;
+    }
     
     void Shader::AddUniformBuffer(UniformBuffer *Uniforms)
     {
@@ -145,5 +156,25 @@ namespace Silk
             return true;
         }
         return false;
+    }
+    UniformBuffer* Rasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
+    {
+        UniformBuffer* ub = new OpenGLUniformBuffer();
+        ub->SetUniformBlockInfo(GetUniformBlockTypeName(Type),Type);
+        return ub;
+    }
+    void Rasterizer::DestroyUniformBuffer(UniformBuffer* Buffer)
+    {
+        Buffer->ClearData();
+        delete (OpenGLUniformBuffer*)Buffer;
+    }
+    Shader* Rasterizer::CreateShader()
+    {
+        //For now
+        return new OpenGLShader();
+    }
+    void Rasterizer::DestroyShader(Shader *S)
+    {
+        delete (OpenGLShader*)S;
     }
 };

@@ -1,4 +1,5 @@
 #include <Renderer/Mesh.h>
+#include <Renderer/ShaderSystem.h>
 
 namespace Silk
 {

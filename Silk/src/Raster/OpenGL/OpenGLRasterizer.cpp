@@ -170,6 +170,35 @@ namespace Silk
         return -1;
     }
     
+    OpenGLUniformBuffer::~OpenGLUniformBuffer()
+    {
+        if(m_Buffer != 0) glDeleteBuffers(1,&m_Buffer);
+        m_Buffer = 0;
+    }
+    void OpenGLUniformBuffer::InitializeBuffer()
+    {
+        if(m_Buffer) glDeleteBuffers(1,&m_Buffer);
+        glGenBuffers(1,&m_Buffer);
+        
+        UpdateBuffer();
+    }
+    void OpenGLUniformBuffer::UpdateBuffer()
+    {
+        i32 TotalSize = GetBufferSize();
+        
+        Byte* UBO = new Byte[TotalSize];
+        for(i32 i = 0;i < m_UniformInfo.size();i++)
+        {
+            memcpy(&UBO[GetUniformOffset(i)],m_UniformBuffer[i],m_UniformInfo[i].Size);
+        }
+        
+        glBindBuffer(GL_UNIFORM_BUFFER,m_Buffer);
+        glBufferData(GL_UNIFORM_BUFFER,TotalSize,UBO,GL_STATIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER,0);
+        
+        delete UBO;
+    }
+    
     OpenGLRasterizerContext::~OpenGLRasterizerContext()
     {
     }

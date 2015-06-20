@@ -1,5 +1,8 @@
 #include <Renderer/ShaderSystem.h>
 #include <Utilities/Utilities.h>
+#include <Raster/Raster.h>
+
+#include <Renderer/DefaultShaderCode.h>
 
 namespace Silk
 {
@@ -11,8 +14,13 @@ namespace Silk
         "ObjectData",
         "UserData",
     };
+    string GetUniformBlockTypeName(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
+    {
+        return BlockNames[Type];
+    }
     
-    ShaderGenerator::ShaderGenerator(Renderer* r) : m_ShaderVersion(330), m_MaterialUniforms(0), m_UserUniforms(0), m_Renderer(r)
+    ShaderGenerator::ShaderGenerator(Renderer* r) : m_ShaderVersion(330), m_LightingMode(LM_PHONG), m_MaterialUniforms(0),
+                                                    m_UserUniforms(0), m_Renderer(r)
     {
         for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeInputsUsed[i] = false;
         for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed  [i] = false;
@@ -24,11 +32,42 @@ namespace Silk
     
     
 
-    void ShaderGenerator::AddModule(CString Code,i32 Index)
+    void ShaderGenerator::AddVertexModule(CString Code,i32 Index)
     {
-        if(ReadBlocks(Code,Index) < 0) ERROR("Invalid shader module, no code blocks found.\n");
+        if(ReadBlocks(Code,Index,0) < 0) ERROR("Invalid shader module, no code blocks found.\n");
+    }
+    void ShaderGenerator::AddGeometryModule(CString Code,i32 Index)
+    {
+        if(ReadBlocks(Code,Index,1) < 0) ERROR("Invalid shader module, no code blocks found.\n");
+    }
+    void ShaderGenerator::AddFragmentModule(CString Code,i32 Index)
+    {
+        if(ReadBlocks(Code,Index,2) < 0) ERROR("Invalid shader module, no code blocks found.\n");
     }
     Shader* ShaderGenerator::Generate()
+    {
+        string VertexShader   = GenerateVertexShader  ();
+        string GeometryShader = GenerateGeometryShader();
+        string FragmentShader = GenerateFragmentShader();
+        
+        printf("Shader generated:\nVertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
+        
+        Shader* S = m_Renderer->GetRasterizer()->CreateShader();
+        if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
+        {
+            m_Renderer->GetRasterizer()->DestroyShader(S);
+            S = 0;
+        }
+        else
+        {
+            for(i32 i = 0;i < OFT_COUNT;i++)
+            {
+                S->m_FragmentOutputs[i] = m_FragmentOutputsUsed[i];
+            }
+        }
+        return S;
+    }
+    string ShaderGenerator::GenerateVertexShader()
     {
         CodeBlock* SetPosition  = 0;
         CodeBlock* SetNormal    = 0;
@@ -40,22 +79,32 @@ namespace Silk
         
         vector<i32> UnsortedBlockIndices;
         
-        for(i32 i = 0;i < m_Blocks.size();i++)
+        for(i32 i = 0;i < m_VertexBlocks.size();i++)
         {
-            if     (m_Blocks[i].ID == "SetPosition"      ) SetPosition  = &m_Blocks[i];
-            else if(m_Blocks[i].ID == "SetNormal"        ) SetNormal    = &m_Blocks[i];
-            else if(m_Blocks[i].ID == "SetTangent"       ) SetTangent   = &m_Blocks[i];
-            else if(m_Blocks[i].ID == "SetColor"         ) SetColor     = &m_Blocks[i];
-            else if(m_Blocks[i].ID == "SetTexCoords"     ) SetTexC      = &m_Blocks[i];
-            else if(m_Blocks[i].ID == "SetRoughness"     ) SetRoughness = &m_Blocks[i];
-            else if(m_Blocks[i].ID == "SetMetalness"     ) SetMetalness = &m_Blocks[i];
+            if     (m_VertexBlocks[i].ID == "SetPosition"      ) SetPosition  = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetNormal"        ) SetNormal    = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTangent"       ) SetTangent   = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetColor"         ) SetColor     = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTexCoords"     ) SetTexC      = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetRoughness"     ) SetRoughness = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetMetalness"     ) SetMetalness = &m_VertexBlocks[i];
             
             UnsortedBlockIndices.push_back(i);
         }
+        i32 CustomLightingBlock = -1;
+        for(i32 i = 0;i < m_FragmentBlocks.size();i++)
+        {
+            if(m_FragmentBlocks[i].ID == "Lighting") { CustomLightingBlock = i; break; }
+        }
+        
+        if(CustomLightingBlock == -1)
+        {
+            if(m_LightingMode == LM_FLAT) SetAttributeInput(IAT_COLOR,true);
+        }
         
         /* Default code dependencies */
-        if(!SetPosition            ) m_UniformInputsUsed[IUT_RENDERER_UNIFORMS] = true;
-        if(!SetNormal || SetTangent) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS  ] = true;
+        if(!SetPosition                       ) m_UniformInputsUsed[IUT_RENDERER_UNIFORMS] = true;
+        if(!SetNormal || SetTangent || SetTexC) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS  ] = true;
         
         string VertexShader;
         VertexShader += FormatString("#version %d\n",m_ShaderVersion);
@@ -98,12 +147,15 @@ namespace Silk
         VertexShader += "\n";
         VertexShader += "void main()\n{\n";
         
-        if(!SetPosition) VertexShader += string("\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n\t" +
-                                                        PositionOutName + " = "                       + PositionAttribName  + ";\n";
-        if(!SetNormal  ) VertexShader += string("\t") + NormalOutName   + " = u_NormalMatrix * vec4(" + NormalAttribName    + ",1.0f);\n";
-        if(!SetTangent ) VertexShader += string("\t") + TangentOutName  + " = u_NormalMatrix * vec4(" + TangentAttribName   + ",1.0f);\n";
-        if(!SetColor   ) VertexShader += string("\t") + ColorOutName    + " = " + ColorAttribName + ";\n";
-        if(!SetTexC    ) VertexShader += string("\t") + TexCoordOutName + " = u_TextureMatrix * vec3(" + TexCoordAttribName + ",1.0f);\n";
+        if(!SetPosition  && m_AttributeInputsUsed[IAT_POSITION         ]) VertexShader += string("\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n\t" +
+                                                                                                         PositionOutName  + " = "                       + PositionAttribName  + ";\n";
+        if(!SetNormal    && m_AttributeInputsUsed[IAT_NORMAL           ]) VertexShader += string("\t") + NormalOutName    + " = u_NormalMatrix * vec4(" + NormalAttribName    + ",1.0f);\n";
+        if(!SetTangent   && m_AttributeInputsUsed[IAT_TANGENT          ]) VertexShader += string("\t") + TangentOutName   + " = u_NormalMatrix * vec4(" + TangentAttribName   + ",1.0f);\n";
+        if(!SetColor     && m_AttributeInputsUsed[IAT_COLOR            ]) VertexShader += string("\t") + ColorOutName     + " = " + ColorAttribName + ";\n";
+        if(!SetTexC      && m_AttributeInputsUsed[IAT_TEXCOORD         ]) VertexShader += string("\t") + TexCoordOutName  + " = u_TextureMatrix * vec3(" + TexCoordAttribName + ",1.0f);\n";
+        if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += string("\t") + RoughnessOutName + " = u_Roughness;\n";
+        if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += string("\t") + MetalnessOutName + " = u_Metalness;\n";
+        
         /*
          *
          *   Don't forget the default animation stuff
@@ -117,31 +169,144 @@ namespace Silk
             i32 BlockIndexIndex = 0;
             for(i32 i = 0;i < UnsortedBlockIndices.size();i++)
             {
-                if(m_Blocks[UnsortedBlockIndices[i]].Index < m_Blocks[MinExecutionIndexIndex].Index)
+                if(m_VertexBlocks[UnsortedBlockIndices[i]].Index < m_VertexBlocks[MinExecutionIndexIndex].Index)
                 {
                     MinExecutionIndexIndex = UnsortedBlockIndices[i];
                     BlockIndexIndex = i;
                 }
             }
             UnsortedBlockIndices.erase(UnsortedBlockIndices.begin() + BlockIndexIndex);
-            VertexShader += "\t" + m_Blocks[MinExecutionIndexIndex].Code + "\n";
+            VertexShader += "\t" + m_VertexBlocks[MinExecutionIndexIndex].Code + "\n";
         }
         
         VertexShader += "}\n";
-        
-        
-        printf("Shader generated:\n%s",VertexShader.c_str());
-        
-        return 0;
+        return VertexShader;
     }
-    i32 ShaderGenerator::ReadBlocks(CString Code,i32 Index)
+    string ShaderGenerator::GenerateGeometryShader()
+    {
+        return "";
+    }
+    string ShaderGenerator::GenerateFragmentShader()
+    {
+        string FragmentShader;
+        FragmentShader += FormatString("#version %d\n",m_ShaderVersion);
+        
+        /*
+         * Attribute inputs
+         */
+        FragmentShader += "\n";
+        if(m_AttributeInputsUsed[IAT_POSITION   ]) FragmentShader += string("in vec3 " ) + PositionOutName   + ";\n";
+        if(m_AttributeInputsUsed[IAT_NORMAL     ]) FragmentShader += string("in vec3 " ) + NormalOutName     + ";\n";
+        if(m_AttributeInputsUsed[IAT_TANGENT    ]) FragmentShader += string("in vec3 " ) + TangentOutName    + ";\n";
+        if(m_AttributeInputsUsed[IAT_COLOR      ]) FragmentShader += string("in vec4 " ) + ColorOutName      + ";\n";
+        if(m_AttributeInputsUsed[IAT_TEXCOORD   ]) FragmentShader += string("in vec2 " ) + TexCoordOutName   + ";\n";
+        
+        i32 CustomLightingBlock = -1;
+        vector<i32> UnsortedBlockIndices;
+        
+        CodeBlock* PointLight       = 0;
+        CodeBlock* SpotLight        = 0;
+        CodeBlock* DirectionalLight = 0;
+        
+        for(i32 i = 0;i < m_FragmentBlocks.size();i++)
+        {
+            if     (m_FragmentBlocks[i].ID == "Lighting") CustomLightingBlock = i;
+            else if(m_FragmentBlocks[i].ID == "PointLight") PointLight = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SpotLight") SpotLight = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "DirectionalLight") DirectionalLight = &m_FragmentBlocks[i];
+            else UnsortedBlockIndices.push_back(i);
+        }
+        if(CustomLightingBlock == -1 && m_LightingMode == LM_PHONG) SetUniformInput(IUT_RENDERER_UNIFORMS,true);
+        
+        /*
+         * Uniform inputs
+         */
+        for(i32 i = 0;i < IUT_COUNT;i++)
+        {
+            if(m_UniformInputsUsed[i])
+            {
+                FragmentShader += GenerateInputBlock((INPUT_UNIFORM_TYPE)i);
+            }
+        }
+        
+        /*
+         * Fragment outputs
+         */
+        FragmentShader += "\n";
+        if(m_FragmentOutputsUsed[OFT_POSITION ]) FragmentShader += string("out vec4 ") + FragmentPositionOutputName  + ";\n";
+        if(m_FragmentOutputsUsed[OFT_NORMAL   ]) FragmentShader += string("out vec4 ") + FragmentNormalOutputName    + ";\n";
+        if(m_FragmentOutputsUsed[OFT_TANGENT  ]) FragmentShader += string("out vec4 ") + FragmentTangentOutputName   + ";\n";
+        if(m_FragmentOutputsUsed[OFT_COLOR    ]) FragmentShader += string("out vec4 ") + FragmentColorOutputName     + ";\n";
+        if(m_FragmentOutputsUsed[OFT_MATERIAL0]) FragmentShader += string("out vec4 ") + FragmentMaterial0OutputName + ";\n";
+        if(m_FragmentOutputsUsed[OFT_MATERIAL1]) FragmentShader += string("out vec4 ") + FragmentMaterial1OutputName + ";\n";
+        
+        /*
+         * main
+         */
+        FragmentShader += "\n";
+        FragmentShader += "void main()\n{\n";
+        
+        while(UnsortedBlockIndices.size() != 0)
+        {
+            i32 MinExecutionIndexIndex = UnsortedBlockIndices[0];
+            i32 BlockIndexIndex = 0;
+            for(i32 i = 0;i < UnsortedBlockIndices.size();i++)
+            {
+                if(m_FragmentBlocks[UnsortedBlockIndices[i]].Index < m_FragmentBlocks[MinExecutionIndexIndex].Index)
+                {
+                    MinExecutionIndexIndex = UnsortedBlockIndices[i];
+                    BlockIndexIndex = i;
+                }
+            }
+            UnsortedBlockIndices.erase(UnsortedBlockIndices.begin() + BlockIndexIndex);
+            FragmentShader += "\t" + m_FragmentBlocks[MinExecutionIndexIndex].Code + "\n";
+        }
+        
+        if(CustomLightingBlock != -1) FragmentShader += m_FragmentBlocks[CustomLightingBlock].Code;
+        else
+        {
+            switch(m_LightingMode)
+            {
+                case LM_PHONG:
+                {
+                    FragmentShader += DefaultFragmentShaderBase_0;
+                    
+                    if(!PointLight) FragmentShader += DefaultFragmentShaderPointLight;
+                    else FragmentShader += PointLight->Code;
+                    
+                    FragmentShader += DefaultFragmentShaderBase_1;
+                    
+                    if(!SpotLight) FragmentShader += DefaultFragmentShaderSpotLight;
+                    else FragmentShader += SpotLight->Code;
+                    
+                    FragmentShader += DefaultFragmentShaderBase_2;
+                    
+                    if(!DirectionalLight) FragmentShader += DefaultFragmentShaderDirectionalLight;
+                    else FragmentShader += DirectionalLight->Code;
+                    
+                    FragmentShader += DefaultFragmentShaderBase_3;
+                    break;
+                }
+                case LM_FLAT:
+                {
+                    FragmentShader += DefaultFlatFragmentShader;
+                    break;
+                }
+            }
+        }
+        
+        FragmentShader += "}\n";
+        
+        return FragmentShader;
+    }
+    i32 ShaderGenerator::ReadBlocks(CString Code,i32 Index,i32 ShaderType)
     {
         i32 p = 0;
         while(Code[p] != 0)
         {
             if(Code[p] == '[')
             {
-                i32 r = ParseBlock(Code,p + 1,Index);
+                i32 r = ParseBlock(Code,p + 1,Index,ShaderType);
                 if(r == -1) return -1;
                 
                 p = r;
@@ -150,7 +315,7 @@ namespace Silk
         }
         return 0;
     }
-    i32 ShaderGenerator::ParseBlock(CString Code,i32 StartIndex,i32 ExecutionIndex)
+    i32 ShaderGenerator::ParseBlock(CString Code,i32 StartIndex,i32 ExecutionIndex,i32 ShaderType)
     {
         i32 p = StartIndex;
         
@@ -164,7 +329,9 @@ namespace Silk
         
         b.Index = ExecutionIndex;
         
-        m_Blocks.push_back(b);
+        if     (ShaderType == 0) m_VertexBlocks  .push_back(b);
+        else if(ShaderType == 1) m_GeometryBlocks.push_back(b);
+        else if(ShaderType == 2) m_FragmentBlocks.push_back(b);
         return p;
     }
     string ShaderGenerator::GenerateInputBlock(INPUT_UNIFORM_TYPE Type)
@@ -175,6 +342,7 @@ namespace Silk
             case IUT_MATERIAL_UNIFORMS: { eUniforms = m_MaterialUniforms                    ; break; }
             case IUT_ENGINE_UNIFORMS  : { eUniforms = m_Renderer->GetEngineUniformBuffer  (); break; }
             case IUT_RENDERER_UNIFORMS: { eUniforms = m_Renderer->GetRendererUniformBuffer(); break; }
+            case IUT_OBJECT_UNIFORMS  : { eUniforms = 0                                     ; break; }
             case IUT_USER_UNIFORMS    : { eUniforms = m_UserUniforms                        ; break; }
             default:
             {
@@ -185,7 +353,7 @@ namespace Silk
         if(!eUniforms) return "";
         
         string Code;
-        Code += "\nlayout (packed) uniform " + BlockNames[Type] + "\n{\n";
+        Code += "\nlayout (std140) uniform " + GetUniformBlockTypeName(Type) + "\n{\n";
         
         i32 uCount = eUniforms->GetUniformCount();
         for(i32 i = 0;i < uCount;i++)

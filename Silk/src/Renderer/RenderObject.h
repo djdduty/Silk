@@ -6,15 +6,19 @@
 
 #include <Renderer/Mesh.h>
 #include <Renderer/Material.h>
-#include <Raster/Raster.h>
 
 #include <Math/Math.h>
 
 using namespace std;
 
-namespace Silk {
+namespace Silk
+{
     class Renderer;
     class ObjectList;
+    class Material;
+    class RasterObjectIdentifier;
+    class Shader;
+    class Rasterizer;
 
     enum RENDER_OBJECT_TYPE
     {
@@ -52,8 +56,9 @@ namespace Silk {
             //TODO Camera, Light
 
             //List references
-            i32                 m_ListIndex ;
-            ObjectList*         m_List      ;
+            i32                 m_ShaderListIndex;
+            i32                 m_ListIndex      ;
+            ObjectList*         m_List           ;
 
         private:
             void MarkAsUpdated();
@@ -77,15 +82,22 @@ namespace Silk {
                 m_CameraObjects.clear();
             }
 
-            ObjectVector GetMeshList()   { return m_MeshObjects;   }
-            ObjectVector GetCameraList() { return m_CameraObjects; }
-            ObjectVector GetLightList()  { return m_LightObjects;  }
+            ObjectVector& GetMeshList()   { return m_MeshObjects;   }
+            ObjectVector& GetCameraList() { return m_CameraObjects; }
+            ObjectVector& GetLightList()  { return m_LightObjects;  }
+        
+            i32 GetShaderCount() const { return m_ShadersUsed.size(); }
+            Shader* GetShader(i32 Index) const { return m_ShadersUsed[Index]; }
+            ObjectVector& GetShaderMeshList(i32 Index) { return m_ShaderObjects[Index]; }
 
         protected:
             friend class Renderer;
             ObjectVector m_MeshObjects;
             ObjectVector m_LightObjects;
             ObjectVector m_CameraObjects;
+            
+            vector<Shader*> m_ShadersUsed;
+            vector<vector<RenderObject*> >m_ShaderObjects;
     };
 }
 

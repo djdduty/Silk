@@ -52,6 +52,18 @@ namespace Silk
             vector<struct AttributeBuffer> m_Attributes;
     };
     
+    class OpenGLUniformBuffer : public UniformBuffer
+    {
+        public:
+            OpenGLUniformBuffer() : m_Buffer(0) { }
+            ~OpenGLUniformBuffer();
+        
+            virtual void InitializeBuffer();
+            virtual void UpdateBuffer    ();
+        
+            GLuint m_Buffer;
+    };
+    
     class OpenGLRasterizerContext : public RasterContext
     {
         public:

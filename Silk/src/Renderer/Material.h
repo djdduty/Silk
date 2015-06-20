@@ -3,6 +3,7 @@
 
 namespace Silk
 {
+    class Shader;
     class Material
     {
         public:
@@ -29,11 +30,15 @@ namespace Silk
             Material() {}
             ~Material() {}
         
-            void SetMap(MAP_TYPE Type,Texture* Map) {}
+            void SetMap(MAP_TYPE Type,Texture* Map) { m_Maps[Type] = Map; }
             Texture* GetMap(MAP_TYPE Type) const { return m_Maps[Type]; }
+        
+            void SetShader(Shader* Shdr) { m_Shader = Shdr; }
+            Shader* GetShader() const { return m_Shader; }
         
         protected:
             Texture* m_Maps[MT_COUNT];
+            Shader* m_Shader;
     };
 };
 

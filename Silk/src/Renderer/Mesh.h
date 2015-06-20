@@ -7,30 +7,6 @@ using namespace std;
 
 namespace Silk
 {
-    #define PositionAttribName   "a_Position"
-    #define NormalAttribName     "a_Normal"
-    #define TangentAttribName    "a_Tangent"
-    #define ColorAttribName      "a_Color"
-    #define TexCoordAttribName   "a_TexCoord"
-    #define BoneWeightAttribName "a_Weights"
-    #define BoneIndexAttribName  "a_BoneIDs"
-    
-    #define PositionOutName   "o_Position"
-    #define NormalOutName     "o_Normal"
-    #define TangentOutName    "o_Tangent"
-    #define ColorOutName      "o_Color"
-    #define TexCoordOutName   "o_TexCoord"
-    #define RoughnessOutName  "o_Roughness"
-    #define MetalnessOutName  "o_Metalness"
-    
-    #define PositionAttribIndex   0
-    #define NormalAttribIndex     1
-    #define TangentAttribIndex    2
-    #define ColorAttribIndex      3
-    #define TexCoordAttribIndex   4
-    #define BoneWeightAttribIndex 5
-    #define BoneIndexAttribIndex  6
-    
     class Mesh
     {
         public:

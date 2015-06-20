@@ -3,15 +3,18 @@
 #include <Renderer/RenderObject.h>
 #include <Renderer/Mesh.h>
 #include <Renderer/Material.h>
-#include <Raster/Raster.h>
 
 namespace Silk
 {
+    class UniformBuffer;
     class Renderer
     {
         public:
             Renderer(Rasterizer* Raster);
             virtual ~Renderer();
+        
+            Rasterizer* GetRasterizer()               { return m_Raster; }
+        
             UniformBuffer* GetEngineUniformBuffer()   { return m_EngineUniforms; }
             UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms; }
         
@@ -23,7 +26,7 @@ namespace Silk
             {
                 if(!Object)
                     return;
-
+                    
                 Object->m_ListIndex = m_ObjectList->AddObject(Object);
                 Object->m_List = m_ObjectList;
             }
