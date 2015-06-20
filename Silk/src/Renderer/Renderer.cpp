@@ -21,9 +21,11 @@ namespace Silk
 
     void Renderer::Render(i32 PrimType)
     {
-        ObjectVector l = m_ObjectList->GetMeshList();
-        for(i32 i = 0; i < l.size(); i++) {
-            RenderObject* Obj = l[i];
+        ObjectVector Lights = m_ObjectList->GetLightList();
+
+        ObjectVector Meshes = m_ObjectList->GetMeshList();
+        for(i32 i = 0; i < Meshes.size(); i++) {
+            RenderObject* Obj = Meshes[i];
             if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled) 
             {
                 i32 Count = Obj->m_Mesh->GetAttribute(0)->Count;

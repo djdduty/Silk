@@ -14,8 +14,11 @@ namespace Silk {
 
     void RenderObject::SetMesh(Mesh* M, Material* Mat)
     {
-        if(m_Type != ROT_MESH) {
-            ERROR("Could not set the mesh of RenderObject, this object is not a mesh object!\n");
+        if(M && Mat && m_Type != ROT_MESH) {
+            if(M && Mat)
+                ERROR("Could not set the mesh of RenderObject, this object is not a mesh object!\n");
+            else
+                ERROR("Coult not set the mesh of RenderObject, the material and or the mesh is null!\n");
             return;
         }
 
@@ -27,11 +30,27 @@ namespace Silk {
 
     void RenderObject::SetMaterial(Material* Mat)
     {
-        if(m_Type != ROT_MESH) {
-            ERROR("Could not set the material of RenderObject, this object is not a mesh object!\n");
+        if(Mat && m_Type != ROT_MESH) {
+            if(Mat)
+                ERROR("Could not set the material of RenderObject, this object is not a mesh object!\n");
+            else
+                ERROR("Coult not set the material of RenderObject, the material is null!\n");
             return;
         }
         m_Material = Mat;
+    }
+
+    void RenderObject::SetLight(Light* L)
+    {
+        if(L && m_Type != ROT_LIGHT) {
+            if(L)
+                ERROR("Could not set the light of RenderObject, this object is not a light object!\n");
+            else
+                ERROR("Could not set the light of RenderObject, the light is null!\n");
+            return;
+        }
+        
+        m_Light = L;
     }
 
     void RenderObject::SetTransform(Mat4 Transform)
@@ -68,6 +87,7 @@ namespace Silk {
                 break;
             }
         }
+        return -1;
     }
 
     void ObjectList::RemoveObject(RenderObject* Obj)

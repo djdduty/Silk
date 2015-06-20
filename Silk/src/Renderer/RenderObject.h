@@ -5,6 +5,8 @@
 #include <vector>
 
 #include <Renderer/Mesh.h>
+#include <Renderer/Light.h>
+
 #include <Renderer/Material.h>
 #include <Raster/Raster.h>
 
@@ -31,10 +33,12 @@ namespace Silk {
             ~RenderObject();
 
             Mesh*       GetMesh()      { return m_Mesh;      }
+            Light*      GetLight()     { return m_Light;     }
             Material*   GetMaterial()  { return m_Material;  }
             Mat4        GetTransform() { return m_Transform; }
 
             void SetMesh(Mesh* M, Material* Mat);
+            void SetLight(Light* L);
             void SetMaterial(Material* Mat);
             void SetTransform(Mat4 Transform);
 
@@ -42,18 +46,20 @@ namespace Silk {
             friend class Renderer;
             friend class ObjectList;
 
+            RasterObjectIdentifier* m_ObjectIdentifier;
+
             RENDER_OBJECT_TYPE      m_Type      ;
             bool                    m_Enabled   ;
             Renderer*               m_Renderer  ;
-            RasterObjectIdentifier* m_ObjectIdentifier;
             Material*               m_Material  ;
             Mesh*                   m_Mesh      ;
+            Light*                  m_Light     ;
             Mat4                    m_Transform ;
             //TODO Camera, Light
 
             //List references
-            i32                 m_ListIndex ;
-            ObjectList*         m_List      ;
+            i32                 m_ListIndex     ;
+            ObjectList*         m_List          ;
 
         private:
             void MarkAsUpdated();
