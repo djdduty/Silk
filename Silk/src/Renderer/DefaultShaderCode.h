@@ -50,12 +50,12 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,1.0 / u_Roughness);\n" +
     "\t\t\t\t}\n\n" +
     "\t\t\t\t//Light equation\n" +
-    "\t\t\t\tOut0 = (u_AmbientFactor * " + ColorOutName + " * u_Light[l].Ambient) + //Ambient\n" +
+    "\t\t\t\t" + FragmentColorOutputName + " = (u_AmbientFactor * " + ColorOutName + " * u_Light[l].Ambient) + //Ambient\n" +
     "\t\t\t\t       (ndotl           * o_Color  * u_Light[l].Diffuse) + //Diffuse\n" +
     "\t\t\t\t       (SpecularPower   * u_Light[l].Color * u_LightSpecular);  //Specular\n\n" +
     "\t\t\t\t//Attenuation\n" +
-    "\t\t\t\tOut0 *= 1.0 / (u_Light[l].CAttenuation + (u_Light[l].LAttenuation * Dist) + (u_Light[l].QAttenuation * (Dist * Dist)));\n" +
-    "\t\t\t\tOut0 *= u_Light[l].Intensity * FadeFactor;\n";
+    "\t\t\t\t" + FragmentColorOutputName + " *= 1.0 / (u_Light[l].CAttenuation + (u_Light[l].LAttenuation * Dist) + (u_Light[l].QAttenuation * (Dist * Dist)));\n" +
+    "\t\t\t\t" + FragmentColorOutputName + " *= u_Light[l].Intensity * FadeFactor;\n";
 
     static string DefaultFragmentShaderSpotLight =
     string("\t\t\t\tvec3 Dir = u_Light[l].Position - ") + PositionOutName + ";\n" +
@@ -85,12 +85,12 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,1.0 / u_Roughness);\n" +
     "\t\t\t\t}\n" +
     "\t\t\t\t//Light equation\n" +
-    "\t\t\t\tOut0 = (u_AmbientFactor * " + ColorOutName + " * u_Light[l].Ambient) + //Ambient\n" +
+    "\t\t\t\t" + FragmentColorOutputName + " = (u_AmbientFactor * " + ColorOutName + " * u_Light[l].Ambient) + //Ambient\n" +
     "\t\t\t\t       (ndotl           * " + ColorOutName + " * u_Light[l].Diffuse) + //Diffuse\n" +
     "\t\t\t\t       (SpecularPower   * u_Light[l].Color * u_LightSpecular);  //Specular\n" +
     "\t\t\t\t//Attenuation\n" +
-    "\t\t\t\tOut0 *= 1.0 / (u_Light[l].CAttenuation + (u_Light[l].LAttenuation * Dist) + (u_Light[l].QAttenuation * (Dist * Dist)));\n" +
-    "\t\t\t\tOut0 *= u_Light[l].Intensity * FadeFactor;\n";
+    "\t\t\t\t" + FragmentColorOutputName + " *= 1.0 / (u_Light[l].CAttenuation + (u_Light[l].LAttenuation * Dist) + (u_Light[l].QAttenuation * (Dist * Dist)));\n" +
+    "\t\t\t\t" + FragmentColorOutputName + " *= u_Light[l].Intensity * FadeFactor;\n";
 
     static string DefaultFragmentShaderDirectionalLight =
     string("\t\t\t\tfloat ndotl = max(dot(") + NormalOutName + ",u_Light[l].Direction),0.0);\n" +
@@ -103,7 +103,7 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,1.0 / u_Roughness);\n" +
     "\t\t\t\t}\n\n" +
     "\t\t\t\t/* Light Equation */\n" +
-    "\t\t\t\tOut0 = u_Light[l].Intensity * ((u_AmbientFactor * u_Light[l].Ambient * " + ColorOutName + ") + (ndotl * " + ColorOutName + " * u_Light[l].Diffuse) + (SpecularPower * u_Light[l].Specular));\n";
+    "\t\t\t\t" + FragmentColorOutputName + " = u_Light[l].Intensity * ((u_AmbientFactor * u_Light[l].Ambient * " + ColorOutName + ") + (ndotl * " + ColorOutName + " * u_Light[l].Diffuse) + (SpecularPower * u_Light[l].Specular));\n";
 
 
     /* * * * * * * * * * * * * * * * * * * * * * * *\
