@@ -27,6 +27,7 @@ namespace Silk
 
     void Renderer::Render(i32 PrimType)
     {
+<<<<<<< HEAD
         i32 ShaderCount = m_ObjectList->GetShaderCount();
         for(i32 i = 0;i < ShaderCount;i++)
         {
@@ -36,6 +37,14 @@ namespace Silk
             Shader->Enable();
             
             for(i32 m = 0;m < Meshes.size();m++)
+=======
+        ObjectVector Lights = m_ObjectList->GetLightList();
+
+        ObjectVector Meshes = m_ObjectList->GetMeshList();
+        for(i32 i = 0; i < Meshes.size(); i++) {
+            RenderObject* Obj = Meshes[i];
+            if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled) 
+>>>>>>> 8a94f8395fced34db965ca7c0c0aeb466d9c8a2b
             {
                 RenderObject* Obj = Meshes[m];
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
