@@ -27,17 +27,17 @@ namespace Silk
             LightType m_Type;
 
             Vec3 m_Direction;
-            Vec3 m_Position;
-            Vec3 m_Color;
-            f32 m_Cutoff; //this doesn't seem like a proper spotlight value
+            Vec3 m_Position ;
+            Vec3 m_Color    ;
+            f32 m_Cutoff    ; //this doesn't seem like a proper spotlight value
 
-            f32 m_Power;
+            f32 m_Power     ;
 
             struct
             {
-                f32 Constant;
-                f32 Linear;
-                f32 Exponential;
+                f32 Constant    ;
+                f32 Linear      ;
+                f32 Exponential ;
             } m_Attenuation;
     };
 }
