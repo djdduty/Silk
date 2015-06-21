@@ -13,6 +13,7 @@ namespace Silk
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode);
         
             virtual void Enable();
+            virtual void UseMaterial(Material* Mat);
             virtual void Disable();
         
         protected:
@@ -20,5 +21,6 @@ namespace Silk
             GLuint m_VS;
             GLuint m_GS;
             GLuint m_PS;
+            GLuint m_SamplerLocations[Material::MT_COUNT];
     };
 };

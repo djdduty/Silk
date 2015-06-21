@@ -95,10 +95,13 @@ namespace Silk
             ShaderGenerator(Renderer* r);
             ~ShaderGenerator();
         
+            void Reset();
+        
             void AddVertexModule(CString Code,i32 Index);
             void AddGeometryModule(CString Code,i32 Index);
             void AddFragmentModule(CString Code,i32 Index);
-            
+        
+            void SetTextureInput  (Material::MAP_TYPE   Type,bool Flag) { m_MapTypesUsed       [Type] = Flag; }
             void SetUniformInput  (INPUT_UNIFORM_TYPE   Type,bool Flag) { m_UniformInputsUsed  [Type] = Flag; }
             void SetAttributeInput(INPUT_ATTRIBUTE_TYPE Type,bool Flag) { m_AttributeInputsUsed[Type] = Flag; }
             void SetFragmentOutput(OUTPUT_FRAGMENT_TYPE Type,bool Flag) { m_FragmentOutputsUsed[Type] = Flag; }
@@ -127,6 +130,7 @@ namespace Silk
             
             i32                 m_ShaderVersion;
 
+            bool                m_MapTypesUsed[Material::MT_COUNT];
             bool                m_UniformInputsUsed[IUT_COUNT];
             bool                m_AttributeInputsUsed[IAT_COUNT];
             bool                m_FragmentOutputsUsed[OFT_COUNT];

@@ -1,4 +1,5 @@
 #include <Raster/OpenGL/OpenGLShader.h>
+#include <Raster/OpenGL/OpenGLTexture.h>
 #include <Raster/OpenGL/OpenGLRasterizer.h>
 #include <Renderer/Mesh.h>
 #include <Renderer/ShaderSystem.h>
@@ -170,7 +171,7 @@ namespace Silk
             return false;
         }
         
-        //for(i32 i = 0;i < SU_COUNT;i++) m_UniformLocs[i] = glGetUniformLocation(m_PID,UniformNames[i]);
+        for(i32 i = 0;i < Material::MT_COUNT;i++) m_SamplerLocations[i] = glGetUniformLocation(m_PID,GetShaderMapName((Material::MAP_TYPE)i).c_str());
         
         glBindVertexArray(0);
         glDeleteVertexArrays(1,&ugh);
@@ -203,6 +204,17 @@ namespace Silk
             else Buffers[i] = GL_NONE;
         }
         glDrawBuffers(ShaderGenerator::OFT_COUNT,Buffers);
+    }
+    void OpenGLShader::UseMaterial(Material *Mat)
+    {
+        for(i32 i = 0;i < Material::MT_COUNT;i++)
+        {
+            OpenGLTexture* t = (OpenGLTexture*)Mat->GetMap((Material::MAP_TYPE)i);
+            if(!t || m_SamplerLocations[i] == -1) continue;
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D,t->GetTextureID());
+            glUniform1i(m_SamplerLocations[i],i);
+        }
     }
     void OpenGLShader::Disable()
     {

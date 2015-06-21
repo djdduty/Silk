@@ -19,19 +19,25 @@ namespace Silk
         return BlockNames[Type];
     }
     
-    ShaderGenerator::ShaderGenerator(Renderer* r) : m_ShaderVersion(330), m_LightingMode(LM_PHONG), m_MaterialUniforms(0),
-                                                    m_UserUniforms(0), m_Renderer(r)
+    ShaderGenerator::ShaderGenerator(Renderer* r) : m_Renderer(r)
     {
-        for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeInputsUsed[i] = false;
-        for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed  [i] = false;
-        m_AttributeInputsUsed[0] = true;
+        Reset();
     }
     ShaderGenerator::~ShaderGenerator()
     {
     }
     
+    void ShaderGenerator::Reset()
+    {
+        m_ShaderVersion    = 330;
+        m_LightingMode     = LM_FLAT;
+        m_MaterialUniforms = 0;
+        m_UserUniforms     = 0;
+        for(i32 i = 0;i < Material::MT_COUNT;i++) m_MapTypesUsed[i] = false;
+        for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeInputsUsed  [i] = false;
+        for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed    [i] = false;
+    }
     
-
     void ShaderGenerator::AddVertexModule(CString Code,i32 Index)
     {
         if(ReadBlocks(Code,Index,0) < 0) ERROR("Invalid shader module, no code blocks found.\n");
@@ -207,14 +213,29 @@ namespace Silk
         CodeBlock* PointLight       = 0;
         CodeBlock* SpotLight        = 0;
         CodeBlock* DirectionalLight = 0;
+        CodeBlock* SetPosition  = 0;
+        CodeBlock* SetNormal    = 0;
+        CodeBlock* SetTangent   = 0;
+        CodeBlock* SetColor     = 0;
+        CodeBlock* SetTexC      = 0;
+        CodeBlock* SetMaterial0 = 0;
+        CodeBlock* SetMaterial1 = 0;
         
         for(i32 i = 0;i < m_FragmentBlocks.size();i++)
         {
-            if     (m_FragmentBlocks[i].ID == "Lighting") CustomLightingBlock = i;
-            else if(m_FragmentBlocks[i].ID == "PointLight") PointLight = &m_FragmentBlocks[i];
-            else if(m_FragmentBlocks[i].ID == "SpotLight") SpotLight = &m_FragmentBlocks[i];
-            else if(m_FragmentBlocks[i].ID == "DirectionalLight") DirectionalLight = &m_FragmentBlocks[i];
+            if     (m_FragmentBlocks[i].ID == "Lighting"        ) CustomLightingBlock = i;
+            else if(m_FragmentBlocks[i].ID == "PointLight"      ) PointLight          = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SpotLight"       ) SpotLight           = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "DirectionalLight") DirectionalLight    = &m_FragmentBlocks[i];
             else UnsortedBlockIndices.push_back(i);
+            
+            if     (m_FragmentBlocks[i].ID == "SetPosition"     ) SetPosition         = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetNormal"       ) SetNormal           = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetTangent"      ) SetTangent          = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetColor"        ) SetColor            = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetTexCoords"    ) SetTexC             = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetMaterial0"    ) SetMaterial0        = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetMaterial1"    ) SetMaterial1        = &m_FragmentBlocks[i];
         }
         if(CustomLightingBlock == -1 && m_LightingMode == LM_PHONG) SetUniformInput(IUT_RENDERER_UNIFORMS,true);
         
@@ -228,6 +249,18 @@ namespace Silk
                 FragmentShader += GenerateInputBlock((INPUT_UNIFORM_TYPE)i);
             }
         }
+        
+        /*
+         * Sampler inputs
+         */
+         FragmentShader += "\n";
+         for(i32 i = 0;i < Material::MT_COUNT;i++)
+         {
+             if(m_MapTypesUsed[i])
+             {
+                 FragmentShader += "uniform sampler2D " + GetShaderMapName((Material::MAP_TYPE)i) + ";\n";
+             }
+         }
         
         /*
          * Fragment outputs
@@ -245,6 +278,23 @@ namespace Silk
          */
         FragmentShader += "\n";
         FragmentShader += "void main()\n{\n";
+        
+        if(m_FragmentOutputsUsed[OFT_POSITION ] && !SetPosition)
+        {
+            if(!m_MapTypesUsed[Material::MT_POSITION]) FragmentShader += string("\t") + FragmentPositionOutputName  + " = " + PositionOutName  + ";\n";
+            else FragmentShader += string("\t") + FragmentPositionOutputName + " = texture(" + GetShaderMapName(Material::MT_POSITION) + "," + TexCoordOutName + ");\n";
+        }
+        if(m_FragmentOutputsUsed[OFT_NORMAL   ] && !SetNormal  )
+        {
+            if(!m_MapTypesUsed[Material::MT_NORMAL  ]) FragmentShader += string("\t") + FragmentNormalOutputName    + " = " + NormalOutName    + ";\n";
+            else FragmentShader += string("\t") + FragmentPositionOutputName + " = texture(" + GetShaderMapName(Material::MT_NORMAL  ) + "," + TexCoordOutName + ");\n";
+        }
+        if(m_FragmentOutputsUsed[OFT_TANGENT  ] && !SetTangent ) FragmentShader += string("\t") + FragmentTangentOutputName   + " = " + TangentOutName   + ";\n";
+        if(m_FragmentOutputsUsed[OFT_COLOR    ] && !SetColor   )
+        {
+            if(!m_MapTypesUsed[Material::MT_DIFFUSE ]) FragmentShader += string("\t") + FragmentColorOutputName     + " = " + ColorOutName     + ";\n";
+            else FragmentShader += string("\t") + FragmentColorOutputName + " = texture(" + GetShaderMapName(Material::MT_DIFFUSE  ) + "," + TexCoordOutName + ");\n";
+        }
         
         while(UnsortedBlockIndices.size() != 0)
         {
@@ -289,7 +339,8 @@ namespace Silk
                 }
                 case LM_FLAT:
                 {
-                    FragmentShader += DefaultFlatFragmentShader;
+                    //Done by default code now, but I'll leave it here just in case something changes
+                    //FragmentShader += DefaultFlatFragmentShader;
                     break;
                 }
             }
@@ -378,6 +429,7 @@ namespace Silk
             else Code += ";\n";
         }
         Code += "};\n";
+        
         return Code;
     }
 };

@@ -2,8 +2,9 @@
 #define SILK_RASTERIZATION_H
 
 #include <Math/Math.h>
-#include <Renderer/ShaderSystem.h>
+#include <Renderer/Material.h>
 #include <Renderer/Light.h>
+#include <Renderer/ShaderSystem.h>
 
 #include <vector>
 using namespace std;
@@ -160,6 +161,7 @@ namespace Silk
             UniformBuffer* GetUniformBuffer(i32 Index) const { return m_UniformBuffers[Index]; }
         
             virtual void Enable() = 0;
+            virtual void UseMaterial(Material* Mat) = 0;
             virtual void Disable() = 0;
         
         protected:

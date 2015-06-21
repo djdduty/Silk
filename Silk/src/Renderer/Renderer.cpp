@@ -32,6 +32,8 @@ namespace Silk
         for(i32 i = 0;i < ShaderCount;i++)
         {
             Shader*          Shader = m_ObjectList->GetShader        (i);
+            if(!Shader) continue;
+            
             SilkObjectVector Meshes = m_ObjectList->GetShaderMeshList(i);
             
             Shader->Enable();
@@ -41,6 +43,9 @@ namespace Silk
                 RenderObject* Obj = Meshes[m];
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
                 {
+                    //Pass material uniforms
+                    Shader->UseMaterial(Obj->GetMaterial());
+                    
                     i32 Count = Obj->m_Mesh->GetAttribute(0)->Count;
                     Obj->m_ObjectIdentifier->Render(PrimType, 0, Count);
                 }
