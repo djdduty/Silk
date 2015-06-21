@@ -3,6 +3,7 @@
 
 #include <Math/Math.h>
 #include <Renderer/ShaderSystem.h>
+#include <Renderer/Light.h>
 
 #include <vector>
 using namespace std;
@@ -82,7 +83,8 @@ namespace Silk
                 UT_VEC2,
                 UT_VEC3,
                 UT_VEC4,
-                UT_MAT4
+                UT_MAT4,
+                UT_LIGHT,
             };
         
             struct UniformDef
@@ -91,6 +93,7 @@ namespace Silk
                 UNIFORM_TYPE Type;
                 i32 Size;
                 i32 Offset;
+                i32 ArraySize;
             };
         
             void ClearData();
@@ -105,6 +108,17 @@ namespace Silk
             void SetUniform(i32 UID,const Vec3&  Value);
             void SetUniform(i32 UID,const Vec4&  Value);
             void SetUniform(i32 UID,const Mat4&  Value);
+            void SetUniform(i32 UID,const vector<bool>& Values);
+            void SetUniform(i32 UID,const vector<i32 >& Values);
+            void SetUniform(i32 UID,const vector<u32 >& Values);
+            void SetUniform(i32 UID,const vector<f32 >& Values);
+            void SetUniform(i32 UID,const vector<f64 >& Values);
+            void SetUniform(i32 UID,const vector<Vec2>& Values);
+            void SetUniform(i32 UID,const vector<Vec3>& Values);
+            void SetUniform(i32 UID,const vector<Vec4>& Values);
+            void SetUniform(i32 UID,const vector<Mat4>& Values);
+            void SetUniform(i32 UID,Light* Lt);
+            void SetUniform(i32 UID,const vector<Light*>& Lts);
         
             virtual void InitializeBuffer() = 0;
             virtual void UpdateBuffer    () = 0;

@@ -321,11 +321,11 @@ namespace Silk
         
         CodeBlock b;
         while(Code[p] != 0 && Code[p] != ']') { b.ID += Code[p]; p++; }
-        if(Code[p] ==  0 ) { ERROR("Unexpected end of shader template file.\n"); return -1; }
+        if(Code[p] ==  0) { ERROR("Unexpected end of shader template file.\n"); return -1; }
         p++;
         string BlockCode;
-        while(Code[p] != 0 && (Code[p] != '[' && Code[p + 1] != '/')) { b.Code += Code[p]; p++; }
-        if(Code[p] ==  0 ) { ERROR("Unexpected end of shader template file.\n"); return -1; }
+        while(Code[p] != 0 && !(Code[p] == '[' && Code[p + 1] == '/')) { b.Code += Code[p]; p++; }
+        if(Code[p] ==  0) { ERROR("Unexpected end of shader template file.\n"); return -1; }
         
         b.Index = ExecutionIndex;
         
@@ -353,6 +353,7 @@ namespace Silk
         if(!eUniforms) return "";
         
         string Code;
+        Code += LightDataStructure + "\n";
         Code += "\nlayout (std140) uniform " + GetUniformBlockTypeName(Type) + "\n{\n";
         
         i32 uCount = eUniforms->GetUniformCount();
@@ -370,8 +371,11 @@ namespace Silk
                 UCase("\tvec3 "  ,UniformBuffer::UT_VEC3  );
                 UCase("\tvec4 "  ,UniformBuffer::UT_VEC4  );
                 UCase("\tmat4 "  ,UniformBuffer::UT_MAT4  );
+                UCase("\tLight " ,UniformBuffer::UT_LIGHT );
             }
-            Code += eUniforms->GetUniformInfo(i)->Name + ";\n";
+            Code += eUniforms->GetUniformInfo(i)->Name;
+            if(eUniforms->GetUniformInfo(i)->ArraySize != -1) Code += FormatString("[%d];\n",eUniforms->GetUniformInfo(i)->ArraySize);
+            else Code += ";\n";
         }
         Code += "};\n";
         return Code;
