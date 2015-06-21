@@ -111,7 +111,7 @@ int main(int ArgC,char *ArgV[])
                 for(i32 y = 0;y < s;y++)
                 {
                     f32 n = octave_noise_3d(3,50,1.0f,((f32)x) / ((f32)s) + (z * 0.5f),((f32)y) / ((f32)s) - (z * 0.5f),z);
-                    Tex->SetPixel(Vec2(x,y),Vec4(ColorFunc(n),1.0));
+                    Tex->SetPixel(Vec2(x,y),Vec4(ColorFunc(n + z),1.0));
                 }
             }
             z += 0.01f;
