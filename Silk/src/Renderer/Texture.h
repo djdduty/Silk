@@ -14,6 +14,9 @@ namespace Silk
         
             void CreateTexture(i32 Width,i32 Height);
             void SetPixel(const Vec2& Coord,const Vec4& Color);
+            Vec4 GetPixel(const Vec2& Coord) const;
+        
+            u32* GetPixels() { return m_Pixels; }
         
         protected:
             i32  m_Width;

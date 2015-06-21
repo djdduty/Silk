@@ -27,4 +27,16 @@ namespace Silk
         i32 bIdx = ((i32)Coord.x) + (((i32)Coord.y) * m_Height);
         m_Pixels[bIdx] = GU_RGBA(uByte(Color.x * 255.0f),uByte(Color.y * 255.0f),uByte(Color.z * 255.0f),uByte(Color.w * 255.0f));
     }
+    Vec4 Texture::GetPixel(const Vec2& Coord) const
+    {
+        if(!m_Pixels) return Vec4(0,0,0,0);
+        i32 bIdx = ((i32)Coord.x) + (((i32)Coord.y) * m_Height);
+        Vec4 p;
+        const f32 Inv255 = 1.0f / 255.0f;
+        p.x = ((f32)((uByte*)&m_Pixels[bIdx])[0]) * Inv255;
+        p.y = ((f32)((uByte*)&m_Pixels[bIdx])[1]) * Inv255;
+        p.z = ((f32)((uByte*)&m_Pixels[bIdx])[2]) * Inv255;
+        p.w = ((f32)((uByte*)&m_Pixels[bIdx])[3]) * Inv255;
+        return p;
+    }
 };
