@@ -36,7 +36,7 @@ int main(int ArgC,char *ArgV[])
         g.SetAttributeInput(ShaderGenerator::IAT_COLOR          ,true);
         g.SetFragmentOutput(ShaderGenerator::OFT_COLOR          ,true);
         g.SetUniformInput  (ShaderGenerator::IUT_USER_UNIFORMS  ,true);
-        g.SetLightingMode  (ShaderGenerator::LM_PHONG                );
+        g.SetLightingMode  (ShaderGenerator::LM_FLAT                 );
         
         UniformBuffer* ub = Rend->GetRasterizer()->CreateUniformBuffer(ShaderGenerator::IUT_USER_UNIFORMS);
         ub->SetUniform(ub->DefineUniform("Test0"),Vec4(1,0,0,1));

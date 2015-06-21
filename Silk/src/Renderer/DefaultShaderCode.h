@@ -116,16 +116,6 @@ namespace Silk
      *  L I G H T   D A T A   S T R U C T U R E  *
     \* * * * * * * * * * * * * * * * * * * * * * */
     
-    /*
-    Vec3 m_Direction;
-    Vec3 m_Position ;
-    Vec3 m_Color    ;
-    f32 m_Cutoff    ;
-    f32 m_Power     ;
-    f32 Constant    ;
-    f32 Linear      ;
-    f32 Exponential ;
-    */
     static string LightDataStructure =
     string("struct Light\n")            +
     "{\n"                               +
