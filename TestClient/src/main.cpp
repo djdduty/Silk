@@ -50,9 +50,9 @@ int main(int ArgC,char *ArgV[])
         Rasterizer* r = Win->GetRasterizer();
         ((OpenGLRasterizer*)r)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Renderer* Rend = new Renderer(r);
+        Renderer* Render = new Renderer(r);
         
-        ShaderGenerator g(Rend);
+        ShaderGenerator g(Render);
         g.SetShaderVersion(330);
         g.SetLightingMode  (ShaderGenerator::LM_FLAT                 );
         g.SetAttributeInput(ShaderGenerator::IAT_POSITION       ,true);
@@ -77,7 +77,6 @@ int main(int ArgC,char *ArgV[])
         mesh->SetColorBuffer   (3,colorBuff);
         mesh->SetTexCoordBuffer(3,TexcBuff );
 
-        Renderer* Render = new Renderer(r);
         RenderObject* rObj = Render->CreateRenderObject(ROT_MESH,false);
         Material* mat = new Material();
         mat->SetShader(g.Generate());
@@ -127,6 +126,7 @@ int main(int ArgC,char *ArgV[])
         delete Render;
         delete rObj;
         delete mat;
+        delete Tex;
         delete mesh;
     }
     
