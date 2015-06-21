@@ -36,6 +36,7 @@ namespace Silk
         for(i32 i = 0;i < Material::MT_COUNT;i++) m_MapTypesUsed[i] = false;
         for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeInputsUsed  [i] = false;
         for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed    [i] = false;
+        for(i32 i = 0;i < OFT_COUNT;i++) m_FragmentOutputsUsed  [i] = false;
     }
     
     void ShaderGenerator::AddVertexModule(CString Code,i32 Index)

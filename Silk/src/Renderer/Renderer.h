@@ -6,6 +6,34 @@
 
 namespace Silk
 {
+    class Camera
+    {
+        public:
+            Camera(Vec2 FoV, Scalar NearPlane, Scalar FarPlane) : //Perspective
+                m_Transform(Mat4::Identity)
+            {
+                m_Projection = PerspectiveMultiFov(FoV.x, FoV.y, NearPlane, FarPlane);
+            }
+
+            Camera(Scalar Left,Scalar Right,Scalar Top,Scalar Bottom, Scalar Near, Scalar Far) : //Ortho
+                m_Transform(Mat4::Identity)
+            {
+                m_Projection = Orthogonal(Left, Right, Top, Bottom, Near, Far);
+            }
+
+            Camera(Mat4 Projection) : m_Projection(Projection), m_Transform(Mat4::Identity) {}
+            ~Camera() {}
+
+            Mat4 GetTransform() { return m_Transform; }
+            Mat4 GetProjection() { return m_Projection; }
+
+            void SetTransform(Mat4 Transform) { m_Transform = Transform; }
+            void SetProjection(Mat4 Projection) { m_Projection = Projection; }
+        protected:
+            Mat4 m_Transform;
+            Mat4 m_Projection;
+    };
+
     class UniformBuffer;
     class Renderer
     {

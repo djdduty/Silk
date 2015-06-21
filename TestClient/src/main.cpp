@@ -7,7 +7,7 @@
 #include <Window.h>
 
 #ifdef WIN32
-    //#include <vld.h>
+   //#include <vld.h>
 #endif
 
 #include <Silk.h>
@@ -84,7 +84,7 @@ int main(int ArgC,char *ArgV[])
         
         Texture* Tex = new OpenGLTexture();
         
-        i32 s = 256;
+        i32 s = 64;
         Tex->CreateTexture(s,s);
         Tex->InitializeTexture();
         
