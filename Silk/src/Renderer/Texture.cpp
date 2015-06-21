@@ -10,7 +10,12 @@ namespace Silk
     }
     Texture::~Texture()
     {
+        FreeMemory();
+    }
+    void Texture::FreeMemory()
+    {
         if(m_Pixels) delete [] m_Pixels;
+        m_Pixels = 0;
     }
 
     void Texture::CreateTexture(i32 Width,i32 Height)

@@ -1,5 +1,6 @@
 #include <Raster/Raster.h>
 #include <Raster/OpenGL/OpenGLShader.h>
+#include <Raster/OpenGL/OpenGLTexture.h>
 #include <Raster/OpenGL/OpenGLRasterizer.h>
 
 namespace Silk
@@ -237,10 +238,19 @@ namespace Silk
     Shader* Rasterizer::CreateShader()
     {
         //For now
-        return new OpenGLShader();
+        return new OpenGLShader(m_Renderer);
     }
     void Rasterizer::DestroyShader(Shader *S)
     {
         delete (OpenGLShader*)S;
+    }
+    Texture* Rasterizer::CreateTexture()
+    {
+        return new OpenGLTexture();
+    }
+    void Rasterizer::DestroyTexture(Texture* T)
+    {
+        T->FreeMemory();
+        delete (OpenGLTexture*)T;
     }
 };

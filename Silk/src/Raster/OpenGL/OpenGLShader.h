@@ -7,7 +7,7 @@ namespace Silk
     class OpenGLShader : public Shader
     {
         public:
-            OpenGLShader();
+            OpenGLShader(Renderer* r);
             ~OpenGLShader();
         
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode);

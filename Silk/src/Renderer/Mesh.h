@@ -44,6 +44,8 @@ namespace Silk
             void SetColorBuffer   (i32 Count,void* Normals  ,bool IsStatic = true,i32 Stride = 0);
             void SetTexCoordBuffer(i32 Count,void* TexCoords,bool IsStatic = true,i32 Stride = 0);
         
+            i32 GetVertexCount() const;
+        
             void AddAttribute(string ShaderName,i32 ShaderIndex,ATTRIB_TYPE Type,i32 ComponentCount,i32 Size,i32 Count,i32 Stride,void* Pointer,bool IsStatic = true);
         
             i32 GetAttributeCount() const { return m_Attributes.size(); }

@@ -1,16 +1,29 @@
 #include <Renderer/Renderer.h>
 #include <Renderer/Mesh.h>
+#include <Renderer/Texture.h>
 #include <Raster/Raster.h>
 
 #include <Raster/OpenGL/OpenGLShader.h>
+
+#include <Utilities/SimplexNoise.h>
+
+#include <math.h>
+
+#define DEFAULT_TEXTURE_SIZE 64
 
 namespace Silk
 {
     Renderer::Renderer(Rasterizer* Raster) : 
         m_ObjectList(new ObjectList()), m_UpdatedObjects(new ObjectList), m_Raster(Raster)
     {
+        m_DefaultTexture   = m_Raster->CreateTexture();
+        m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
+        m_DefaultTexture->InitializeTexture();
+        
         m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS  );
         m_RendererUniforms = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_RENDERER_UNIFORMS);
+        
+        m_NoiseGenerator.SetParameters(0.5f,0.5f,0.5f,3,rand());
     }
 
     Renderer::~Renderer() 
@@ -20,13 +33,21 @@ namespace Silk
 
         m_UpdatedObjects->Clear();
         delete m_UpdatedObjects;
-
+        
+        m_Raster->DestroyTexture(m_DefaultTexture);
         m_Raster->DestroyUniformBuffer(m_EngineUniforms);
         m_Raster->DestroyUniformBuffer(m_RendererUniforms);
+    }
+    Texture* Renderer::GetDefaultTexture()
+    {
+        m_DefaultTextureNeedsUpdate = true;
+        return m_DefaultTexture;
     }
 
     void Renderer::Render(i32 PrimType)
     {
+        if(m_DefaultTextureNeedsUpdate) UpdateDefaultTexture();
+    
         SilkObjectVector Lights = m_ObjectList->GetLightList();
         i32 ShaderCount = m_ObjectList->GetShaderCount();
         for(i32 i = 0;i < ShaderCount;i++)
@@ -46,7 +67,7 @@ namespace Silk
                     //Pass material uniforms
                     Shader->UseMaterial(Obj->GetMaterial());
                     
-                    i32 Count = Obj->m_Mesh->GetAttribute(0)->Count;
+                    i32 Count = Obj->m_Mesh->GetVertexCount();
                     Obj->m_ObjectIdentifier->Render(PrimType, 0, Count);
                 }
             }
@@ -67,5 +88,24 @@ namespace Silk
             AddRenderObject(Object);
 
         return Object;
+    }
+    void Renderer::UpdateDefaultTexture()
+    {
+        for(i32 x = 0;x < DEFAULT_TEXTURE_SIZE;x++)
+        {
+            for(i32 y = 0;y < DEFAULT_TEXTURE_SIZE;y++)
+            {
+                f32 r = 1.0f;
+                f32 nx = (((f32)x) / ((f32)DEFAULT_TEXTURE_SIZE) + (cos(m_DefaultTexturePhase * 0.1f) * r)) * 20.0f;
+                f32 ny = (((f32)y) / ((f32)DEFAULT_TEXTURE_SIZE) + (sin(m_DefaultTexturePhase * 0.1f) * r)) * 20.0f;
+                f32 xZoom = sin(m_DefaultTexturePhase * 2.0f) * 10.0f;
+                f32 yZoom = cos(m_DefaultTexturePhase * 2.0f) * 10.0f;
+                f32 n = octave_noise_3d(4,0.4f,1.0f,nx / (20.0f + xZoom),ny / (20.0f + yZoom),m_DefaultTexturePhase * 2.0f);
+                m_DefaultTexture->SetPixel(Vec2(x,y),Vec4(ColorFunc(n + m_DefaultTexturePhase * 0.2f),1.0));
+            }
+        }
+        m_DefaultTexturePhase += 0.0025f;
+        
+        m_DefaultTexture->UpdateTexture();
     }
 };

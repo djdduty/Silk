@@ -6,7 +6,7 @@
 
 namespace Silk
 {
-    OpenGLShader::OpenGLShader()
+    OpenGLShader::OpenGLShader(Renderer* r) : Shader(r)
     {
     }
     OpenGLShader::~OpenGLShader()
@@ -210,7 +210,8 @@ namespace Silk
         for(i32 i = 0;i < Material::MT_COUNT;i++)
         {
             OpenGLTexture* t = (OpenGLTexture*)Mat->GetMap((Material::MAP_TYPE)i);
-            if(!t || m_SamplerLocations[i] == -1) continue;
+            if(m_SamplerLocations[i] == -1) continue;
+            if(!t) t = (OpenGLTexture*)m_Renderer->GetDefaultTexture();
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D,t->GetTextureID());
             glUniform1i(m_SamplerLocations[i],i);

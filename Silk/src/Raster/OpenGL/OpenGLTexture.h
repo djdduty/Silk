@@ -11,10 +11,13 @@ namespace Silk
             ~OpenGLTexture();
         
             virtual void InitializeTexture();
+            virtual void UpdateTexture();
         
             GLuint GetTextureID() const { return m_TexID; }
         
         protected:
+            i32 m_LastWidth;
+            i32 m_LastHeight;
             GLuint m_TexID;
     };
 };

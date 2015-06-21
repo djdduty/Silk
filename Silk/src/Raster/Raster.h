@@ -149,7 +149,7 @@ namespace Silk
     class Shader
     {
         public:
-            Shader() {}
+            Shader(Renderer* r) : m_Renderer(r) {}
             virtual ~Shader() {}
         
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode) = 0;
@@ -168,6 +168,7 @@ namespace Silk
             friend class ShaderGenerator;
             vector<UniformBuffer*> m_UniformBuffers;
             bool m_FragmentOutputs[ShaderGenerator::OFT_COUNT];
+            Renderer* m_Renderer;
     };
     
     class Rasterizer
@@ -175,6 +176,8 @@ namespace Silk
         public:
             Rasterizer();
             virtual ~Rasterizer();
+        
+            void SetRenderer(Renderer* r) { m_Renderer = r; }
         
             virtual bool ValidateContext(RasterContext* Ctx);
             bool SetContext(RasterContext* Ctx);
@@ -185,6 +188,8 @@ namespace Silk
             void DestroyUniformBuffer(UniformBuffer* Buffer);
             Shader* CreateShader();
             void DestroyShader(Shader* S);
+            Texture* CreateTexture();
+            void DestroyTexture(Texture* T);
         
             void SetClearColor(const Vec4& c) { m_ClearColor = c; }
         
@@ -195,6 +200,7 @@ namespace Silk
         
             virtual RasterContext* CreateContext() = 0;
         protected:
+            Renderer* m_Renderer;
             RasterContext* m_GraphicsContext;
             Vec4 m_ClearColor;
     };

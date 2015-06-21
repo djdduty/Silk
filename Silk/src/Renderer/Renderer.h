@@ -3,6 +3,7 @@
 #include <Renderer/RenderObject.h>
 #include <Renderer/Mesh.h>
 #include <Renderer/Material.h>
+#include <Utilities/PerlinNoise.h>
 
 namespace Silk
 {
@@ -43,7 +44,9 @@ namespace Silk
         
             Rasterizer* GetRasterizer()               { return m_Raster; }
         
-            UniformBuffer* GetEngineUniformBuffer()   { return m_EngineUniforms; }
+            Texture*       GetDefaultTexture       ();
+            PerlinNoise*   GetNoiseGenerator       () { return &m_NoiseGenerator ; }
+            UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms  ; }
             UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms; }
         
             void Render(i32 PrimType);
@@ -52,8 +55,7 @@ namespace Silk
 
             void AddRenderObject(RenderObject* Object)
             {
-                if(!Object)
-                    return;
+                if(!Object) return;
                     
                 Object->m_ListIndex = m_ObjectList->AddObject(Object);
                 Object->m_List = m_ObjectList;
@@ -62,6 +64,12 @@ namespace Silk
             void AddToUpdateList(RenderObject* Object)    { m_UpdatedObjects->AddObject(Object); }
 
         protected:
+            bool m_DefaultTextureNeedsUpdate;
+            Texture* m_DefaultTexture;
+            f32 m_DefaultTexturePhase;
+            void UpdateDefaultTexture();
+            PerlinNoise m_NoiseGenerator;
+            
             UniformBuffer* m_EngineUniforms;
             UniformBuffer* m_RendererUniforms;
 

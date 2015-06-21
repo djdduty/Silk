@@ -30,6 +30,12 @@ namespace Silk
     {
         AddAttribute(TexCoordAttribName,TexCoordAttribIndex,AT_FLOAT,2,Count * sizeof(f32) * 2,Count,Stride,TexCoords);
     }
+    i32 Mesh::GetVertexCount() const
+    {
+        i32 Idx = GetAttributeIndex(PositionAttribIndex);
+        if(Idx != -1) return m_Attributes[Idx].Count;
+        return -1;
+    }
     void Mesh::AddAttribute(string ShaderName,i32 ShaderIndex,ATTRIB_TYPE Type,i32 ComponentCount,i32 Size,i32 Count,i32 Stride,void *Pointer,bool IsStatic)
     {
         if(GetAttributeIndex(ShaderIndex) != -1)
