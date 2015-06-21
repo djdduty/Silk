@@ -121,17 +121,18 @@ namespace Silk
             i32 ParseBlock(CString Code,i32 StartIndex,i32 ExecutionIndex,i32 ShaderType);
             string GenerateInputBlock(INPUT_UNIFORM_TYPE Type);
         
-            vector<CodeBlock> m_VertexBlocks;
-            vector<CodeBlock> m_GeometryBlocks;
-            vector<CodeBlock> m_FragmentBlocks;
+            vector<CodeBlock>   m_VertexBlocks;
+            vector<CodeBlock>   m_GeometryBlocks;
+            vector<CodeBlock>   m_FragmentBlocks;
             
-            i32 m_ShaderVersion;
-            LIGHTING_MODES m_LightingMode;
-            bool m_UniformInputsUsed[IUT_COUNT];
-            bool m_AttributeInputsUsed[IAT_COUNT];
-            bool m_FragmentOutputsUsed[OFT_COUNT];
-            UniformBuffer* m_MaterialUniforms;
-            UniformBuffer* m_UserUniforms;
+            i32                 m_ShaderVersion;
+
+            bool                m_UniformInputsUsed[IUT_COUNT];
+            bool                m_AttributeInputsUsed[IAT_COUNT];
+            bool                m_FragmentOutputsUsed[OFT_COUNT];
+            UniformBuffer*      m_MaterialUniforms;
+            UniformBuffer*      m_UserUniforms;
+            LIGHTING_MODES      m_LightingMode;
         
             Renderer* m_Renderer;
     };
