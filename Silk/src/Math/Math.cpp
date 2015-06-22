@@ -812,7 +812,7 @@ namespace Silk
         return Result;
     }
 
-    Mat4 Camera(const Vec3& Eye,const Vec3& _Look,const Vec3& _Up,const Vec3& _Right)
+    Mat4 CreateTransform(const Vec3& Eye,const Vec3& _Look,const Vec3& _Up,const Vec3& _Right)
     {
         Vec3 Look = _Look.Normalized();
         Vec3 Up = _Up.Normalized();

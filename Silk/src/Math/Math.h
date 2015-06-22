@@ -270,7 +270,8 @@ namespace Silk
     Mat4 RotationX(Scalar Theta);
     Mat4 RotationY(Scalar Theta);
     Mat4 RotationZ(Scalar Theta);
-    Mat4 Camera(const Vec3& Eye,const Vec3& Look,const Vec3& Up,const Vec3& Right);
+    //Renamed from "Camera", was conflicting with the Camera class
+    Mat4 CreateTransform(const Vec3& Eye,const Vec3& Look,const Vec3& Up,const Vec3& Right);
     Mat4 LookAt(const Vec3& Eye,const Vec3& At,const Vec3& Up);
     Mat4 Orthogonal(Scalar Width,Scalar Height,Scalar Near,Scalar Far);
     Mat4 Orthogonal(Scalar Left,Scalar Right,Scalar Top,Scalar Bottom, Scalar Near, Scalar Far);

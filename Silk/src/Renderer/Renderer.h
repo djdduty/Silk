@@ -25,14 +25,15 @@ namespace Silk
             Camera(Mat4 Projection) : m_Projection(Projection), m_Transform(Mat4::Identity) {}
             ~Camera() {}
 
-            Mat4 GetTransform() { return m_Transform; }
+            Mat4 GetTransform () { return m_Transform ; }
             Mat4 GetProjection() { return m_Projection; }
 
-            void SetTransform(Mat4 Transform) { m_Transform = Transform; }
             void SetProjection(Mat4 Projection) { m_Projection = Projection; }
+            void SetTransform (Mat4 Transform ) { m_Transform  = Transform ; }
+        
         protected:
-            Mat4 m_Transform;
             Mat4 m_Projection;
+            Mat4 m_Transform;
     };
 
     class UniformBuffer;
@@ -45,10 +46,13 @@ namespace Silk
             Rasterizer* GetRasterizer()               { return m_Raster; }
         
             Texture*       GetDefaultTexture       ();
-            PerlinNoise*   GetNoiseGenerator       () { return &m_NoiseGenerator ; }
             UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms  ; }
             UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms; }
         
+            void SetActiveCamera(Camera* c) { m_ActiveCamera = c;    }
+            Camera* GetActiveCamera() const { return m_ActiveCamera; }
+        
+            void UpdateUniforms();
             void Render(i32 PrimType);
 
             RenderObject* CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene = true);
@@ -68,7 +72,8 @@ namespace Silk
             Texture* m_DefaultTexture;
             f32 m_DefaultTexturePhase;
             void UpdateDefaultTexture();
-            PerlinNoise m_NoiseGenerator;
+        
+            Camera* m_ActiveCamera;
             
             UniformBuffer* m_EngineUniforms;
             UniformBuffer* m_RendererUniforms;

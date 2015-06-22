@@ -19,11 +19,12 @@ namespace Silk
         m_DefaultTexture   = m_Raster->CreateTexture();
         m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
         m_DefaultTexture->InitializeTexture();
+        m_DefaultTexturePhase = 0.0f;
         
         m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS  );
         m_RendererUniforms = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_RENDERER_UNIFORMS);
         
-        m_NoiseGenerator.SetParameters(0.5f,0.5f,0.5f,3,rand());
+        m_ActiveCamera = 0;
     }
 
     Renderer::~Renderer() 
@@ -47,7 +48,7 @@ namespace Silk
     void Renderer::Render(i32 PrimType)
     {
         if(m_DefaultTextureNeedsUpdate) UpdateDefaultTexture();
-    
+        
         SilkObjectVector Lights = m_ObjectList->GetLightList();
         i32 ShaderCount = m_ObjectList->GetShaderCount();
         for(i32 i = 0;i < ShaderCount;i++)
@@ -55,10 +56,9 @@ namespace Silk
             Shader*          Shader = m_ObjectList->GetShader        (i);
             if(!Shader) continue;
             
-            SilkObjectVector Meshes = m_ObjectList->GetShaderMeshList(i);
-            
             Shader->Enable();
             
+            SilkObjectVector Meshes = m_ObjectList->GetShaderMeshList(i);
             for(i32 m = 0;m < Meshes.size();m++)
             {
                 RenderObject* Obj = Meshes[m];
@@ -68,13 +68,13 @@ namespace Silk
                     Shader->UseMaterial(Obj->GetMaterial());
                     
                     i32 Count = Obj->m_Mesh->GetVertexCount();
-                    Obj->m_ObjectIdentifier->Render(PrimType, 0, Count);
+                    Obj->m_ObjectIdentifier->Render(PrimType,0,Count);
                 }
             }
             
             Shader->Disable();
         }
-
+        
         m_UpdatedObjects->Clear();
     }
 
@@ -91,6 +91,7 @@ namespace Silk
     }
     void Renderer::UpdateDefaultTexture()
     {
+        m_DefaultTextureNeedsUpdate = false;
         for(i32 x = 0;x < DEFAULT_TEXTURE_SIZE;x++)
         {
             for(i32 y = 0;y < DEFAULT_TEXTURE_SIZE;y++)
