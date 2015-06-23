@@ -13,6 +13,7 @@ namespace Silk
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode);
         
             virtual void Enable();
+            virtual void PassUniforms(UniformBuffer* Uniforms);
             virtual void UseMaterial(Material* Mat);
             virtual void Disable();
         

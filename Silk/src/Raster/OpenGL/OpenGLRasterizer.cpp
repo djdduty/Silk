@@ -184,12 +184,28 @@ namespace Silk
     }
     void OpenGLUniformBuffer::UpdateBuffer()
     {
-        i32 TotalSize = GetBufferSize();
+        i32 TotalSize = GetPaddedBufferSize();
         
         Byte* UBO = new Byte[TotalSize];
+        memset(UBO,0,TotalSize);
         for(i32 i = 0;i < m_UniformInfo.size();i++)
         {
-            memcpy(&UBO[GetUniformOffset(i)],m_UniformBuffer[i],m_UniformInfo[i].Size);
+            i32 Offset = GetPaddedUniformOffset(i);
+            i32 Padding = m_UniformInfo[i].PaddedSize - m_UniformInfo[i].TypeSize;
+            
+            if(m_UniformInfo[i].ArraySize != -1 && Padding != 0)
+            {
+                i32 dOffset = 0;
+                for(i32 u = 0;u < m_UniformInfo[i].ArraySize;u++)
+                {
+                    memcpy(&UBO[Offset + dOffset],&((Byte*)m_UniformBuffer[i])[u * m_UniformInfo[i].TypeSize],m_UniformInfo[i].TypeSize);
+                    dOffset += m_UniformInfo[i].PaddedSize;
+                }
+            }
+            else
+            {
+                memcpy(&UBO[Offset],m_UniformBuffer[i],m_UniformInfo[i].Size);
+            }
         }
         
         glBindBuffer(GL_UNIFORM_BUFFER,m_Buffer);

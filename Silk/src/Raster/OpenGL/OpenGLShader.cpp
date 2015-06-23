@@ -182,20 +182,8 @@ namespace Silk
     {
         glUseProgram(m_PID);
         
-        for(i32 i = 0;i < m_UniformBuffers.size();i++)
-        {
-            OpenGLUniformBuffer* Uniforms = (OpenGLUniformBuffer*)m_UniformBuffers[i];
-            ShaderGenerator::INPUT_UNIFORM_TYPE ID = Uniforms->GetUniformBlockID();
-            if(ID == ShaderGenerator::IUT_COUNT)
-            {
-                ERROR("Could not bind uniform buffer \"%s\", invalid block ID (%d).\n",Uniforms->GetUniformBlockName().c_str(),Uniforms->GetUniformBlockID());
-                continue;
-            }
-            
-            i32 Index = glGetUniformBlockIndex(m_PID,Uniforms->GetUniformBlockName().c_str());
-            glBindBufferBase(GL_UNIFORM_BUFFER,Uniforms->GetUniformBlockID(),Uniforms->m_Buffer);
-            glUniformBlockBinding(m_PID,Index,Uniforms->GetUniformBlockID());
-        }
+        if(m_UniformInputs[ShaderGenerator::IUT_RENDERER_UNIFORMS]) PassUniforms(m_Renderer->GetRendererUniformBuffer());
+        if(m_UniformInputs[ShaderGenerator::IUT_ENGINE_UNIFORMS  ]) PassUniforms(m_Renderer->GetEngineUniformBuffer  ());
         
         GLenum Buffers[ShaderGenerator::OFT_COUNT];
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++)
@@ -205,8 +193,29 @@ namespace Silk
         }
         glDrawBuffers(ShaderGenerator::OFT_COUNT,Buffers);
     }
+    void OpenGLShader::PassUniforms(UniformBuffer *Uniforms)
+    {
+        OpenGLUniformBuffer* ub = (OpenGLUniformBuffer*)Uniforms;
+        ShaderGenerator::INPUT_UNIFORM_TYPE ID = ub->GetUniformBlockID();
+        
+        if(ID == ShaderGenerator::IUT_COUNT)
+        {
+            ERROR("Could not bind uniform buffer \"%s\", invalid block ID (%d).\n",Uniforms->GetUniformBlockName().c_str(),Uniforms->GetUniformBlockID());
+            return;
+        }
+        
+        i32 Index = glGetUniformBlockIndex(m_PID,ub->GetUniformBlockName().c_str());
+        glBindBufferBase(GL_UNIFORM_BUFFER,Uniforms->GetUniformBlockID(),ub->m_Buffer);
+        glUniformBlockBinding(m_PID,Index,ub->GetUniformBlockID());
+    }
     void OpenGLShader::UseMaterial(Material *Mat)
     {
+        if(m_UniformInputs[ShaderGenerator::IUT_MATERIAL_UNIFORMS])
+        {
+            Mat->UpdateUniforms();
+            PassUniforms(Mat->GetUniforms());
+        }
+        
         for(i32 i = 0;i < Material::MT_COUNT;i++)
         {
             OpenGLTexture* t = (OpenGLTexture*)Mat->GetMap((Material::MAP_TYPE)i);

@@ -1,41 +1,13 @@
 #ifndef SILK_RENDERER_H
 #define SILK_RENDERER_H
 #include <Renderer/RenderObject.h>
+#include <Renderer/Camera.h>
 #include <Renderer/Mesh.h>
 #include <Renderer/Material.h>
-#include <Utilities/PerlinNoise.h>
+#include <Renderer/UniformBufferTypes.h>
 
 namespace Silk
 {
-    class Camera
-    {
-        public:
-            Camera(Vec2 FoV, Scalar NearPlane, Scalar FarPlane) : //Perspective
-                m_Transform(Mat4::Identity)
-            {
-                m_Projection = PerspectiveMultiFov(FoV.x, FoV.y, NearPlane, FarPlane);
-            }
-
-            Camera(Scalar Left,Scalar Right,Scalar Top,Scalar Bottom, Scalar Near, Scalar Far) : //Ortho
-                m_Transform(Mat4::Identity)
-            {
-                m_Projection = Orthogonal(Left, Right, Top, Bottom, Near, Far);
-            }
-
-            Camera(Mat4 Projection) : m_Projection(Projection), m_Transform(Mat4::Identity) {}
-            ~Camera() {}
-
-            Mat4 GetTransform () { return m_Transform ; }
-            Mat4 GetProjection() { return m_Projection; }
-
-            void SetProjection(Mat4 Projection) { m_Projection = Projection; }
-            void SetTransform (Mat4 Transform ) { m_Transform  = Transform ; }
-        
-        protected:
-            Mat4 m_Projection;
-            Mat4 m_Transform;
-    };
-
     class UniformBuffer;
     class Renderer
     {
@@ -46,8 +18,8 @@ namespace Silk
             Rasterizer* GetRasterizer()               { return m_Raster; }
         
             Texture*       GetDefaultTexture       ();
-            UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms  ; }
-            UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms; }
+            UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }
+            UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms->GetUniforms(); }
         
             void SetActiveCamera(Camera* c) { m_ActiveCamera = c;    }
             Camera* GetActiveCamera() const { return m_ActiveCamera; }
@@ -56,27 +28,34 @@ namespace Silk
             void Render(i32 PrimType);
 
             RenderObject* CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene = true);
+            Material    * CreateMaterial();
+            void Destroy(Material    * Mat);
+            void Destroy(RenderObject* Obj);
 
-            void AddRenderObject(RenderObject* Object)
-            {
-                if(!Object) return;
-                    
-                Object->m_ListIndex = m_ObjectList->AddObject(Object);
-                Object->m_List = m_ObjectList;
-            }
+            void AddRenderObject(RenderObject* Object);
             void RemoveRenderObject(RenderObject* Object) { m_ObjectList->RemoveObject(Object);  }
             void AddToUpdateList(RenderObject* Object)    { m_UpdatedObjects->AddObject(Object); }
+        
+            void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
+            i32 GetMaxLights() { return m_Prefs.MaxLights; }
 
         protected:
+            struct RenderPreferences
+            {
+                i32 MaxLights;
+            };
+            RenderPreferences m_Prefs;
+            bool m_DoRecompileAllShaders;
+        
             bool m_DefaultTextureNeedsUpdate;
             Texture* m_DefaultTexture;
-            f32 m_DefaultTexturePhase;
+            Scalar m_DefaultTexturePhase;
             void UpdateDefaultTexture();
         
             Camera* m_ActiveCamera;
             
             UniformBuffer* m_EngineUniforms;
-            UniformBuffer* m_RendererUniforms;
+            RenderUniformSet* m_RendererUniforms;
 
             ObjectList* m_ObjectList;     //Contains all objects
             ObjectList* m_UpdatedObjects; //clears every frame

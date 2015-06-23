@@ -21,8 +21,13 @@ namespace Silk
         m_DefaultTexture->InitializeTexture();
         m_DefaultTexturePhase = 0.0f;
         
+        m_DoRecompileAllShaders = false;
+        m_Prefs.MaxLights = 8;
+        
+        m_ActiveCamera = 0;
+        
         m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS  );
-        m_RendererUniforms = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_RENDERER_UNIFORMS);
+        m_RendererUniforms = new RenderUniformSet(this);
         
         m_ActiveCamera = 0;
     }
@@ -35,21 +40,32 @@ namespace Silk
         m_UpdatedObjects->Clear();
         delete m_UpdatedObjects;
         
-        m_Raster->DestroyTexture(m_DefaultTexture);
-        m_Raster->DestroyUniformBuffer(m_EngineUniforms);
-        m_Raster->DestroyUniformBuffer(m_RendererUniforms);
+        m_Raster->Destroy(m_DefaultTexture);
+        m_Raster->Destroy(m_EngineUniforms);
+        
+        delete m_RendererUniforms;
     }
     Texture* Renderer::GetDefaultTexture()
     {
         m_DefaultTextureNeedsUpdate = true;
         return m_DefaultTexture;
     }
-
+    void Renderer::UpdateUniforms()
+    {
+        m_RendererUniforms->UpdateUniforms();
+    }
     void Renderer::Render(i32 PrimType)
     {
         if(m_DefaultTextureNeedsUpdate) UpdateDefaultTexture();
+        UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         SilkObjectVector Lights = m_ObjectList->GetLightList();
+        /*
+         * To do:
+         * Determine which lights affect which objects using a scene octree
+         * then call Object->GetUniformSet()->SetLights(ObjectLightVector);
+         */
+        
         i32 ShaderCount = m_ObjectList->GetShaderCount();
         for(i32 i = 0;i < ShaderCount;i++)
         {
@@ -66,6 +82,13 @@ namespace Silk
                 {
                     //Pass material uniforms
                     Shader->UseMaterial(Obj->GetMaterial());
+                    
+                    //Pass object uniforms
+                    if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
+                    {
+                        Obj->UpdateUniforms();
+                        Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+                    }
                     
                     i32 Count = Obj->m_Mesh->GetVertexCount();
                     Obj->m_ObjectIdentifier->Render(PrimType,0,Count);
@@ -89,6 +112,29 @@ namespace Silk
 
         return Object;
     }
+    Material* Renderer::CreateMaterial()
+    {
+        //More here in the future
+        return new Material(this);
+    }
+    void Renderer::Destroy(Material *Mat)
+    {
+        delete Mat;
+    }
+    void Renderer::Destroy(RenderObject* Obj)
+    {
+        RemoveRenderObject(Obj);
+        delete Obj;
+    }
+    
+    void Renderer::AddRenderObject(RenderObject *Object)
+    {
+        if(!Object) return;
+            
+        Object->m_ListIndex = m_ObjectList->AddObject(Object);
+        Object->m_List = m_ObjectList;
+    }
+    
     void Renderer::UpdateDefaultTexture()
     {
         m_DefaultTextureNeedsUpdate = false;

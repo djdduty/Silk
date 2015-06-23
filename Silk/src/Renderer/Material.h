@@ -8,6 +8,10 @@ namespace Silk
 {
     class Shader;
     class Texture;
+    class Renderer;
+    class MaterialUniformSet;
+    class UniformBuffer;
+    
     class Material
     {
         public:
@@ -31,8 +35,6 @@ namespace Silk
                 MT_CUSTOM7     ,
                 MT_COUNT       ,
             };
-            Material();
-            ~Material() {}
         
             void SetMap(MAP_TYPE Type,Texture* Map) { m_Maps[Type] = Map; }
             Texture* GetMap(MAP_TYPE Type) const { return m_Maps[Type]; }
@@ -40,9 +42,18 @@ namespace Silk
             void SetShader(Shader* Shdr) { m_Shader = Shdr; }
             Shader* GetShader() const { return m_Shader; }
         
+            UniformBuffer* GetUniforms();
+            void UpdateUniforms();
+        
         protected:
+            friend class Renderer;
+            Material(Renderer* r);
+            ~Material();
+            
+            MaterialUniformSet* m_Uniforms;
             Texture* m_Maps[MT_COUNT];
             Shader* m_Shader;
+            Renderer* m_Renderer;
     };
     string GetShaderMapName(Material::MAP_TYPE Type);
 };

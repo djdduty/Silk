@@ -6,6 +6,7 @@
 
 #include <Renderer/Mesh.h>
 #include <Renderer/Light.h>
+#include <Renderer/UniformBufferTypes.h>
 
 #include <Renderer/Material.h>
 
@@ -31,35 +32,41 @@ namespace Silk
         ROT_COUNT
     };
 
-    class RenderObject {
+    class RenderObject
+    {
         public:
-            RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObjectIdentifier* ObjectIdentifier);
-            ~RenderObject();
+            Mesh    *   GetMesh     () { return m_Mesh           ; }
+            Light   *   GetLight    () { return m_Light          ; }
+            Material*   GetMaterial () { return m_Material       ; }
+            Mat4        GetTransform() { return m_Uniforms->Model; }
 
-            Mesh*       GetMesh()      { return m_Mesh;      }
-            Light*      GetLight()     { return m_Light;     }
-            Material*   GetMaterial()  { return m_Material;  }
-            Mat4        GetTransform() { return m_Transform; }
-
-            void SetMesh(Mesh* M, Material* Mat);
-            void SetLight(Light* L);
-            void SetMaterial(Material* Mat);
+            void SetMesh     (Mesh    * M, Material* Mat);
+            void SetLight    (Light   * L               );
+            void SetMaterial (Material* Mat             );
+        
             void SetTransform(Mat4 Transform);
+        
+            ModelUniformSet* GetUniformSet() { return m_Uniforms; }
+            void UpdateUniforms();
 
         protected:
+            RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObjectIdentifier* ObjectIdentifier);
+            ~RenderObject();
+        
             friend class Renderer;
             friend class ObjectList;
 
             RasterObjectIdentifier* m_ObjectIdentifier;
 
-            RENDER_OBJECT_TYPE      m_Type      ;
-            bool                    m_Enabled   ;
-            Renderer*               m_Renderer  ;
-            Material*               m_Material  ;
-            Mesh*                   m_Mesh      ;
-            Light*                  m_Light     ;
-            Mat4                    m_Transform ;
+            RENDER_OBJECT_TYPE      m_Type       ;
+            bool                    m_Enabled    ;
+            Renderer*               m_Renderer   ;
+            Material*               m_Material   ;
+            Mesh*                   m_Mesh       ;
+            Light*                  m_Light      ;
             //TODO Camera, Light
+        
+            ModelUniformSet*        m_Uniforms   ;
 
             //List references
             i32                 m_ShaderListIndex;
@@ -72,7 +79,8 @@ namespace Silk
 
 
     #define SilkObjectVector vector<RenderObject*>
-    class ObjectList {
+    class ObjectList
+    {
         public:
             ObjectList() : m_MeshObjects(SilkObjectVector()), m_LightObjects(SilkObjectVector()), m_CameraObjects(SilkObjectVector())
             {};

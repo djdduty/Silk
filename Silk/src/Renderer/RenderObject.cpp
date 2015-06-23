@@ -4,14 +4,16 @@
 
 namespace Silk {
     RenderObject::RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObjectIdentifier* ObjectIdentifier) : 
-        m_Mesh(0), m_Material(0), m_Renderer(Renderer), m_Type(Type), m_Transform(Mat4()), m_Enabled(true), m_List(0), m_ListIndex(0), m_ObjectIdentifier(ObjectIdentifier),
+        m_Mesh(0), m_Material(0), m_Renderer(Renderer), m_Type(Type), m_Enabled(true), m_List(0), m_ListIndex(0), m_ObjectIdentifier(ObjectIdentifier),
         m_Light(0)
     {
+        m_Uniforms = new ModelUniformSet(m_Renderer);
     }
 
     RenderObject::~RenderObject() 
     {
         delete m_ObjectIdentifier;
+        delete m_Uniforms;
     }
 
     void RenderObject::SetMesh(Mesh* M, Material* Mat)
@@ -57,8 +59,26 @@ namespace Silk {
 
     void RenderObject::SetTransform(Mat4 Transform)
     {
-        m_Transform = Transform;
+        m_Uniforms->Model = Transform;
         MarkAsUpdated();
+    }
+    void RenderObject::UpdateUniforms()
+    {
+        Camera* Cam = m_Renderer->GetActiveCamera();
+        if(Cam)
+        {
+            m_Uniforms->MV     = Cam->GetTransform () * m_Uniforms->Model;
+            m_Uniforms->MVP    = Cam->GetProjection() * m_Uniforms->MV   ;
+            m_Uniforms->Normal = m_Uniforms->MV.Inverse().Transpose()    ;
+        }
+        else
+        {
+            m_Uniforms->MV     = m_Uniforms->MVP = Mat4::Identity       ;
+            m_Uniforms->Normal = m_Uniforms->Model.Inverse().Transpose();
+        }
+        
+        
+        m_Uniforms->UpdateUniforms();
     }
 
     void RenderObject::MarkAsUpdated()

@@ -61,6 +61,7 @@ namespace Silk
             virtual ~RasterContext() { }
             ColorFormat m_Format;
             void SetResolution(const Vec2& Resolution);
+            Vec2 GetResolution() const { return m_Resolution; }
         
         protected:
             Rasterizer* m_Parent;
@@ -93,6 +94,8 @@ namespace Silk
                 string Name;
                 UNIFORM_TYPE Type;
                 i32 Size;
+                i32 PaddedSize;
+                i32 TypeSize;
                 i32 Offset;
                 i32 ArraySize;
             };
@@ -127,7 +130,9 @@ namespace Silk
             i32 GetUniformCount() const { return m_UniformBuffer.size(); }
             const UniformDef* GetUniformInfo(i32 Index) const { return &m_UniformInfo[Index]; }
             i32 GetBufferSize() const { return m_TotalSize; }
+            i32 GetPaddedBufferSize() const { return m_TotalPaddedSize; }
             i32 GetUniformOffset(i32 UID) const;
+            i32 GetPaddedUniformOffset(i32 UID) const;
         
             void SetUniformBlockInfo(const string& Name,ShaderGenerator::INPUT_UNIFORM_TYPE ID) { m_BlockName = Name; m_Type = ID; }
             string GetUniformBlockName() const { return m_BlockName; }
@@ -136,12 +141,13 @@ namespace Silk
         protected:
             friend class Shader;
             friend class Rasterizer;
-            UniformBuffer() : m_BlockName(""), m_Type(ShaderGenerator::IUT_COUNT), m_TotalSize(0), m_ParentIndex(-1), m_Parent(0) { }
+            UniformBuffer() : m_BlockName(""), m_Type(ShaderGenerator::IUT_COUNT), m_TotalSize(0), m_TotalPaddedSize(0), m_ParentIndex(-1), m_Parent(0) { }
             string m_BlockName;
             ShaderGenerator::INPUT_UNIFORM_TYPE m_Type;
             vector<void*> m_UniformBuffer;
             vector<UniformDef> m_UniformInfo;
             i32 m_TotalSize;
+            i32 m_TotalPaddedSize;
             i32 m_ParentIndex;
             Shader* m_Parent;
     };
@@ -149,24 +155,21 @@ namespace Silk
     class Shader
     {
         public:
-            Shader(Renderer* r) : m_Renderer(r) {}
+            Shader(Renderer* r);
             virtual ~Shader() {}
         
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode) = 0;
         
-            void AddUniformBuffer(UniformBuffer* Uniforms);
-            void RemoveUniformBuffer(UniformBuffer* Uniforms);
-        
-            i32 GetUniformBufferCount() const { return m_UniformBuffers.size(); }
-            UniformBuffer* GetUniformBuffer(i32 Index) const { return m_UniformBuffers[Index]; }
+            bool UsesUniformInput(ShaderGenerator::INPUT_UNIFORM_TYPE Type) const { return m_UniformInputs[Type]; }
         
             virtual void Enable() = 0;
+            virtual void PassUniforms(UniformBuffer* Uniforms) = 0;
             virtual void UseMaterial(Material* Mat) = 0;
             virtual void Disable() = 0;
         
         protected:
             friend class ShaderGenerator;
-            vector<UniformBuffer*> m_UniformBuffers;
+            bool m_UniformInputs[ShaderGenerator::IUT_COUNT];
             bool m_FragmentOutputs[ShaderGenerator::OFT_COUNT];
             Renderer* m_Renderer;
     };
@@ -185,11 +188,11 @@ namespace Silk
             virtual void InitializeContext() = 0;
         
             UniformBuffer* CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type);
-            void DestroyUniformBuffer(UniformBuffer* Buffer);
-            Shader* CreateShader();
-            void DestroyShader(Shader* S);
-            Texture* CreateTexture();
-            void DestroyTexture(Texture* T);
+            Shader       * CreateShader ();
+            Texture      * CreateTexture();
+            void Destroy(UniformBuffer* Buffer);
+            void Destroy(Shader       * S     );
+            void Destroy(Texture      * T     );
         
             void SetClearColor(const Vec4& c) { m_ClearColor = c; }
         

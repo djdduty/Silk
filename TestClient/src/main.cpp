@@ -36,13 +36,15 @@ int main(int ArgC,char *ArgV[])
         
         ShaderGenerator g(Render);
         g.SetShaderVersion(330);
+        g.SetUniformInput(ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         g.SetAttributeInput(ShaderGenerator::IAT_POSITION       ,true);
         g.SetAttributeInput(ShaderGenerator::IAT_TEXCOORD       ,true);
         g.SetTextureInput  (Material::MT_DIFFUSE                ,true);
         g.SetFragmentOutput(ShaderGenerator::OFT_COLOR          ,true);
-    
+        
         g.AddVertexModule(const_cast<CString>("[SetTexCoords]o_TexCoord = a_TexCoord;[/SetTexCoords]"),0);
         g.AddVertexModule(const_cast<CString>("[SetPosition]gl_Position = vec4(a_Position,1.0);[/SetPosition]"),1);
+        g.AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord);[/SetColor]"),0);
         
         Win->PollEvents();
         
@@ -131,11 +133,13 @@ int main(int ArgC,char *ArgV[])
         mesh->SetTexCoordBuffer(24,TexcBuff );
 
         RenderObject* rObj = Render->CreateRenderObject(ROT_MESH,false);
-        Material* mat = new Material();
+        Material* mat = Render->CreateMaterial();
         mat->SetShader(g.Generate());
         rObj->SetMesh(mesh, mat);
         Render->AddRenderObject(rObj);
         
+        Camera* Cam = new Camera(Vec2(70.0f,70.0f),0.01f,100.0f);
+        Render->SetActiveCamera(Cam);
 
         while(!Win->GetCloseRequested())
         {
@@ -148,10 +152,10 @@ int main(int ArgC,char *ArgV[])
             Win->SwapBuffers();
         }
 
-        Render->GetRasterizer()->DestroyShader(mat->GetShader());
+        Render->GetRasterizer()->Destroy(mat->GetShader());
+        Render->Destroy(mat);
+        Render->Destroy(rObj);
         delete Render;
-        delete rObj;
-        delete mat;
         delete mesh;
     }
     

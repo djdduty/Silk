@@ -1,0 +1,49 @@
+#include <Renderer/Camera.h>
+
+namespace Silk
+{
+    Mat4 Camera::GetProjection()
+    {
+        if(m_UpdateProjection)
+        {
+            m_UpdateProjection = false;
+            if(m_IsPerspective) m_Projection = PerspectiveMultiFov(m_FieldOfView.x,m_FieldOfView.y,m_NearPlane,m_FarPlane);
+            else m_Projection = Orthogonal(m_OrthoDims.x,m_OrthoDims.x + m_OrthoDims.z,m_OrthoDims.y,m_OrthoDims.y + m_OrthoDims.w,m_NearPlane,m_FarPlane);
+        }
+        return m_Projection;
+    }
+    
+    void Camera::SetPerspective(const Vec2& FoV,Scalar Near,Scalar Far)
+    {
+        m_FieldOfView = FoV;
+        SetZClipPlanes(Near,Far);
+        m_IsPerspective = true;
+        m_UpdateProjection = true;
+    }
+    void Camera::SetOrthographic(const Vec2& Dimensions,Scalar Near,Scalar Far)
+    {
+        SetZClipPlanes(Near,Far);
+        m_OrthoDims = Vec4(0,0,Dimensions.x,Dimensions.y);
+        m_IsPerspective = false;
+        m_UpdateProjection = true;
+    }
+    void Camera::SetOrthographic(Scalar Left,Scalar Right,Scalar Top,Scalar Bottom,Scalar Near,Scalar Far)
+    {
+        SetZClipPlanes(Near,Far);
+        m_OrthoDims = Vec4(Left,Top,Right - Left,Bottom - Top);
+        m_IsPerspective = false;
+        m_UpdateProjection = true;
+    }
+    void Camera::SetFieldOfView(const Vec2 &FoV)
+    {
+        m_FieldOfView = FoV;
+        m_IsPerspective = true;
+        m_UpdateProjection = true;
+    }
+    void Camera::SetZClipPlanes(Scalar Near,Scalar Far)
+    {
+        if(Near != -1) m_NearPlane   = max(Near,0.00001f);
+        if(Far  != -1) m_FarPlane    = max(Near + 1.0f,Far);
+        m_UpdateProjection = true;
+    }
+};

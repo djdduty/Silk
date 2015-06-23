@@ -62,15 +62,13 @@ namespace Silk
         Shader* S = m_Renderer->GetRasterizer()->CreateShader();
         if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
         {
-            m_Renderer->GetRasterizer()->DestroyShader(S);
+            m_Renderer->GetRasterizer()->Destroy(S);
             S = 0;
         }
         else
         {
-            for(i32 i = 0;i < OFT_COUNT;i++)
-            {
-                S->m_FragmentOutputs[i] = m_FragmentOutputsUsed[i];
-            }
+            for(i32 i = 0;i < OFT_COUNT;i++) S->m_FragmentOutputs[i] = m_FragmentOutputsUsed[i];
+            for(i32 i = 0;i < IUT_COUNT;i++) S->m_UniformInputs  [i] = m_UniformInputsUsed  [i];
         }
         return S;
     }
@@ -111,7 +109,10 @@ namespace Silk
         
         /* Default code dependencies */
         if(!SetPosition                       ) m_UniformInputsUsed[IUT_RENDERER_UNIFORMS] = true;
-        if(!SetNormal || SetTangent || SetTexC) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS  ] = true;
+        
+        if((!SetNormal  && m_AttributeInputsUsed[IAT_NORMAL  ])
+        || (!SetTangent && m_AttributeInputsUsed[IAT_TANGENT ])
+        || (!SetTexC    && m_AttributeInputsUsed[IAT_TEXCOORD])) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = true;
         
         string VertexShader;
         VertexShader += FormatString("#version %d\n",m_ShaderVersion);

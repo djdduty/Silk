@@ -1,4 +1,6 @@
 #include <Renderer/Material.h>
+#include <Renderer/Renderer.h>
+#include <Renderer/UniformBufferTypes.h>
 
 namespace Silk
 {
@@ -26,8 +28,22 @@ namespace Silk
         return MaterialMapNames[Type];
     }
     
-    Material::Material()
+    Material::Material(Renderer* r) : m_Renderer(r)
     {
         for(i32 i = 0;i < MT_COUNT;i++) m_Maps[i] = 0;
+        m_Uniforms = new MaterialUniformSet(m_Renderer);
+    }
+    Material::~Material()
+    {
+        delete m_Uniforms;
+    }
+    
+    UniformBuffer* Material::GetUniforms()
+    {
+        return m_Uniforms->GetUniforms();
+    }
+    
+    void Material::UpdateUniforms()
+    {
     }
 };
