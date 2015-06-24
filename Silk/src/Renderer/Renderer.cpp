@@ -57,6 +57,7 @@ namespace Silk
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         SilkObjectVector Lights = m_ObjectList->GetLightList();
+        
         /*
          * To do:
          * Determine which lights affect which objects using a scene octree

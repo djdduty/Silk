@@ -1,7 +1,4 @@
 #include <Raster/Raster.h>
-#include <Raster/OpenGL/OpenGLShader.h>
-#include <Raster/OpenGL/OpenGLTexture.h>
-#include <Raster/OpenGL/OpenGLRasterizer.h>
 
 namespace Silk
 {
@@ -133,7 +130,7 @@ namespace Silk
     {
         if(m_UniformBuffer[UID] == 0)
         {
-            m_UniformBuffer[UID] = new Light(*Lt);
+            m_UniformBuffer[UID] = Lt;
             m_UniformInfo[UID].Type = UT_LIGHT;
             m_UniformInfo[UID].Size = sizeof(Light);
             m_UniformInfo[UID].PaddedSize = sizeof(Light);
@@ -228,35 +225,5 @@ namespace Silk
             return true;
         }
         return false;
-    }
-    UniformBuffer* Rasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
-    {
-        UniformBuffer* ub = new OpenGLUniformBuffer();
-        ub->SetUniformBlockInfo(GetUniformBlockTypeName(Type),Type);
-        ub->InitializeBuffer();
-        return ub;
-    }
-    Shader* Rasterizer::CreateShader()
-    {
-        //For now
-        return new OpenGLShader(m_Renderer);
-    }
-    Texture* Rasterizer::CreateTexture()
-    {
-        return new OpenGLTexture();
-    }
-    void Rasterizer::Destroy(UniformBuffer* Buffer)
-    {
-        Buffer->ClearData();
-        delete (OpenGLUniformBuffer*)Buffer;
-    }
-    void Rasterizer::Destroy(Shader *S)
-    {
-        delete (OpenGLShader*)S;
-    }
-    void Rasterizer::Destroy(Texture* T)
-    {
-        T->FreeMemory();
-        delete (OpenGLTexture*)T;
     }
 };

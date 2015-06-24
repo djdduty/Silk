@@ -13,15 +13,12 @@
 #include <Raster/OpenGL/OpenGLShader.h>
 #include <Raster/OpenGL/OpenGLTexture.h>
 
-#include <Renderer/ShaderSystem.h>
-#include <Renderer/Renderer.h>
-
 #include <Renderer/Mesh.h>
 using namespace Silk;
 
 using namespace TestClient;
 
-#define ObjsSize 100
+#define ObjsSize 1000
 
 int main(int ArgC,char *ArgV[])
 {

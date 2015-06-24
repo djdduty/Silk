@@ -1,5 +1,7 @@
 #include <Raster/OpenGL/OpenGLRasterizer.h>
 #include <Renderer/Mesh.h>
+#include <Raster/OpenGL/OpenGLShader.h>
+#include <Raster/OpenGL/OpenGLTexture.h>
 
 namespace Silk
 {
@@ -323,5 +325,36 @@ namespace Silk
         
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
+    }
+
+    UniformBuffer* CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type) {
+        UniformBuffer* ub = new OpenGLUniformBuffer();
+        ub->SetUniformBlockInfo(GetUniformBlockTypeName(Type),Type);
+        ub->InitializeBuffer();
+        return ub;
+    }
+    Shader* OpenGLRasterizer::CreateShader()
+    {
+        //For now
+        return new OpenGLShader(m_Renderer);
+    }
+    Texture* OpenGLRasterizer::CreateTexture()
+    {
+        return new OpenGLTexture();
+    }
+
+    void OpenGLRasterizer::Destroy(UniformBuffer* Buffer)
+    {
+        Buffer->ClearData();
+        delete (OpenGLUniformBuffer*)Buffer;
+    }
+    void OpenGLRasterizer::Destroy(Shader *S)
+    {
+        delete (OpenGLShader*)S;
+    }
+    void OpenGLRasterizer::Destroy(Texture* T)
+    {
+        T->FreeMemory();
+        delete (OpenGLTexture*)T;
     }
 };
