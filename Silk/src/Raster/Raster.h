@@ -102,6 +102,7 @@ namespace Silk
     class UniformBuffer
     {
         public:
+            UniformBuffer() : m_BlockName(""), m_Type(ShaderGenerator::IUT_COUNT), m_TotalSize(0), m_TotalPaddedSize(0), m_ParentIndex(-1), m_Parent(0) { }
             virtual ~UniformBuffer() { }
         
             void ClearData();
@@ -132,7 +133,7 @@ namespace Silk
             virtual void UpdateBuffer    () = 0;
         
             i32 GetUniformCount() const { return m_UniformBuffer.size(); }
-            UniformDef* GetUniformInfo(i32 Index) { return &m_UniformInfo [Index]; }
+            UniformDef* GetUniformInfo(i32 Index) { return m_UniformInfo [Index]; }
             void*    GetUniformPointer(i32 Index) { return m_UniformBuffer[Index]; }
             i32 GetBufferSize() const { return m_TotalSize; }
             i32 GetPaddedBufferSize() const { return m_TotalPaddedSize; }
@@ -146,11 +147,10 @@ namespace Silk
         protected:
             friend class Shader;
             friend class Rasterizer;
-            UniformBuffer() : m_BlockName(""), m_Type(ShaderGenerator::IUT_COUNT), m_TotalSize(0), m_TotalPaddedSize(0), m_ParentIndex(-1), m_Parent(0) { }
             string m_BlockName;
             ShaderGenerator::INPUT_UNIFORM_TYPE m_Type;
             vector<void*> m_UniformBuffer;
-            vector<UniformDef> m_UniformInfo;
+            vector<UniformDef*> m_UniformInfo;
             i32 m_TotalSize;
             i32 m_TotalPaddedSize;
             i32 m_ParentIndex;
@@ -193,18 +193,19 @@ namespace Silk
             RasterContext* GetContext() const { return m_GraphicsContext; }
             virtual void InitializeContext() = 0;
         
-            UniformBuffer* CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type);
-            Shader       * CreateShader ();
-            Texture      * CreateTexture();
-            void Destroy(UniformBuffer* Buffer);
-            void Destroy(Shader       * S     );
-            void Destroy(Texture      * T     );
+            virtual Shader  * CreateShader () = 0;
+            virtual Texture * CreateTexture() = 0;
+
+            virtual void Destroy(UniformBuffer* Buffer) = 0;
+            virtual void Destroy(Shader       * S     ) = 0;
+            virtual void Destroy(Texture      * T     ) = 0;
         
             void SetClearColor(const Vec4& c) { m_ClearColor = c; }
         
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
 
+            virtual UniformBuffer*          CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type) = 0;
             virtual RasterObjectIdentifier* CreateObjectIdentifier() = 0;
         
             virtual RasterContext* CreateContext() = 0;

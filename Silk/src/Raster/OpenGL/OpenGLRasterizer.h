@@ -42,7 +42,7 @@ namespace Silk
         
             void* MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access);
             void UnmapBuffer(GLuint AttributeIndex);
-        
+
             virtual void Render(i32 PrimitiveType,i32 Start,i32 Count);
         
         protected:
@@ -55,7 +55,7 @@ namespace Silk
     class OpenGLUniformBuffer : public UniformBuffer
     {
         public:
-            OpenGLUniformBuffer() : m_Buffer(0) { }
+            OpenGLUniformBuffer() : m_Buffer(0), UniformBuffer() { }
             ~OpenGLUniformBuffer();
         
             virtual void InitializeBuffer();
@@ -89,7 +89,14 @@ namespace Silk
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h)   { glViewport(x,y,w,h);     }
             virtual RasterContext* CreateContext()              { return new OpenGLRasterizerContext(this); }
 
+            virtual Shader                * CreateShader();
+            virtual Texture               * CreateTexture();
+            virtual UniformBuffer         * CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type);
             virtual RasterObjectIdentifier* CreateObjectIdentifier() { return new OpenGLObjectIdentifier(); }
+
+            virtual void Destroy(UniformBuffer* B);
+            virtual void Destroy(Shader* S);
+            virtual void Destroy(Texture* T);
         
         protected:
             GLuint m_ColorFormat;

@@ -1,6 +1,8 @@
 #include <Raster/OpenGL/OpenGLRasterizer.h>
 #include <Raster/OpenGL/OpenGLUniform.h>
 #include <Renderer/Mesh.h>
+#include <Raster/OpenGL/OpenGLShader.h>
+#include <Raster/OpenGL/OpenGLTexture.h>
 
 namespace Silk
 {
@@ -193,21 +195,21 @@ namespace Silk
         for(i32 i = 0;i < m_UniformInfo.size();i++)
         {
             i32 Offset = GetPaddedUniformOffset(i);
-            i32 Padding = m_UniformInfo[i].PaddedSize - m_UniformInfo[i].TypeSize;
+            i32 Padding = m_UniformInfo[i]->PaddedSize - m_UniformInfo[i]->TypeSize;
             
-            if(m_UniformInfo[i].ArraySize != -1 && Padding != 0)
+            if(m_UniformInfo[i]->ArraySize != -1 && Padding != 0)
             {
                 i32 dOffset = 0;
-                for(i32 u = 0;u < m_UniformInfo[i].ArraySize;u++)
+                for(i32 u = 0;u < m_UniformInfo[i]->ArraySize;u++)
                 {
-                    memcpy(&UBO[Offset + dOffset],&((Byte*)m_UniformBuffer[i])[u * m_UniformInfo[i].TypeSize],m_UniformInfo[i].TypeSize);
-                    dOffset += m_UniformInfo[i].PaddedSize;
+                    memcpy(&UBO[Offset + dOffset],&((Byte*)m_UniformBuffer[i])[u * m_UniformInfo[i]->TypeSize],m_UniformInfo[i]->TypeSize);
+                    dOffset += m_UniformInfo[i]->PaddedSize;
                 }
             }
             else
             {
                 //printf("v[%d]: %s | o: %d | s: %d | p: %d\n",i,m_UniformInfo[i].Name.c_str(),Offset,m_UniformInfo[i].TypeSize,Padding);
-                memcpy(&UBO[Offset],m_UniformBuffer[i],m_UniformInfo[i].Size);
+                memcpy(&UBO[Offset],m_UniformBuffer[i],m_UniformInfo[i]->Size);
             }
         }
         
@@ -325,5 +327,37 @@ namespace Silk
         
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
+    }
+
+    UniformBuffer* OpenGLRasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
+    {
+        UniformBuffer* ub = new OpenGLUniformBuffer();
+        ub->SetUniformBlockInfo(GetUniformBlockTypeName(Type),Type);
+        ub->InitializeBuffer();
+        return ub;
+    }
+    Shader* OpenGLRasterizer::CreateShader()
+    {
+        //For now
+        return new OpenGLShader(m_Renderer);
+    }
+    Texture* OpenGLRasterizer::CreateTexture()
+    {
+        return new OpenGLTexture();
+    }
+
+    void OpenGLRasterizer::Destroy(UniformBuffer* Buffer)
+    {
+        Buffer->ClearData();
+        delete (OpenGLUniformBuffer*)Buffer;
+    }
+    void OpenGLRasterizer::Destroy(Shader *S)
+    {
+        delete (OpenGLShader*)S;
+    }
+    void OpenGLRasterizer::Destroy(Texture* T)
+    {
+        T->FreeMemory();
+        delete (OpenGLTexture*)T;
     }
 };

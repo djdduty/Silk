@@ -45,7 +45,9 @@ namespace Silk
     class UC_Light : public UniformCall
     {
         public:
-            UC_Light(UniformDef* Def) : UniformCall(Def) { }
+            UC_Light(UniformDef* Def) : UniformCall(Def), m_PositionLocs(0), m_DirectionLocs(0),
+                m_ColorLocs(0), m_CutoffLocs(0), m_SoftenLocs(0), m_PowerLocs(0), m_ConstantLocs(0),
+                m_LinearLocs(0), m_ExponentialLocs(0), m_TypeLocs(0) { }
             ~UC_Light();
         
             virtual void Call     (void* Data);

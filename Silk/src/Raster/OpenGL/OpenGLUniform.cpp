@@ -58,16 +58,16 @@ namespace Silk
     
     UC_Light::~UC_Light()
     {
-        delete [] m_PositionLocs   ;
-        delete [] m_DirectionLocs  ;
-        delete [] m_ColorLocs      ;
-        delete [] m_CutoffLocs     ;
-        delete [] m_SoftenLocs     ;
-        delete [] m_PowerLocs      ;
-        delete [] m_ConstantLocs   ;
-        delete [] m_LinearLocs     ;
-        delete [] m_ExponentialLocs;
-        delete [] m_TypeLocs       ;
+        if(m_PositionLocs   ) delete [] m_PositionLocs   ;
+        if(m_DirectionLocs  ) delete [] m_DirectionLocs  ;
+        if(m_ColorLocs      ) delete [] m_ColorLocs      ;
+        if(m_CutoffLocs     ) delete [] m_CutoffLocs     ;
+        if(m_SoftenLocs     ) delete [] m_SoftenLocs     ;
+        if(m_PowerLocs      ) delete [] m_PowerLocs      ;
+        if(m_ConstantLocs   ) delete [] m_ConstantLocs   ;
+        if(m_LinearLocs     ) delete [] m_LinearLocs     ;
+        if(m_ExponentialLocs) delete [] m_ExponentialLocs;
+        if(m_TypeLocs       ) delete [] m_TypeLocs       ;
     }
     void UC_Light::Call(void *Data)
     {

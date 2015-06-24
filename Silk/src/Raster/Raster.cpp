@@ -30,17 +30,17 @@ namespace Silk
     
     void UniformBuffer::ClearData()
     {
-        for(i32 i = 0;i < m_UniformInfo.size();i++)
+        for(i32 i = 0;i < m_UniformBuffer.size();i++)
         {
             if(m_UniformBuffer[i])
             {
-                switch(m_UniformInfo[i].Type)
+                switch(m_UniformInfo[i]->Type)
                 {
                     #define TypeCase(T,U) \
                     case U: \
                     { \
-                        if(m_UniformInfo[i].ArraySize != -1) delete [] (T*)m_UniformBuffer[i]; \
-                        else delete (T*)m_UniformBuffer[i]; \
+                        if(m_UniformInfo[i]->ArraySize != -1) delete [] (T*)m_UniformBuffer[i]; \
+                        else if(m_UniformBuffer[i]) delete (T*)m_UniformBuffer[i]; \
                         break; \
                     }
                     TypeCase(bool ,UT_BOOL  )
@@ -52,12 +52,18 @@ namespace Silk
                     TypeCase(Vec3 ,UT_VEC3  )
                     TypeCase(Vec4 ,UT_VEC4  )
                     TypeCase(Mat4 ,UT_MAT4  )
-                    TypeCase(Light,UT_LIGHT )
+                    case UT_LIGHT:
+                    {
+                        if(m_UniformInfo[i]->ArraySize != -1) delete [] (Light**)m_UniformBuffer[i];
+                        else if(m_UniformBuffer[i]) delete (Light*)m_UniformBuffer[i];
+                        break;
+                    }
                     default:
                     {
                         ERROR("Invalid uniform type. Cannot delete. Memory corruption?\n");
                     }
                 }
+                delete m_UniformInfo[i];
             }
         }
         m_UniformBuffer.clear();
@@ -69,15 +75,15 @@ namespace Silk
     {
         for(i32 i = 0;i < m_UniformInfo.size();i++)
         {
-            if(m_UniformInfo[i].Name == Name)
+            if(m_UniformInfo[i]->Name == Name)
             {
                 ERROR("Error defining uniform. Uniform \"%s\" already exists. (Buffer: 0x%lX)\n",Name.c_str(),(intptr_t)this);
                 return i;
             }
         }
         
-        UniformDef u;
-        u.Name = Name;
+        UniformDef* u = new UniformDef();
+        u->Name = Name;
         m_UniformInfo.push_back(u);
         m_UniformBuffer.push_back(0);
         return m_UniformInfo.size() - 1;
@@ -88,19 +94,19 @@ namespace Silk
         if(m_UniformBuffer[UID] == 0)                                           \
         {                                                                       \
             m_UniformBuffer[UID] = new T(Value);                                \
-            m_UniformInfo[UID].PassCalls.push_back(new C(&m_UniformInfo[UID])); \
-            m_UniformInfo[UID].Type = Enum;                                     \
-            m_UniformInfo[UID].TypeSize = Sz;                                   \
-            m_UniformInfo[UID].Size = Sz;                                       \
-            m_UniformInfo[UID].PaddedSize = PSz;                                \
-            m_UniformInfo[UID].Offset = GetUniformOffset(UID);                  \
-            m_TotalSize += m_UniformInfo[UID].Size;                             \
-            m_TotalPaddedSize += m_UniformInfo[UID].PaddedSize;                 \
-            m_UniformInfo[UID].ArraySize = -1;                                  \
+            m_UniformInfo[UID]->PassCalls.push_back(new C(m_UniformInfo[UID])); \
+            m_UniformInfo[UID]->Type = Enum;                                     \
+            m_UniformInfo[UID]->TypeSize = Sz;                                   \
+            m_UniformInfo[UID]->Size = Sz;                                       \
+            m_UniformInfo[UID]->PaddedSize = PSz;                                \
+            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);                  \
+            m_TotalSize += m_UniformInfo[UID]->Size;                             \
+            m_TotalPaddedSize += m_UniformInfo[UID]->PaddedSize;                 \
+            m_UniformInfo[UID]->ArraySize = -1;                                  \
         }                                                                       \
-        if(m_UniformInfo[UID].Type != Enum)                                     \
+        if(m_UniformInfo[UID]->Type != Enum)                                     \
         {                                                                       \
-            ERROR("Invalid type (%s) for uniform. Uniform type is (%s).\n",#T,UniformTypeNames[m_UniformInfo[UID].Type]); \
+            ERROR("Invalid type (%s) for uniform. Uniform type is (%s).\n",#T,UniformTypeNames[m_UniformInfo[UID]->Type]); \
             return;                                                             \
         }                                                                       \
         (*(T*)m_UniformBuffer[UID]) = Value;                                    \
@@ -110,19 +116,19 @@ namespace Silk
         if(m_UniformBuffer[UID] == 0)                                           \
         {                                                                       \
             m_UniformBuffer[UID] = new T[Values.size()];                        \
-            m_UniformInfo[UID].PassCalls.push_back(new C(&m_UniformInfo[UID])); \
-            m_UniformInfo[UID].Type = Enum;                                     \
-            m_UniformInfo[UID].TypeSize = Sz;                                   \
-            m_UniformInfo[UID].Size = Sz * Values.size();                       \
-            m_UniformInfo[UID].PaddedSize = PSz;                                \
-            m_UniformInfo[UID].Offset = GetUniformOffset(UID);                  \
-            m_TotalSize += m_UniformInfo[UID].Size;                             \
+            m_UniformInfo[UID]->PassCalls.push_back(new C(m_UniformInfo[UID])); \
+            m_UniformInfo[UID]->Type = Enum;                                     \
+            m_UniformInfo[UID]->TypeSize = Sz;                                   \
+            m_UniformInfo[UID]->Size = Sz * Values.size();                       \
+            m_UniformInfo[UID]->PaddedSize = PSz;                                \
+            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);                  \
+            m_TotalSize += m_UniformInfo[UID]->Size;                             \
             m_TotalPaddedSize += PSz * Values.size();                           \
-            m_UniformInfo[UID].ArraySize = Values.size();                       \
+            m_UniformInfo[UID]->ArraySize = Values.size();                       \
         }                                                                       \
-        if(m_UniformInfo[UID].Type != Enum)                                     \
+        if(m_UniformInfo[UID]->Type != Enum)                                     \
         {                                                                       \
-            ERROR("Invalid type (%s) for uniform. Uniform type is (%s).\n",#T,UniformTypeNames[m_UniformInfo[UID].Type]); \
+            ERROR("Invalid type (%s) for uniform. Uniform type is (%s).\n",#T,UniformTypeNames[m_UniformInfo[UID]->Type]); \
             return;                                                             \
         }                                                                       \
         for(i32 i = 0;i < Values.size();i++)                                    \
@@ -145,20 +151,20 @@ namespace Silk
     {
         if(m_UniformBuffer[UID] == 0)
         {
-            m_UniformBuffer[UID] = new Light(*Lt);
-            m_UniformInfo[UID].PassCalls.push_back(new UC_Light(&m_UniformInfo[UID]));
-            m_UniformInfo[UID].Type = UT_LIGHT;
-            m_UniformInfo[UID].Size = sizeof(Light);
-            m_UniformInfo[UID].PaddedSize = sizeof(Light);
-            m_UniformInfo[UID].TypeSize = sizeof(Light);
-            m_UniformInfo[UID].Offset = GetUniformOffset(UID);
-            m_TotalSize += m_UniformInfo[UID].Size;
-            m_TotalPaddedSize += m_UniformInfo[UID].PaddedSize;
-            m_UniformInfo[UID].ArraySize = -1;
+            m_UniformBuffer[UID] = Lt;
+            m_UniformInfo[UID]->PassCalls.push_back(new UC_Light(m_UniformInfo[UID]));
+            m_UniformInfo[UID]->Type = UT_LIGHT;
+            m_UniformInfo[UID]->Size = sizeof(Light);
+            m_UniformInfo[UID]->PaddedSize = sizeof(Light);
+            m_UniformInfo[UID]->TypeSize = sizeof(Light);
+            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);
+            m_TotalSize += m_UniformInfo[UID]->Size;
+            m_TotalPaddedSize += m_UniformInfo[UID]->PaddedSize;
+            m_UniformInfo[UID]->ArraySize = -1;
         }
-        if(m_UniformInfo[UID].Type != UT_LIGHT)
+        if(m_UniformInfo[UID]->Type != UT_LIGHT)
         {
-            ERROR("Invalid type (Light) for uniform. Uniform type is (%s).\n",UniformTypeNames[m_UniformInfo[UID].Type]);
+            ERROR("Invalid type (Light) for uniform. Uniform type is (%s).\n",UniformTypeNames[m_UniformInfo[UID]->Type]);
             return;
         }
         (*(Light*)m_UniformBuffer[UID]) = *Lt;
@@ -168,19 +174,19 @@ namespace Silk
         if(m_UniformBuffer[UID] == 0)
         {
             m_UniformBuffer[UID] = new Light*[Lts.size()];
-            m_UniformInfo[UID].PassCalls.push_back(new UC_Light(&m_UniformInfo[UID]));
-            m_UniformInfo[UID].Type = UT_LIGHT;
-            m_UniformInfo[UID].Size = sizeof(Light) * Lts.size();
-            m_UniformInfo[UID].PaddedSize = sizeof(Light) * Lts.size();
-            m_UniformInfo[UID].TypeSize = sizeof(Light);
-            m_UniformInfo[UID].Offset = GetUniformOffset(UID);
-            m_TotalSize += m_UniformInfo[UID].Size;
-            m_TotalPaddedSize += m_UniformInfo[UID].PaddedSize * Lts.size();
-            m_UniformInfo[UID].ArraySize = Lts.size();
+            m_UniformInfo[UID]->PassCalls.push_back(new UC_Light(m_UniformInfo[UID]));
+            m_UniformInfo[UID]->Type = UT_LIGHT;
+            m_UniformInfo[UID]->Size = sizeof(Light) * Lts.size();
+            m_UniformInfo[UID]->PaddedSize = sizeof(Light) * Lts.size();
+            m_UniformInfo[UID]->TypeSize = sizeof(Light);
+            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);
+            m_TotalSize += m_UniformInfo[UID]->Size;
+            m_TotalPaddedSize += m_UniformInfo[UID]->PaddedSize * Lts.size();
+            m_UniformInfo[UID]->ArraySize = Lts.size();
         }
-        if(m_UniformInfo[UID].Type != UT_LIGHT)
+        if(m_UniformInfo[UID]->Type != UT_LIGHT)
         {
-            ERROR("Invalid type (Light) for uniform. Uniform type is (%s).\n",UniformTypeNames[m_UniformInfo[UID].Type]);
+            ERROR("Invalid type (Light) for uniform. Uniform type is (%s).\n",UniformTypeNames[m_UniformInfo[UID]->Type]);
             return;
         }
         for(i32 i = 0;i < Lts.size();i++)
@@ -193,7 +199,7 @@ namespace Silk
     i32 UniformBuffer::GetUniformOffset(i32 UID) const
     {
         i32 Offset = 0;
-        for(i32 i = 0;i < UID;i++) Offset += m_UniformInfo[i].Size;
+        for(i32 i = 0;i < UID;i++) Offset += m_UniformInfo[i]->Size;
         return Offset;
     }
     i32 UniformBuffer::GetPaddedUniformOffset(i32 UID) const
@@ -201,8 +207,8 @@ namespace Silk
         i32 Offset = 0;
         for(i32 i = 0;i < UID;i++)
         {
-            if(m_UniformInfo[i].ArraySize != -1) Offset += m_UniformInfo[i].PaddedSize * m_UniformInfo[i].ArraySize;
-            else Offset += m_UniformInfo[i].PaddedSize;
+            if(m_UniformInfo[i]->ArraySize != -1) Offset += m_UniformInfo[i]->PaddedSize * m_UniformInfo[i]->ArraySize;
+            else Offset += m_UniformInfo[i]->PaddedSize;
         }
         return Offset;
     }
@@ -242,35 +248,5 @@ namespace Silk
             return true;
         }
         return false;
-    }
-    UniformBuffer* Rasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
-    {
-        UniformBuffer* ub = new OpenGLUniformBuffer();
-        ub->SetUniformBlockInfo(GetUniformBlockTypeName(Type),Type);
-        ub->InitializeBuffer();
-        return ub;
-    }
-    Shader* Rasterizer::CreateShader()
-    {
-        //For now
-        return new OpenGLShader(m_Renderer);
-    }
-    Texture* Rasterizer::CreateTexture()
-    {
-        return new OpenGLTexture();
-    }
-    void Rasterizer::Destroy(UniformBuffer* Buffer)
-    {
-        Buffer->ClearData();
-        delete (OpenGLUniformBuffer*)Buffer;
-    }
-    void Rasterizer::Destroy(Shader *S)
-    {
-        delete (OpenGLShader*)S;
-    }
-    void Rasterizer::Destroy(Texture* T)
-    {
-        T->FreeMemory();
-        delete (OpenGLTexture*)T;
     }
 };

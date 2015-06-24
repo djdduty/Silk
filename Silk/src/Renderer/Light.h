@@ -30,7 +30,7 @@ namespace Silk
                 m_Attenuation.Linear      = 0.0;
                 m_Attenuation.Exponential = 0.0;
             }
-            ~Light() {}
+            ~Light() { }
 
             Vec4 m_Position ;
             Vec4 m_Direction;
