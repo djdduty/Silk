@@ -21,6 +21,8 @@ using namespace Silk;
 
 using namespace TestClient;
 
+#define ObjsSize 100
+
 int main(int ArgC,char *ArgV[])
 {
     Window* Win = new Window();
@@ -92,10 +94,10 @@ int main(int ArgC,char *ArgV[])
         mesh->SetVertexBuffer  (12,vertBuff );
         mesh->SetTexCoordBuffer(12,TexcBuff );
 
-        RenderObject* Objs[1000];
+        RenderObject* Objs[ObjsSize];
         Material* mat = Render->CreateMaterial();
         mat->SetShader(g.Generate());
-        for(i32 i = 0;i < 1000;i++)
+        for(i32 i = 0;i < ObjsSize;i++)
         {
             Objs[i] = Render->CreateRenderObject(ROT_MESH,false);
             Objs[i]->SetMesh(mesh,mat);
@@ -112,6 +114,9 @@ int main(int ArgC,char *ArgV[])
         
         Mat4 cTrans = Translation(Vec3(0,2,-10));
         Scalar a = 0.0f;
+        f32 ElapsedTime = 0.0;
+        f32 LastTime = Win->GetElapsedTime();
+        i32 FrameCounter = 0;
         while(!Win->GetCloseRequested())
         {
             Win->PollEvents();
@@ -124,17 +129,28 @@ int main(int ArgC,char *ArgV[])
             Rot0     *= Rotation(Vec3(1,0,0),10.0f);
             Cam->SetTransform(Rot0 * Translation(Vec3(0,1,10 + a)));
             
-            for(i32 i = 0;i < 1000;i++) Objs[i]->SetTransform(Objs[i]->GetTransform() * Rotation(Vec3(1,0,0),0.01f));
+            for(i32 i = 0;i < ObjsSize;i++) Objs[i]->SetTransform(Objs[i]->GetTransform() * Rotation(Vec3(1,0,0),0.01f));
             
             Render->Render(GL_TRIANGLES);
             
+            f32 DeltaTime = Win->GetElapsedTime() - LastTime;
+            LastTime = Win->GetElapsedTime();
+
             Win->SwapBuffers();
+            FrameCounter++;
+            ElapsedTime += DeltaTime;
+            if(ElapsedTime >= 1.0f) {
+                printf("FPS: %d\n", FrameCounter);
+                FrameCounter = 0;
+                ElapsedTime = 0.0f;
+            }
         }
 
         Render->GetRasterizer()->Destroy(mat->GetShader());
         Render->Destroy(mat);
-        for(i32 i = 0;i < 100;i++) Render->Destroy(Objs[i]);
+        for(i32 i = 0;i < ObjsSize;i++) Render->Destroy(Objs[i]);
         delete Render;
+        delete Cam;
         delete mesh;
     }
     

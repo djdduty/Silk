@@ -24,7 +24,7 @@ namespace TestClient {
 
             GLFWwindow* GetWindow() { return m_Window; }
             Rasterizer* GetRasterizer() { return m_Rasterizer; }
-            f64 GetElapsedTime();
+            f64 GetElapsedTime() { return glfwGetTime(); }
 
         protected:
             GLFWwindow* m_Window;
