@@ -249,8 +249,8 @@ namespace Silk
             Vec4 operator*(const Vec4& rVal) const;
             Vec3 operator*(const Vec3& rVal) const;
         
-            Vec4& operator[](i32 rIdx) { return (&x)[rIdx]; }
-            Vec4 operator[](i32 rIdx) const { return (&x)[rIdx]; }
+            Vec4& operator[](i32 rIdx)       { return (&x)[rIdx]; }
+            Vec4  operator[](i32 rIdx) const { return (&x)[rIdx]; }
         
             Vec4 x;
             Vec4 y;

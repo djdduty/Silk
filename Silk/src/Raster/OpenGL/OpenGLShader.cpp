@@ -6,8 +6,10 @@
 
 namespace Silk
 {
-    OpenGLShader::OpenGLShader(Renderer* r) : Shader(r)
+    OpenGLShader::OpenGLShader(Renderer* r) : Shader(r), m_PID(0), m_VS(0), m_GS(0), m_PS(0)
     {
+        for(i32 i = 0;i < ShaderGenerator::IUT_COUNT;i++) m_BlockIndices    [i] = -1;
+        for(i32 i = 0;i < Material       :: MT_COUNT;i++) m_SamplerLocations[i] = -1;
     }
     OpenGLShader::~OpenGLShader()
     {
@@ -198,15 +200,20 @@ namespace Silk
         OpenGLUniformBuffer* ub = (OpenGLUniformBuffer*)Uniforms;
         ShaderGenerator::INPUT_UNIFORM_TYPE ID = ub->GetUniformBlockID();
         
+        if(!m_UniformInputs[ID])
+        {
+            WARNING("Attempting to pass uniform block (ID: %d) to shader that doesn't use it.\n",ID);
+            return;
+        }
         if(ID == ShaderGenerator::IUT_COUNT)
         {
             ERROR("Could not bind uniform buffer \"%s\", invalid block ID (%d).\n",Uniforms->GetUniformBlockName().c_str(),Uniforms->GetUniformBlockID());
             return;
         }
         
-        i32 Index = glGetUniformBlockIndex(m_PID,ub->GetUniformBlockName().c_str());
+        if(m_BlockIndices[ID] == -1) m_BlockIndices[ID] = glGetUniformBlockIndex(m_PID,ub->GetUniformBlockName().c_str());
         glBindBufferBase(GL_UNIFORM_BUFFER,Uniforms->GetUniformBlockID(),ub->m_Buffer);
-        glUniformBlockBinding(m_PID,Index,ub->GetUniformBlockID());
+        glUniformBlockBinding(m_PID,m_BlockIndices[ID],ub->GetUniformBlockID());
     }
     void OpenGLShader::UseMaterial(Material *Mat)
     {

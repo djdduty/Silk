@@ -119,12 +119,12 @@ namespace Silk
         }                                                           \
     }
     
-    SetUniformFunc(bool,UT_BOOL  ,sizeof(bool),sizeof(f32) * 4 );
-    SetUniformFunc(i32 ,UT_INT   ,sizeof(i32 ),sizeof(f32) * 4 );
-    SetUniformFunc(u32 ,UT_UINT  ,sizeof(u32 ),sizeof(f32) * 4 );
-    SetUniformFunc(f32 ,UT_FLOAT ,sizeof(f32 ),sizeof(f32) * 4 );
-    SetUniformFunc(f64 ,UT_DOUBLE,sizeof(f64 ),sizeof(f64) * 4 );
-    SetUniformFunc(Vec2,UT_VEC2  ,sizeof(Vec2),sizeof(f32) * 4 );
+    SetUniformFunc(bool,UT_BOOL  ,sizeof(bool),sizeof(f32));// * 4 );
+    SetUniformFunc(i32 ,UT_INT   ,sizeof(i32 ),sizeof(f32));// * 4 );
+    SetUniformFunc(u32 ,UT_UINT  ,sizeof(u32 ),sizeof(f32));// * 4 );
+    SetUniformFunc(f32 ,UT_FLOAT ,sizeof(f32 ),sizeof(f32));// * 4 );
+    SetUniformFunc(f64 ,UT_DOUBLE,sizeof(f64 ),sizeof(f64));// * 4 );
+    SetUniformFunc(Vec2,UT_VEC2  ,sizeof(Vec2),sizeof(f32) * 2 );
     SetUniformFunc(Vec3,UT_VEC3  ,sizeof(Vec3),sizeof(f32) * 4 );
     SetUniformFunc(Vec4,UT_VEC4  ,sizeof(Vec4),sizeof(f32) * 4 );
     SetUniformFunc(Mat4,UT_MAT4  ,sizeof(Mat4),sizeof(f32) * 16);
@@ -137,6 +137,7 @@ namespace Silk
             m_UniformInfo[UID].Type = UT_LIGHT;
             m_UniformInfo[UID].Size = sizeof(Light);
             m_UniformInfo[UID].PaddedSize = sizeof(Light);
+            m_UniformInfo[UID].TypeSize = sizeof(Light);
             m_UniformInfo[UID].Offset = GetUniformOffset(UID);
             m_TotalSize += m_UniformInfo[UID].Size;
             m_TotalPaddedSize += m_UniformInfo[UID].PaddedSize;
@@ -157,6 +158,7 @@ namespace Silk
             m_UniformInfo[UID].Type = UT_LIGHT;
             m_UniformInfo[UID].Size = sizeof(Light) * Lts.size();
             m_UniformInfo[UID].PaddedSize = sizeof(Light) * Lts.size();
+            m_UniformInfo[UID].TypeSize = sizeof(Light);
             m_UniformInfo[UID].Offset = GetUniformOffset(UID);
             m_TotalSize += m_UniformInfo[UID].Size;
             m_TotalPaddedSize += m_UniformInfo[UID].PaddedSize * Lts.size();

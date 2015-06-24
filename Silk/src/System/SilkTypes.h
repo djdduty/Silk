@@ -58,5 +58,6 @@ typedef u32                 UID;
 
 #define LOG(...) printf(__VA_ARGS__)
 #define ERROR(...) fprintf(stderr,__VA_ARGS__)
+#define WARNING(...) fprintf(stderr,__VA_ARGS__)
 
 #endif

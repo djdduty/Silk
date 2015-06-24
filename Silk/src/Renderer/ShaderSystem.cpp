@@ -22,9 +22,11 @@ namespace Silk
     ShaderGenerator::ShaderGenerator(Renderer* r) : m_Renderer(r)
     {
         Reset();
+        m_NullModelUniforms = new ModelUniformSet(r);
     }
     ShaderGenerator::~ShaderGenerator()
     {
+        delete m_NullModelUniforms;
     }
     
     void ShaderGenerator::Reset()
@@ -395,7 +397,7 @@ namespace Silk
             case IUT_MATERIAL_UNIFORMS: { eUniforms = m_MaterialUniforms                    ; break; }
             case IUT_ENGINE_UNIFORMS  : { eUniforms = m_Renderer->GetEngineUniformBuffer  (); break; }
             case IUT_RENDERER_UNIFORMS: { eUniforms = m_Renderer->GetRendererUniformBuffer(); break; }
-            case IUT_OBJECT_UNIFORMS  : { eUniforms = 0                                     ; break; }
+            case IUT_OBJECT_UNIFORMS  : { eUniforms = m_NullModelUniforms->GetUniforms()    ; break; }
             case IUT_USER_UNIFORMS    : { eUniforms = m_UserUniforms                        ; break; }
             default:
             {
@@ -406,7 +408,7 @@ namespace Silk
         if(!eUniforms) return "";
         
         string Code;
-        Code += LightDataStructure + "\n";
+        if(Type == ShaderGenerator::IUT_OBJECT_UNIFORMS) Code += LightDataStructure + "\n";
         Code += "\nlayout (std140) uniform " + GetUniformBlockTypeName(Type) + "\n{\n";
         
         i32 uCount = eUniforms->GetUniformCount();

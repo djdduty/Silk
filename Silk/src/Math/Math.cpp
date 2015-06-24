@@ -726,12 +726,10 @@ namespace Silk
         {
             for(i32 j = 0;j < 4;j++)
             {
-                Scalar Total = 0.0f;
                 for(i32 k = 0;k < 4;k++)
                 {
-                    Total += (*this)[i][k] * rVal[k][j];
+                    r[i][j] += (*this)[i][k] * rVal[k][j];
                 }
-                r[i][j] = Total;
             }
         }
         return r;
@@ -743,12 +741,10 @@ namespace Silk
         {
             for(i32 j = 0;j < 4;j++)
             {
-                Scalar Total = 0.0f;
                 for(i32 k = 0;k < 4;k++)
                 {
-                    Total += (*this)[i][k] * rVal[k][j];
+                    r[i][j] += (*this)[i][k] * rVal[k][j];
                 }
-                r[i][j] = Total;
             }
         }
         return *this = r;
@@ -763,9 +759,9 @@ namespace Silk
         {
             const Scalar invW = 1.0f / W;
             return Vec4((rVal.x * x.x + rVal.y * y.x + rVal.z * z.x + w.x) * invW,
-                           (rVal.x * x.y + rVal.y * y.y + rVal.z * z.y + w.y) * invW,
-                           (rVal.x * x.z + rVal.y * y.z + rVal.z * z.z + w.z) * invW,
-                           (rVal.x * x.w + rVal.y * y.w + rVal.z * z.w + w.w) * invW);
+                        (rVal.x * x.y + rVal.y * y.y + rVal.z * z.y + w.y) * invW,
+                        (rVal.x * x.z + rVal.y * y.z + rVal.z * z.z + w.z) * invW,
+                        (rVal.x * x.w + rVal.y * y.w + rVal.z * z.w + w.w) * invW);
         }
         return Vec4();
     }
@@ -778,8 +774,8 @@ namespace Silk
         {
             const Scalar invW = 1.0f / W;
             return Vec3((rVal.x * x.x + rVal.y * y.x + rVal.z * z.x + w.x) * invW,
-                           (rVal.x * x.y + rVal.y * y.y + rVal.z * z.y + w.y) * invW,
-                           (rVal.x * x.z + rVal.y * y.z + rVal.z * z.z + w.z) * invW);
+                        (rVal.x * x.y + rVal.y * y.y + rVal.z * z.y + w.y) * invW,
+                        (rVal.x * x.z + rVal.y * y.z + rVal.z * z.z + w.z) * invW);
         }
         return Vec3();
     }

@@ -22,6 +22,7 @@ namespace Silk
             GLuint m_VS;
             GLuint m_GS;
             GLuint m_PS;
-            GLuint m_SamplerLocations[Material::MT_COUNT];
+            i32 m_SamplerLocations[Material::MT_COUNT];
+            i32 m_BlockIndices[ShaderGenerator::IUT_COUNT];
     };
 };

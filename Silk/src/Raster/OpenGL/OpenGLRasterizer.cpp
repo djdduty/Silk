@@ -204,9 +204,18 @@ namespace Silk
             }
             else
             {
+                //printf("v[%d]: %s | o: %d | s: %d | p: %d\n",i,m_UniformInfo[i].Name.c_str(),Offset,m_UniformInfo[i].TypeSize,Padding);
                 memcpy(&UBO[Offset],m_UniformBuffer[i],m_UniformInfo[i].Size);
             }
         }
+        
+        /*
+        f32* f = (f32*)UBO;
+        for(i32 i = 0;i < TotalSize / 4;i += 4)
+        {
+            printf("[%d]%f,%f,%f,%f\n",4 * i,f[i],f[i + 1],f[i + 2],f[i + 3]);
+        }
+        */
         
         glBindBuffer(GL_UNIFORM_BUFFER,m_Buffer);
         glBufferData(GL_UNIFORM_BUFFER,TotalSize,UBO,GL_STATIC_DRAW);
@@ -311,5 +320,8 @@ namespace Silk
             ERROR("Glew initialization failed: %s\n", glewGetErrorString(err));
         }
         glGetError();
+        
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
     }
 };

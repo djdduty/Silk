@@ -14,7 +14,7 @@
 namespace Silk
 {
     Renderer::Renderer(Rasterizer* Raster) : 
-        m_ObjectList(new ObjectList()), m_UpdatedObjects(new ObjectList), m_Raster(Raster)
+        m_ObjectList(new ObjectList()), m_Raster(Raster)
     {
         m_DefaultTexture   = m_Raster->CreateTexture();
         m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
@@ -36,9 +36,6 @@ namespace Silk
     {
         m_ObjectList->Clear();
         delete m_ObjectList;
-
-        m_UpdatedObjects->Clear();
-        delete m_UpdatedObjects;
         
         m_Raster->Destroy(m_DefaultTexture);
         m_Raster->Destroy(m_EngineUniforms);
@@ -98,7 +95,7 @@ namespace Silk
             Shader->Disable();
         }
         
-        m_UpdatedObjects->Clear();
+        m_UpdatedObjects.clear();
     }
 
     RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene)

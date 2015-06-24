@@ -136,6 +136,7 @@ namespace Silk
             bool                m_FragmentOutputsUsed[OFT_COUNT];
             UniformBuffer*      m_MaterialUniforms;
             UniformBuffer*      m_UserUniforms;
+            ModelUniformSet*    m_NullModelUniforms;
             LIGHTING_MODES      m_LightingMode;
         
             Renderer* m_Renderer;

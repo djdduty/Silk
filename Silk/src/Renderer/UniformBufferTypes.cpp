@@ -10,8 +10,8 @@ namespace Silk
         m_iMVP                 = m_UniformBuffer->DefineUniform("u_MVP"       );
         m_iModel               = m_UniformBuffer->DefineUniform("u_Model"     );
         m_iNormal              = m_UniformBuffer->DefineUniform("u_Normal"    );
-        m_iLightInfluenceCount = m_UniformBuffer->DefineUniform("u_LightCount");
         m_iLightInfluences     = m_UniformBuffer->DefineUniform("u_Lights"    );
+        m_iLightInfluenceCount = m_UniformBuffer->DefineUniform("u_LightCount");
         
         m_NullLight = new Light();
         m_NullLight->m_Power = 0.0f;
@@ -50,7 +50,7 @@ namespace Silk
     void ModelUniformSet::UpdateUniforms()
     {
         m_UniformBuffer->SetUniform(m_iMV                 ,MV          );
-        m_UniformBuffer->SetUniform(m_iMVP                ,MVP         );
+        m_UniformBuffer->SetUniform(m_iMVP                ,MVP.Transpose());
         m_UniformBuffer->SetUniform(m_iNormal             ,Normal      );
         m_UniformBuffer->SetUniform(m_iModel              ,Model       );
         m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
@@ -66,8 +66,8 @@ namespace Silk
         m_iCameraPosition  = m_UniformBuffer->DefineUniform("u_CameraPosition" );
         m_iCameraDirection = m_UniformBuffer->DefineUniform("u_CameraDirection");
         m_iResolution      = m_UniformBuffer->DefineUniform("u_Resolution"     );
-        m_iExposire        = m_UniformBuffer->DefineUniform("u_Exposure"       );
         m_iFieldOfView     = m_UniformBuffer->DefineUniform("u_FieldOfView"    );
+        m_iExposire        = m_UniformBuffer->DefineUniform("u_Exposure"       );
         m_iNearPlane       = m_UniformBuffer->DefineUniform("u_NearPlane"      );
         m_iFarPlane        = m_UniformBuffer->DefineUniform("u_FarPlane"       );
         m_iFocalPoint      = m_UniformBuffer->DefineUniform("u_FocalPoint"     );
@@ -88,9 +88,9 @@ namespace Silk
             Vec3 cPos = Vec3(cTrans[0][3],cTrans[1][3],cTrans[2][3]);
             Vec3 cFwd = Vec3(cTrans[0][2],cTrans[1][2],cTrans[2][2]);
             
-            m_UniformBuffer->SetUniform(m_iView           ,cTrans               );
             m_UniformBuffer->SetUniform(m_iCameraPosition ,cPos                 );
             m_UniformBuffer->SetUniform(m_iCameraDirection,cFwd                 );
+            m_UniformBuffer->SetUniform(m_iView           ,cTrans.Inverse()     );
             m_UniformBuffer->SetUniform(m_iProjection     ,Cam->GetProjection ());
             m_UniformBuffer->SetUniform(m_iExposire       ,Cam->GetExposure   ());
             m_UniformBuffer->SetUniform(m_iFieldOfView    ,Cam->GetFieldOfView());

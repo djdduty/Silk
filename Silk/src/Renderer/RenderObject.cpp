@@ -67,7 +67,7 @@ namespace Silk {
         Camera* Cam = m_Renderer->GetActiveCamera();
         if(Cam)
         {
-            m_Uniforms->MV     = Cam->GetTransform () * m_Uniforms->Model;
+            m_Uniforms->MV     = Cam->GetTransform ().Inverse() * m_Uniforms->Model;
             m_Uniforms->MVP    = Cam->GetProjection() * m_Uniforms->MV   ;
             m_Uniforms->Normal = m_Uniforms->MV.Inverse().Transpose()    ;
         }
@@ -97,16 +97,20 @@ namespace Silk {
                 
                 /* Add to the shader-object list */
                 Shader* s = Obj->GetMaterial()->GetShader();
-                bool ShaderExists = false;
+                i32 ShaderIdx = -1;
                 for(i32 i = 0;i < m_ShadersUsed.size();i++)
                 {
-                    if(s == m_ShadersUsed[i]) { ShaderExists = true; break; }
+                    if(s == m_ShadersUsed[i]) { ShaderIdx = i; break; }
                 }
-                if(!ShaderExists) m_ShadersUsed.push_back(s);
+                if(ShaderIdx == -1)
+                {
+                    m_ShadersUsed.push_back(s);
+                    m_ShaderObjects.push_back(vector<RenderObject*>());
+                    ShaderIdx = m_ShaderObjects.size() - 1;
+                }
                 
-                m_ShaderObjects.push_back(vector<RenderObject*>());
-                m_ShaderObjects[m_ShaderObjects.size() - 1].push_back(Obj);
-                Obj->m_ShaderListIndex = m_ShaderObjects[m_ShaderObjects.size() - 1].size() - 1;
+                m_ShaderObjects[ShaderIdx].push_back(Obj);
+                Obj->m_ShaderListIndex = m_ShaderObjects[ShaderIdx].size() - 1;
                 
                 return m_MeshObjects.size()-1;
                 break;

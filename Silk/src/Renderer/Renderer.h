@@ -34,7 +34,7 @@ namespace Silk
 
             void AddRenderObject(RenderObject* Object);
             void RemoveRenderObject(RenderObject* Object) { m_ObjectList->RemoveObject(Object);  }
-            void AddToUpdateList(RenderObject* Object)    { m_UpdatedObjects->AddObject(Object); }
+            void AddToUpdateList(RenderObject* Object)    { m_UpdatedObjects.push_back(Object); }
         
             void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
             i32 GetMaxLights() { return m_Prefs.MaxLights; }
@@ -58,7 +58,7 @@ namespace Silk
             RenderUniformSet* m_RendererUniforms;
 
             ObjectList* m_ObjectList;     //Contains all objects
-            ObjectList* m_UpdatedObjects; //clears every frame
+            vector<RenderObject*> m_UpdatedObjects; //clears every frame
             Rasterizer* m_Raster;
     };
 };
