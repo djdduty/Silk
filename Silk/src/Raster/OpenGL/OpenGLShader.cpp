@@ -1,6 +1,7 @@
 #include <Raster/OpenGL/OpenGLShader.h>
 #include <Raster/OpenGL/OpenGLTexture.h>
 #include <Raster/OpenGL/OpenGLRasterizer.h>
+#include <Raster/OpenGL/OpenGLUniform.h>
 #include <Renderer/Mesh.h>
 #include <Renderer/ShaderSystem.h>
 
@@ -211,15 +212,35 @@ namespace Silk
             return;
         }
         
+        i32 UniformCount = Uniforms->GetUniformCount();
+        for(i32 i = 0;i < UniformCount;i++)
+        {
+            UniformDef* Def = Uniforms->GetUniformInfo(i);
+            if(m_ID + 1 >= Def->PassCalls.size())
+            {
+                while(m_ID + 1 >= Def->PassCalls.size()) Def->PassCalls.push_back(0);
+            }
+            
+            if(Def->PassCalls[m_ID + 1] == 0)
+            {
+                Def->PassCalls[m_ID + 1] = Def->PassCalls[0]->Factory();
+                Def->PassCalls[m_ID + 1]->AcquireLocations(m_PID);
+            }
+            
+            if(Def->ArraySize == -1) Def->PassCalls[m_ID + 1]->Call(Uniforms->GetUniformPointer(i));
+        }
+        
+        /*
         if(m_BlockIndices[ID] == -1) m_BlockIndices[ID] = glGetUniformBlockIndex(m_PID,ub->GetUniformBlockName().c_str());
         glBindBufferBase(GL_UNIFORM_BUFFER,Uniforms->GetUniformBlockID(),ub->m_Buffer);
         glUniformBlockBinding(m_PID,m_BlockIndices[ID],ub->GetUniformBlockID());
+        */
     }
     void OpenGLShader::UseMaterial(Material *Mat)
     {
         if(m_UniformInputs[ShaderGenerator::IUT_MATERIAL_UNIFORMS])
         {
-            Mat->UpdateUniforms();
+            //Mat->UpdateUniforms();
             PassUniforms(Mat->GetUniforms());
         }
         

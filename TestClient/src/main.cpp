@@ -92,14 +92,14 @@ int main(int ArgC,char *ArgV[])
         mesh->SetVertexBuffer  (12,vertBuff );
         mesh->SetTexCoordBuffer(12,TexcBuff );
 
-        RenderObject* Objs[1000];
+        RenderObject* Objs[5000];
         Material* mat = Render->CreateMaterial();
         mat->SetShader(g.Generate());
-        for(i32 i = 0;i < 1000;i++)
+        for(i32 i = 0;i < 5000;i++)
         {
             Objs[i] = Render->CreateRenderObject(ROT_MESH,false);
             Objs[i]->SetMesh(mesh,mat);
-            Objs[i]->SetTransform(Translation(Vec3(Random(-50,50),0,Random(-50,50))));
+            Objs[i]->SetTransform(Translation(Vec3(Random(-500,500),0,Random(-500,500))));
             Render->AddRenderObject(Objs[i]);
         }
         
@@ -124,7 +124,7 @@ int main(int ArgC,char *ArgV[])
             Rot0     *= Rotation(Vec3(1,0,0),10.0f);
             Cam->SetTransform(Rot0 * Translation(Vec3(0,1,10 + a)));
             
-            for(i32 i = 0;i < 1000;i++) Objs[i]->SetTransform(Objs[i]->GetTransform() * Rotation(Vec3(1,0,0),0.01f));
+            for(i32 i = 0;i < 5000;i++) Objs[i]->SetTransform(Objs[i]->GetTransform() * Rotation(Vec3(1,0,0),0.01f));
             
             Render->Render(GL_TRIANGLES);
             
@@ -133,7 +133,7 @@ int main(int ArgC,char *ArgV[])
 
         Render->GetRasterizer()->Destroy(mat->GetShader());
         Render->Destroy(mat);
-        for(i32 i = 0;i < 100;i++) Render->Destroy(Objs[i]);
+        for(i32 i = 0;i < 5000;i++) Render->Destroy(Objs[i]);
         delete Render;
         delete mesh;
     }

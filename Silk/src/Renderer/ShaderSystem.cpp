@@ -19,7 +19,7 @@ namespace Silk
         return BlockNames[Type];
     }
     
-    ShaderGenerator::ShaderGenerator(Renderer* r) : m_Renderer(r)
+    ShaderGenerator::ShaderGenerator(Renderer* r) : m_Renderer(r), m_ShadersGenerated(0)
     {
         Reset();
         m_NullModelUniforms = new ModelUniformSet(r);
@@ -71,6 +71,8 @@ namespace Silk
         {
             for(i32 i = 0;i < OFT_COUNT;i++) S->m_FragmentOutputs[i] = m_FragmentOutputsUsed[i];
             for(i32 i = 0;i < IUT_COUNT;i++) S->m_UniformInputs  [i] = m_UniformInputsUsed  [i];
+            S->m_ID = m_ShadersGenerated;
+            m_ShadersGenerated++;
         }
         return S;
     }
@@ -409,7 +411,7 @@ namespace Silk
         
         string Code;
         if(Type == ShaderGenerator::IUT_OBJECT_UNIFORMS) Code += LightDataStructure + "\n";
-        Code += "\nlayout (std140) uniform " + GetUniformBlockTypeName(Type) + "\n{\n";
+        //Code += "\nlayout (std140) uniform " + GetUniformBlockTypeName(Type) + "\n{\n";
         
         i32 uCount = eUniforms->GetUniformCount();
         for(i32 i = 0;i < uCount;i++)
@@ -417,22 +419,22 @@ namespace Silk
             #define UCase(TypeString,Enum) case Enum: { Code += TypeString; break; }
             switch(eUniforms->GetUniformInfo(i)->Type)
             {
-                UCase("\tbool "  ,UniformBuffer::UT_BOOL  );
-                UCase("\tint "   ,UniformBuffer::UT_INT   );
-                UCase("\tuint "  ,UniformBuffer::UT_UINT  );
-                UCase("\tfloat " ,UniformBuffer::UT_FLOAT );
-                UCase("\tdouble ",UniformBuffer::UT_DOUBLE);
-                UCase("\tvec2 "  ,UniformBuffer::UT_VEC2  );
-                UCase("\tvec3 "  ,UniformBuffer::UT_VEC3  );
-                UCase("\tvec4 "  ,UniformBuffer::UT_VEC4  );
-                UCase("\tmat4 "  ,UniformBuffer::UT_MAT4  );
-                UCase("\tLight " ,UniformBuffer::UT_LIGHT );
+                UCase("uniform bool "  ,UT_BOOL  );
+                UCase("uniform int "   ,UT_INT   );
+                UCase("uniform uint "  ,UT_UINT  );
+                UCase("uniform float " ,UT_FLOAT );
+                UCase("uniform double ",UT_DOUBLE);
+                UCase("uniform vec2 "  ,UT_VEC2  );
+                UCase("uniform vec3 "  ,UT_VEC3  );
+                UCase("uniform vec4 "  ,UT_VEC4  );
+                UCase("uniform mat4 "  ,UT_MAT4  );
+                UCase("uniform Light " ,UT_LIGHT );
             }
             Code += eUniforms->GetUniformInfo(i)->Name;
             if(eUniforms->GetUniformInfo(i)->ArraySize != -1) Code += FormatString("[%d];\n",eUniforms->GetUniformInfo(i)->ArraySize);
             else Code += ";\n";
         }
-        Code += "};\n";
+        //Code += "};\n";
         
         return Code;
     }

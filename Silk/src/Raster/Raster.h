@@ -69,36 +69,40 @@ namespace Silk
             
     };
     
+    class UniformCall;
     class Shader;
+    
+    enum UNIFORM_TYPE
+    {
+        UT_BOOL,
+        UT_INT,
+        UT_UINT,
+        UT_FLOAT,
+        UT_DOUBLE,
+        UT_VEC2,
+        UT_VEC3,
+        UT_VEC4,
+        UT_MAT4,
+        UT_LIGHT,
+    };
+    class UniformDef
+    {
+        public:
+            UniformDef() { }
+            ~UniformDef();
+            string Name;
+            UNIFORM_TYPE Type;
+            i32 Size;
+            i32 PaddedSize;
+            i32 TypeSize;
+            i32 Offset;
+            i32 ArraySize;
+            vector<UniformCall*> PassCalls;
+    };
     class UniformBuffer
     {
         public:
             virtual ~UniformBuffer() { }
-            
-            enum UNIFORM_TYPE
-            {
-                UT_BOOL,
-                UT_INT,
-                UT_UINT,
-                UT_FLOAT,
-                UT_DOUBLE,
-                UT_VEC2,
-                UT_VEC3,
-                UT_VEC4,
-                UT_MAT4,
-                UT_LIGHT,
-            };
-        
-            struct UniformDef
-            {
-                string Name;
-                UNIFORM_TYPE Type;
-                i32 Size;
-                i32 PaddedSize;
-                i32 TypeSize;
-                i32 Offset;
-                i32 ArraySize;
-            };
         
             void ClearData();
         
@@ -128,7 +132,8 @@ namespace Silk
             virtual void UpdateBuffer    () = 0;
         
             i32 GetUniformCount() const { return m_UniformBuffer.size(); }
-            const UniformDef* GetUniformInfo(i32 Index) const { return &m_UniformInfo[Index]; }
+            UniformDef* GetUniformInfo(i32 Index) { return &m_UniformInfo [Index]; }
+            void*    GetUniformPointer(i32 Index) { return m_UniformBuffer[Index]; }
             i32 GetBufferSize() const { return m_TotalSize; }
             i32 GetPaddedBufferSize() const { return m_TotalPaddedSize; }
             i32 GetUniformOffset(i32 UID) const;
@@ -172,6 +177,7 @@ namespace Silk
             bool m_UniformInputs[ShaderGenerator::IUT_COUNT];
             bool m_FragmentOutputs[ShaderGenerator::OFT_COUNT];
             Renderer* m_Renderer;
+            i32 m_ID;
     };
     
     class Rasterizer

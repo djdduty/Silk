@@ -140,6 +140,7 @@ namespace Silk
             LIGHTING_MODES      m_LightingMode;
         
             Renderer* m_Renderer;
+            i32 m_ShadersGenerated;
     };
     string GetUniformBlockTypeName(ShaderGenerator::INPUT_UNIFORM_TYPE Type);
 };

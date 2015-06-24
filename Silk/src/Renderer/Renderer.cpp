@@ -29,6 +29,8 @@ namespace Silk
         m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS  );
         m_RendererUniforms = new RenderUniformSet(this);
         
+        UpdateDefaultTexture();
+        
         m_ActiveCamera = 0;
     }
 

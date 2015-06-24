@@ -50,12 +50,12 @@ namespace Silk
     void ModelUniformSet::UpdateUniforms()
     {
         m_UniformBuffer->SetUniform(m_iMV                 ,MV          );
-        m_UniformBuffer->SetUniform(m_iMVP                ,MVP.Transpose());
+        m_UniformBuffer->SetUniform(m_iMVP                ,MVP         );
         m_UniformBuffer->SetUniform(m_iNormal             ,Normal      );
         m_UniformBuffer->SetUniform(m_iModel              ,Model       );
         m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
         m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
-        m_UniformBuffer->UpdateBuffer();
+        //m_UniformBuffer->UpdateBuffer();
     }
     
     RenderUniformSet::RenderUniformSet(Renderer* r) : m_Renderer(r)
@@ -111,7 +111,7 @@ namespace Silk
             m_UniformBuffer->SetUniform(m_iFocalPoint     ,0.0f);
         }
         m_UniformBuffer->SetUniform(m_iResolution,m_Renderer->GetRasterizer()->GetContext()->GetResolution());
-        m_UniformBuffer->UpdateBuffer();
+        //m_UniformBuffer->UpdateBuffer();
     }
     
     
@@ -126,6 +126,6 @@ namespace Silk
         
     void MaterialUniformSet::UpdateUniforms()
     {
-        m_UniformBuffer->UpdateBuffer();
+        //m_UniformBuffer->UpdateBuffer();
     }
 };
