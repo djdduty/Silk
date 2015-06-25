@@ -19,11 +19,10 @@ namespace Silk
         
             void SetLights(const vector<Light*>& Lights);
         
-            Mat4 MV;
-            Mat4 MVP;
-            Mat4 Model;
-            Mat4 Normal;
-            Mat4 Texture;
+            void SetModelMatrix(const Mat4& M);
+            const Mat4& GetModelMatrix() const { return m_Model; }
+            void SetTextureMatrix(const Mat4& T);
+            const Mat4& GetTextureMatrix() const { return m_Texture; }
         
             void UpdateUniforms();
             UniformBuffer* GetUniforms() const { return m_UniformBuffer; }
@@ -32,6 +31,14 @@ namespace Silk
             Light* m_NullLight;
             vector<Light*>m_Lights;
             i32 m_LightCount;
+        
+            bool m_ModelMatrixUpdated;
+            bool m_TexMatrixUpdated;
+            Mat4 m_MV;
+            Mat4 m_MVP;
+            Mat4 m_Model;
+            Mat4 m_Normal;
+            Mat4 m_Texture;
         
             UniformBuffer* m_UniformBuffer;
             i32 m_iMV;                   //Mat4

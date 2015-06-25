@@ -217,10 +217,10 @@ namespace Silk
             return;
         }
         
-        i32 UniformCount = Uniforms->GetUniformCount();
+        i32 UniformCount = Uniforms->GetUpdatedUniformCount();
         for(i32 i = 0;i < UniformCount;i++)
         {
-            UniformDef* Def = Uniforms->GetUniformInfo(i);
+            UniformDef* Def = Uniforms->GetUpdatedUniformInfo(i);
             if(m_ID + 1 >= Def->PassCalls.size())
             {
                 while(m_ID + 1 >= Def->PassCalls.size()) Def->PassCalls.push_back(0);

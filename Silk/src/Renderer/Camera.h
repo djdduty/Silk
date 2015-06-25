@@ -22,13 +22,14 @@ namespace Silk
             Camera(Mat4 Projection) : m_Projection(Projection), m_Transform(Mat4::Identity) {}
             ~Camera() {}
 
-            Mat4 GetTransform () { return m_Transform ; }
-            Mat4 GetProjection();
+            const Mat4& GetTransform () { return m_Transform ; }
+            const Mat4& GetProjection();
         
             bool IsPerspective() const { return  m_IsPerspective; }
             bool IsOrthogonal () const { return !m_IsPerspective; }
         
-            void SetTransform (Mat4 Transform) { m_Transform  = Transform ; }
+            void SetTransform (Mat4 Transform) { m_Transform  = Transform ; m_TrnsChanged = true; m_InverseTransform = m_Transform.Inverse(); }
+            const Mat4& GetInverseTransform() const { return m_InverseTransform; }
         
             //Plane depth of -1 means use the ones already stored
             void SetPerspective (const Vec2& FoV       ,Scalar Near = -1,Scalar Far = -1);
@@ -37,8 +38,17 @@ namespace Silk
         
             void SetFieldOfView(const Vec2& FoV);
             void SetZClipPlanes(Scalar Near,Scalar Far);
-            void SetExposure   (Scalar Exposure)     { m_Exposure   = Exposure  ; }
-            void SetFocalPoint (Scalar FocalPoint)   { m_FocalPoint = FocalPoint; }
+            void SetExposure   (Scalar Exposure)     { m_Exposure   = Exposure  ; m_ExpoChanged = true; }
+            void SetFocalPoint (Scalar FocalPoint)   { m_FocalPoint = FocalPoint; m_FcPtChanged = true; }
+        
+            bool DidProjectionUpdate () { if(m_ProjChanged) { m_ProjChanged = false; return true; }  return false; }
+            bool DidTransformUpdate  () { if(m_TrnsChanged) { m_TrnsChanged = false; return true; }  return false; }
+            bool DidOrthoDimsUpdate  () { if(m_OrDmChanged) { m_OrDmChanged = false; return true; }  return false; }
+            bool DidFieldOfViewUpdate() { if(m_FdVwChanged) { m_FdVwChanged = false; return true; }  return false; }
+            bool DidExposureUpdate   () { if(m_ExpoChanged) { m_ExpoChanged = false; return true; }  return false; }
+            bool DidNearPlaneUpdate  () { if(m_nPlnChanged) { m_nPlnChanged = false; return true; }  return false; }
+            bool DidFarPlaneUpdate   () { if(m_fPlnChanged) { m_fPlnChanged = false; return true; }  return false; }
+            bool DidFocalPointUpdate () { if(m_FcPtChanged) { m_FcPtChanged = false; return true; }  return false; }
             
             Vec2   GetFieldOfView() const { return m_FieldOfView; }
             Scalar GetExposure   () const { return m_Exposure   ; }
@@ -50,14 +60,24 @@ namespace Silk
             bool   m_UpdateProjection;
             bool   m_IsPerspective   ;
         
+            Mat4   m_InverseTransform;
+        
             Mat4   m_Projection ;
+            bool   m_ProjChanged;
             Mat4   m_Transform  ;
+            bool   m_TrnsChanged;
             Vec4   m_OrthoDims  ;
+            bool   m_OrDmChanged;
             Vec2   m_FieldOfView;
+            bool   m_FdVwChanged;
             Scalar m_Exposure   ;
+            bool   m_ExpoChanged;
             Scalar m_NearPlane  ;
+            bool   m_nPlnChanged;
             Scalar m_FarPlane   ;
+            bool   m_fPlnChanged;
             Scalar m_FocalPoint ;
+            bool   m_FcPtChanged;
     };
 };
 

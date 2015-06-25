@@ -10,16 +10,16 @@ namespace Silk
         m_Location = glGetUniformLocation(PID,m_Def->Name.c_str());
     }
 
-    #define UC_Calls(C,P1,P2,F1,F2)             \
-    void C::Call     (void* Data)               \
-    {                                           \
-        if(m_Location == -1) return;            \
-        F1(m_Location,P1 Data);                 \
-    }                                           \
-    void C::CallArray(void* Data)               \
-    {                                           \
-        if(m_Location == -1) return;            \
-        F2(m_Location,m_Def->ArraySize,P2 Data);\
+    #define UC_Calls(C,P1,P2,F1,F2)                     \
+    void C::Call     (void* Data)                       \
+    {                                                   \
+        if(m_Location == -1) return;                    \
+        F1(m_Location,P1 Data);                         \
+    }                                                   \
+    void C::CallArray(void* Data)                       \
+    {                                                   \
+        if(m_Location == -1) return;                    \
+        F2(m_Location,m_Def->ArraySize,P2 Data);        \
     }
     
     UC_Calls(UC_Bool  ,*(i32 *),(i32 *),glUniform1i ,glUniform1iv );
@@ -30,16 +30,16 @@ namespace Silk
     
     #undef UC_Calls
     
-    #define UC_Calls(C,F1,F2)                   \
-    void C::Call     (void* Data)               \
-    {                                           \
-        if(m_Location == -1) return;            \
-        F1;                                     \
-    }                                           \
-    void C::CallArray(void* Data)               \
-    {                                           \
-        if(m_Location == -1) return;            \
-        F2;                                     \
+    #define UC_Calls(C,F1,F2)                           \
+    void C::Call     (void* Data)                       \
+    {                                                   \
+        if(m_Location == -1) return;                    \
+        F1;                                             \
+    }                                                   \
+    void C::CallArray(void* Data)                       \
+    {                                                   \
+        if(m_Location == -1) return;                    \
+        F2;                                             \
     }
     UC_Calls(UC_Vec2,glUniform2f (m_Location,(*(Vec2*)Data).x,(*(Vec2*)Data).y),
                      glUniform2fv(m_Location,m_Def->ArraySize,(f32*)Data));

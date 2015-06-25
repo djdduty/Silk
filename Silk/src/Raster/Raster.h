@@ -135,6 +135,11 @@ namespace Silk
             i32 GetUniformCount() const { return m_UniformBuffer.size(); }
             UniformDef* GetUniformInfo(i32 Index) { return m_UniformInfo [Index]; }
             void*    GetUniformPointer(i32 Index) { return m_UniformBuffer[Index]; }
+        
+            i32 GetUpdatedUniformCount() const { return m_UpdatedUniforms.size(); }
+            UniformDef* GetUpdatedUniformInfo(i32 Index) { return m_UniformInfo[Index]; }
+            void ClearUpdatedUniforms() { m_UpdatedUniforms.clear(); }
+        
             i32 GetBufferSize() const { return m_TotalSize; }
             i32 GetPaddedBufferSize() const { return m_TotalPaddedSize; }
             i32 GetUniformOffset(i32 UID) const;
@@ -151,6 +156,7 @@ namespace Silk
             ShaderGenerator::INPUT_UNIFORM_TYPE m_Type;
             vector<void*> m_UniformBuffer;
             vector<UniformDef*> m_UniformInfo;
+            vector<UniformDef*> m_UpdatedUniforms;
             i32 m_TotalSize;
             i32 m_TotalPaddedSize;
             i32 m_ParentIndex;

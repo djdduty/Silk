@@ -35,10 +35,11 @@ namespace Silk
     class RenderObject
     {
         public:
-            Mesh    *   GetMesh     () { return m_Mesh           ; }
-            Light   *   GetLight    () { return m_Light          ; }
-            Material*   GetMaterial () { return m_Material       ; }
-            Mat4        GetTransform() { return m_Uniforms->Model; }
+            Mesh      *   GetMesh            () { return m_Mesh                        ; }
+            Light     *   GetLight           () { return m_Light                       ; }
+            Material  *   GetMaterial        () { return m_Material                    ; }
+            const Mat4&   GetTransform       () { return m_Uniforms->GetModelMatrix  (); }
+            const Mat4&   GetTextureTransform() { return m_Uniforms->GetTextureMatrix(); }
 
             void SetMesh     (Mesh    * M, Material* Mat);
             void SetLight    (Light   * L               );

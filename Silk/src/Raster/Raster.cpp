@@ -95,21 +95,22 @@ namespace Silk
         {                                                                       \
             m_UniformBuffer[UID] = new T(Value);                                \
             m_UniformInfo[UID]->PassCalls.push_back(new C(m_UniformInfo[UID])); \
-            m_UniformInfo[UID]->Type = Enum;                                     \
-            m_UniformInfo[UID]->TypeSize = Sz;                                   \
-            m_UniformInfo[UID]->Size = Sz;                                       \
-            m_UniformInfo[UID]->PaddedSize = PSz;                                \
-            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);                  \
-            m_TotalSize += m_UniformInfo[UID]->Size;                             \
-            m_TotalPaddedSize += m_UniformInfo[UID]->PaddedSize;                 \
-            m_UniformInfo[UID]->ArraySize = -1;                                  \
+            m_UniformInfo[UID]->Type = Enum;                                    \
+            m_UniformInfo[UID]->TypeSize = Sz;                                  \
+            m_UniformInfo[UID]->Size = Sz;                                      \
+            m_UniformInfo[UID]->PaddedSize = PSz;                               \
+            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);                 \
+            m_TotalSize += m_UniformInfo[UID]->Size;                            \
+            m_TotalPaddedSize += m_UniformInfo[UID]->PaddedSize;                \
+            m_UniformInfo[UID]->ArraySize = -1;                                 \
         }                                                                       \
-        if(m_UniformInfo[UID]->Type != Enum)                                     \
+        if(m_UniformInfo[UID]->Type != Enum)                                    \
         {                                                                       \
             ERROR("Invalid type (%s) for uniform. Uniform type is (%s).\n",#T,UniformTypeNames[m_UniformInfo[UID]->Type]); \
             return;                                                             \
         }                                                                       \
         (*(T*)m_UniformBuffer[UID]) = Value;                                    \
+       m_UpdatedUniforms.push_back(m_UniformInfo[UID]);                         \
     }                                                                           \
     void UniformBuffer::SetUniform(i32 UID,const vector<T>& Values)             \
     {                                                                           \
@@ -117,16 +118,16 @@ namespace Silk
         {                                                                       \
             m_UniformBuffer[UID] = new T[Values.size()];                        \
             m_UniformInfo[UID]->PassCalls.push_back(new C(m_UniformInfo[UID])); \
-            m_UniformInfo[UID]->Type = Enum;                                     \
-            m_UniformInfo[UID]->TypeSize = Sz;                                   \
-            m_UniformInfo[UID]->Size = Sz * Values.size();                       \
-            m_UniformInfo[UID]->PaddedSize = PSz;                                \
-            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);                  \
-            m_TotalSize += m_UniformInfo[UID]->Size;                             \
+            m_UniformInfo[UID]->Type = Enum;                                    \
+            m_UniformInfo[UID]->TypeSize = Sz;                                  \
+            m_UniformInfo[UID]->Size = Sz * Values.size();                      \
+            m_UniformInfo[UID]->PaddedSize = PSz;                               \
+            m_UniformInfo[UID]->Offset = GetUniformOffset(UID);                 \
+            m_TotalSize += m_UniformInfo[UID]->Size;                            \
             m_TotalPaddedSize += PSz * Values.size();                           \
-            m_UniformInfo[UID]->ArraySize = Values.size();                       \
+            m_UniformInfo[UID]->ArraySize = Values.size();                      \
         }                                                                       \
-        if(m_UniformInfo[UID]->Type != Enum)                                     \
+        if(m_UniformInfo[UID]->Type != Enum)                                    \
         {                                                                       \
             ERROR("Invalid type (%s) for uniform. Uniform type is (%s).\n",#T,UniformTypeNames[m_UniformInfo[UID]->Type]); \
             return;                                                             \
@@ -135,6 +136,7 @@ namespace Silk
         {                                                                       \
             ((T*)m_UniformBuffer[UID])[i] = Values[i];                          \
         }                                                                       \
+       m_UpdatedUniforms.push_back(m_UniformInfo[UID]);                         \
     }
     
     SetUniformFunc(UC_Bool  ,bool,UT_BOOL  ,sizeof(bool),sizeof(f32));// * 4 );
@@ -168,6 +170,7 @@ namespace Silk
             return;
         }
         (*(Light*)m_UniformBuffer[UID]) = *Lt;
+        m_UpdatedUniforms.push_back(m_UniformInfo[UID]);
     }
     void UniformBuffer::SetUniform(i32 UID,const vector<Light*>& Lts)
     {
@@ -193,6 +196,7 @@ namespace Silk
         {
             ((Light**)m_UniformBuffer[UID])[i] = Lts[i];
         }
+       m_UpdatedUniforms.push_back(m_UniformInfo[UID]);
     }
 
     
