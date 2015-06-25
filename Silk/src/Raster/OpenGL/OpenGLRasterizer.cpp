@@ -176,7 +176,7 @@ namespace Silk
 
         glBindVertexArray(m_VAO);
         
-        if(m_IBIndex != -1)
+        if(m_IBIndex != -1) 
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Attributes[m_IBIndex].BufferID);
             glDrawElements(PrimitiveType,Count,m_Attributes[m_IBIndex].Type,(GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize));

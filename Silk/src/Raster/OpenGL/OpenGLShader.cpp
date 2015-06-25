@@ -232,7 +232,7 @@ namespace Silk
                 Def->PassCalls[m_ID + 1]->AcquireLocations(m_PID);
             }
             
-            if(Def->ArraySize == -1) Def->PassCalls[m_ID + 1]->Call(Uniforms->GetUniformPointer(i));
+            if(Def->ArraySize == -1) Def->PassCalls[m_ID + 1]->Call(Uniforms->GetUniformPointer(Uniforms->GetUpdatedUniformIndex(i)));
         }
         
         /*

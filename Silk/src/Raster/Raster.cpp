@@ -110,7 +110,7 @@ namespace Silk
             return;                                                             \
         }                                                                       \
         (*(T*)m_UniformBuffer[UID]) = Value;                                    \
-       m_UpdatedUniforms.push_back(m_UniformInfo[UID]);                         \
+       m_UpdatedUniforms.push_back(UID);                                        \
     }                                                                           \
     void UniformBuffer::SetUniform(i32 UID,const vector<T>& Values)             \
     {                                                                           \
@@ -136,7 +136,7 @@ namespace Silk
         {                                                                       \
             ((T*)m_UniformBuffer[UID])[i] = Values[i];                          \
         }                                                                       \
-       m_UpdatedUniforms.push_back(m_UniformInfo[UID]);                         \
+       m_UpdatedUniforms.push_back(UID);                                        \
     }
     
     SetUniformFunc(UC_Bool  ,bool,UT_BOOL  ,sizeof(bool),sizeof(f32));// * 4 );
@@ -170,7 +170,7 @@ namespace Silk
             return;
         }
         (*(Light*)m_UniformBuffer[UID]) = *Lt;
-        m_UpdatedUniforms.push_back(m_UniformInfo[UID]);
+        m_UpdatedUniforms.push_back(UID);
     }
     void UniformBuffer::SetUniform(i32 UID,const vector<Light*>& Lts)
     {
@@ -196,7 +196,7 @@ namespace Silk
         {
             ((Light**)m_UniformBuffer[UID])[i] = Lts[i];
         }
-       m_UpdatedUniforms.push_back(m_UniformInfo[UID]);
+       m_UpdatedUniforms.push_back(UID);
     }
 
     

@@ -24,10 +24,17 @@ namespace Silk
         m_MVP     =
         m_Normal  = Mat4::Identity;
         
-        
+        m_TexMatrixUpdated = m_ModelMatrixUpdated = true;
         
         SetLights(vector<Light*>());
-        UpdateUniforms(); //Must be called here to set the uniform types
+        
+        m_UniformBuffer->SetUniform(m_iMV                 ,m_MV        );
+        m_UniformBuffer->SetUniform(m_iMVP                ,m_MVP       );
+        m_UniformBuffer->SetUniform(m_iNormal             ,m_Normal    );
+        m_UniformBuffer->SetUniform(m_iModel              ,m_Model     );
+        m_UniformBuffer->SetUniform(m_iTexture            ,m_Texture   );
+        m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
+        m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
     }
     ModelUniformSet::~ModelUniformSet()
     {
@@ -54,6 +61,7 @@ namespace Silk
              m_LightCount = m_Lights.size();
              while(m_Lights.size() < m_Renderer->GetMaxLights()) m_Lights.push_back(m_NullLight);
         }
+        m_LightsChanged = true;
     }
 
     void ModelUniformSet::SetModelMatrix(const Mat4 &M)
@@ -70,26 +78,41 @@ namespace Silk
     }
     void ModelUniformSet::UpdateUniforms()
     {
-        if(m_ModelMatrixUpdated)
+        Camera* Cam = m_Renderer->GetActiveCamera();
+        if(Cam)
         {
-            Camera* Cam = m_Renderer->GetActiveCamera();
-            if(Cam)
+            if(m_ModelMatrixUpdated)
             {
-                m_MV     = Cam->GetInverseTransform() * m_Model;
-                m_MVP    = Cam->GetProjection() * m_MV;
+                m_MV  = Cam->GetInverseTransform() * m_Model;
+                m_MVP = Cam->GetProjection      () * m_MV   ;
+                
+                m_UniformBuffer->SetUniform(m_iMV                 ,m_MV          );
+                m_UniformBuffer->SetUniform(m_iMVP                ,m_MVP         );
+                m_UniformBuffer->SetUniform(m_iNormal             ,m_Normal      );
+                m_UniformBuffer->SetUniform(m_iModel              ,m_Model       );
+                
+                m_ModelMatrixUpdated = false;
             }
-            else m_MV     = m_MVP = Mat4::Identity;
-            
-            m_UniformBuffer->SetUniform(m_iMV                 ,m_MV          );
-            m_UniformBuffer->SetUniform(m_iMVP                ,m_MVP         );
-            m_UniformBuffer->SetUniform(m_iNormal             ,m_Normal      );
-            m_UniformBuffer->SetUniform(m_iModel              ,m_Model       );
-            
-            m_ModelMatrixUpdated = true;
         }
-        m_UniformBuffer->SetUniform(m_iTexture            ,m_Texture     );
-        m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
-        m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
+        else if(m_ModelMatrixUpdated)
+        {
+            m_MV = m_MVP = m_Model;
+            m_ModelMatrixUpdated = false;
+        }
+        
+        if(m_TexMatrixUpdated)
+        {
+            m_UniformBuffer->SetUniform(m_iTexture,m_Texture);
+            m_TexMatrixUpdated = false;
+        }
+        
+        if(m_LightsChanged)
+        {
+            m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
+            m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
+            m_LightsChanged = false;
+        }
+        
         //m_UniformBuffer->UpdateBuffer();
     }
     
@@ -107,7 +130,16 @@ namespace Silk
         m_iFarPlane        = m_UniformBuffer->DefineUniform("u_FarPlane"       );
         m_iFocalPoint      = m_UniformBuffer->DefineUniform("u_FocalPoint"     );
         
-        UpdateUniforms(); //Must be called here to set the uniform types
+        m_UniformBuffer->SetUniform(m_iCameraPosition ,Vec3()               );
+        m_UniformBuffer->SetUniform(m_iCameraDirection,Vec3()               );
+        m_UniformBuffer->SetUniform(m_iView           ,Mat4::Identity       );
+        m_UniformBuffer->SetUniform(m_iProjection     ,Mat4::Identity       );
+        m_UniformBuffer->SetUniform(m_iExposire       ,0.0f                 );
+        m_UniformBuffer->SetUniform(m_iFieldOfView    ,Vec2(0,0)            );
+        m_UniformBuffer->SetUniform(m_iNearPlane      ,0.0f                 );
+        m_UniformBuffer->SetUniform(m_iFarPlane       ,0.0f                 );
+        m_UniformBuffer->SetUniform(m_iFocalPoint     ,0.0f                 );
+        m_UniformBuffer->SetUniform(m_iResolution,m_Renderer->GetRasterizer()->GetContext()->GetResolution());
     }
     RenderUniformSet::~RenderUniformSet()
     {

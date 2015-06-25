@@ -8,18 +8,18 @@ namespace Silk
     {
         public:
             Camera(const Vec2& FoV, Scalar NearPlane, Scalar FarPlane) : //Perspective
-                m_Transform(Mat4::Identity)
+                m_Transform(Mat4::Identity), m_InversedTransform(Mat4::Identity)
             {
                 SetPerspective(FoV,NearPlane,FarPlane);
             }
 
             Camera(Scalar Left,Scalar Right,Scalar Top,Scalar Bottom, Scalar Near, Scalar Far) : //Ortho
-                m_Transform(Mat4::Identity)
+                m_Transform(Mat4::Identity), m_InversedTransform(Mat4::Identity)
             {
                 SetOrthographic(Left,Right,Top,Bottom,Near,Far);
             }
 
-            Camera(Mat4 Projection) : m_Projection(Projection), m_Transform(Mat4::Identity) {}
+            Camera(Mat4 Projection) : m_Projection(Projection), m_Transform(Mat4::Identity), m_InversedTransform(Mat4::Identity) {}
             ~Camera() {}
 
             const Mat4& GetTransform () { return m_Transform ; }
@@ -28,8 +28,8 @@ namespace Silk
             bool IsPerspective() const { return  m_IsPerspective; }
             bool IsOrthogonal () const { return !m_IsPerspective; }
         
-            void SetTransform (Mat4 Transform) { m_Transform  = Transform ; m_TrnsChanged = true; m_InverseTransform = m_Transform.Inverse(); }
-            const Mat4& GetInverseTransform() const { return m_InverseTransform; }
+            void SetTransform (Mat4 Transform) { m_Transform  = Transform ; m_TrnsChanged = true; m_InversedTransform = m_Transform.Inverse(); }
+            const Mat4& GetInverseTransform() const { return m_InversedTransform; }
         
             //Plane depth of -1 means use the ones already stored
             void SetPerspective (const Vec2& FoV       ,Scalar Near = -1,Scalar Far = -1);
@@ -57,10 +57,10 @@ namespace Silk
             Scalar GetFocalPoint () const { return m_FocalPoint ; }
         
         protected:
-            bool   m_UpdateProjection;
-            bool   m_IsPerspective   ;
+            bool   m_UpdateProjection ;
+            bool   m_IsPerspective    ;
         
-            Mat4   m_InverseTransform;
+            Mat4   m_InversedTransform;
         
             Mat4   m_Projection ;
             bool   m_ProjChanged;

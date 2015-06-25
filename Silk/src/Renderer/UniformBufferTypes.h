@@ -33,7 +33,8 @@ namespace Silk
             i32 m_LightCount;
         
             bool m_ModelMatrixUpdated;
-            bool m_TexMatrixUpdated;
+            bool m_TexMatrixUpdated  ;
+            bool m_LightsChanged     ;
             Mat4 m_MV;
             Mat4 m_MVP;
             Mat4 m_Model;
