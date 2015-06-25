@@ -232,7 +232,7 @@ namespace Silk
     class Mat4
     {
         public:
-            Mat4();
+            Mat4(Scalar i = 1.0);
             Mat4(Scalar xx,Scalar xy,Scalar xz,Scalar xw,
                  Scalar yx,Scalar yy,Scalar yz,Scalar yw,
                  Scalar zx,Scalar zy,Scalar zz,Scalar zw,

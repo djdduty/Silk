@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <cstdlib>
+#include <math.h>
 
 #include <Window.h>
 
@@ -18,7 +19,7 @@ using namespace Silk;
 
 using namespace TestClient;
 
-#define ObjsSize 650
+#define ObjsSize 1000
 
 int main(int ArgC,char *ArgV[])
 {
@@ -46,7 +47,7 @@ int main(int ArgC,char *ArgV[])
         g->SetFragmentOutput(ShaderGenerator::OFT_COLOR          ,true);
         
         g->AddFragmentModule(const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\nif(NdotL < 0.0) NdotL = -NdotL;[/NdotL]"),0);
-        g->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord);[/SetColor]"),1);
+        g->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord) * NdotL;[/SetColor]"),1);
         
         Win->PollEvents();
         
@@ -130,13 +131,13 @@ int main(int ArgC,char *ArgV[])
         {
             Objs[i] = Render->CreateRenderObject(ROT_MESH,false);
             Objs[i]->SetMesh(mesh,mat);
-            Objs[i]->SetTransform(Translation(Vec3(Random(-300,300),0,Random(-300,300))));
+            Objs[i]->SetTransform(Translation(Vec3(Random(-100,100),0,Random(-100,100))));
             Render->AddRenderObject(Objs[i]);
         }
         
         Scalar Aspect = r->GetContext()->GetResolution().y / r->GetContext()->GetResolution().x;
         
-        Camera* Cam = new Camera(Vec2(60.0f,60.0f * Aspect),0.001f,100.0f);
+        Camera* Cam = new Camera(Vec2(60.0f,60.0f * Aspect),0.001f,2000.0f);
         Cam->SetExposure(1.0f);
         Cam->SetFocalPoint(1.0f);
         Render->SetActiveCamera(Cam);
@@ -154,12 +155,11 @@ int main(int ArgC,char *ArgV[])
             
             r->ClearActiveFramebuffer();
             a += 0.01f;
-            Mat4 Rot0 = Rotation(Vec3(0,1,0),a);
-            Rot0     *= Rotation(Vec3(1,0,0),10.0f);
-            Cam->SetTransform(Rot0 * Translation(Vec3(0,4,10 + a * 5.0f)));
+            Mat4 Rot0 = Rotation(Vec3(1,0,0),10.0f + sin(a) * 0.5f);
+            Cam->SetTransform(Rotation(Vec3(0,1,0),a) * (Rot0 * Translation(Vec3(0,14,10 + a * 2.0f))));
         
             
-            Mat4 T = Mat4::Identity;//Rotation(Vec3(1,0,0),a);
+            Mat4 T = Rotation(Vec3(1,0,0),a);
             for(i32 i = 0;i < ObjsSize;i++)
             {
                 Mat4 cT = Objs[i]->GetTransform();

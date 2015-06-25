@@ -518,9 +518,11 @@ namespace Silk
         Vec3 v1 = rVal + (t * w) + p0.Cross(t);
         return v1;
     }
-    Mat4::Mat4()
+    Mat4::Mat4(Scalar i) : x(i,0,0,0),
+                           y(0,i,0,0),
+                           z(0,0,i,0),
+                           w(0,0,0,i)
     {
-        *this = Identity;
     }
     Mat4::Mat4(Scalar xx,Scalar xy,Scalar xz,Scalar xw,
                Scalar yx,Scalar yy,Scalar yz,Scalar yw,
@@ -709,7 +711,7 @@ namespace Silk
 
     Mat4 Mat4::Transpose() const
     {
-        Mat4 Result;
+        Mat4 Result(0);
         for(u32 i = 0;i < 4;i++)
         {
             for(u32 j = 0;j < 4;j++)
@@ -722,7 +724,7 @@ namespace Silk
 
     Mat4 Mat4::operator*(const Mat4& rVal) const
     {
-        Mat4 r;
+        Mat4 r(0);
         for(i32 i = 0; i < 4; i++)
         {
             for(i32 j = 0;j < 4;j++)
@@ -737,7 +739,7 @@ namespace Silk
     }
     Mat4& Mat4::operator *=(const Mat4& rVal)
     {
-        Mat4 r;
+        Mat4 r(0);
         for(i32 i = 0; i < 4; i++)
         {
             for(i32 j = 0;j < 4;j++)
@@ -786,7 +788,7 @@ namespace Silk
         Vec3 Basis2 = _Basis2.Normalized();
         Vec3 Basis3 = _Basis3.Normalized();
 
-        Mat4 Result;
+        Mat4 Result(0);
         Result[0][0] = Basis1.x;
         Result[1][0] = Basis1.y;
         Result[2][0] = Basis1.z;
@@ -811,29 +813,29 @@ namespace Silk
 
     Mat4 CreateTransform(const Vec3& Eye,const Vec3& _Look,const Vec3& _Up,const Vec3& _Right)
     {
-        Vec3 Look = _Look.Normalized();
-        Vec3 Up = _Up.Normalized();
-        Vec3 Right = _Right.Normalized();
+        Vec3 ZAxis = _Look.Normalized();
+        Vec3 YAxis = _Up.Normalized();
+        Vec3 XAxis = _Right.Normalized();
 
         Mat4 Result;
-        Result[0][0] = Right.x;
-        Result[1][0] = Right.y;
-        Result[2][0] = Right.z;
-        Result[3][0] = -Right.Dot(Eye);
+        Result[0][0] = XAxis.x;
+        Result[0][1] = XAxis.y;
+        Result[0][2] = XAxis.z;
+        Result[0][3] = -XAxis.Dot(Eye);
 
-        Result[0][1] = Up.x;
-        Result[1][1] = Up.y;
-        Result[2][1] = Up.z;
-        Result[3][1] = -Up.Dot(Eye);
+        Result[1][0] = YAxis.x;
+        Result[1][1] = YAxis.y;
+        Result[1][2] = YAxis.z;
+        Result[1][3] = -YAxis.Dot(Eye);
 
-        Result[0][2] = Look.x;
-        Result[1][2] = Look.y;
-        Result[2][2] = Look.z;
-        Result[3][2] = -Look.Dot(Eye);
+        Result[2][0] = ZAxis.x;
+        Result[2][1] = ZAxis.y;
+        Result[2][2] = ZAxis.z;
+        Result[2][3] = -ZAxis.Dot(Eye);
 
-        Result[0][3] = 0.0f;
-        Result[1][3] = 0.0f;
-        Result[2][3] = 0.0f;
+        Result[3][0] = 0.0f;
+        Result[3][1] = 0.0f;
+        Result[3][2] = 0.0f;
         Result[3][3] = 1.0f;
         return Result;
     }
@@ -847,23 +849,23 @@ namespace Silk
 
         Mat4 Result;
         Result[0][0] = XAxis.x;
-        Result[1][0] = XAxis.y;
-        Result[2][0] = XAxis.z;
-        Result[3][0] = -XAxis.Dot(Eye);
+        Result[0][1] = XAxis.y;
+        Result[0][2] = XAxis.z;
+        Result[0][3] = -XAxis.Dot(Eye);
 
-        Result[0][1] = YAxis.x;
+        Result[1][0] = YAxis.x;
         Result[1][1] = YAxis.y;
-        Result[2][1] = YAxis.z;
-        Result[3][1] = -YAxis.Dot(Eye);
+        Result[1][2] = YAxis.z;
+        Result[1][3] = -YAxis.Dot(Eye);
 
-        Result[0][2] = ZAxis.x;
-        Result[1][2] = ZAxis.y;
+        Result[2][0] = ZAxis.x;
+        Result[2][1] = ZAxis.y;
         Result[2][2] = ZAxis.z;
-        Result[3][2] = -ZAxis.Dot(Eye);
+        Result[2][3] = -ZAxis.Dot(Eye);
 
-        Result[0][3] = 0.0f;
-        Result[1][3] = 0.0f;
-        Result[2][3] = 0.0f;
+        Result[3][0] = 0.0f;
+        Result[3][1] = 0.0f;
+        Result[3][2] = 0.0f;
         Result[3][3] = 1.0f;
         return Result;
     }
@@ -872,23 +874,23 @@ namespace Silk
     {
         Mat4 Result;
         Result[0][0] = 2.0f / Width;
-        Result[1][0] = 0.0f;
-        Result[2][0] = 0.0f;
-        Result[3][0] = 0.0f;
-
         Result[0][1] = 0.0f;
-        Result[1][1] = 2.0f / Height;
-        Result[2][1] = 0.0f;
-        Result[3][1] = 0.0f;
-
         Result[0][2] = 0.0f;
-        Result[1][2] = 0.0f;
-        Result[2][2] = 1.0f / (Near - Far);
-        Result[3][2] = Near / (Near - Far);
-
         Result[0][3] = 0.0f;
+
+        Result[1][0] = 0.0f;
+        Result[1][1] = 2.0f / Height;
+        Result[1][2] = 0.0f;
         Result[1][3] = 0.0f;
-        Result[2][3] = 0.0f;
+
+        Result[2][0] = 0.0f;
+        Result[2][1] = 0.0f;
+        Result[2][2] = 1.0f / (Near - Far);
+        Result[2][3] = Near / (Near - Far);
+
+        Result[3][0] = 0.0f;
+        Result[3][1] = 0.0f;
+        Result[3][2] = 0.0f;
         Result[3][3] = 1.0f;
         return Result;
     }
@@ -899,23 +901,23 @@ namespace Silk
         Scalar Length = Far - Near  ;
         Mat4 Result;
         Result[0][0] = 2.0f / Width;
-        Result[1][0] = 0.0f;
-        Result[2][0] = 0.0f;
-        Result[3][0] = 0.0f;
-
         Result[0][1] = 0.0f;
-        Result[1][1] = 2.0f / Height;
-        Result[2][1] = 0.0f;
-        Result[3][1] = 0.0f;
-
         Result[0][2] = 0.0f;
-        Result[1][2] = 0.0f;
-        Result[2][2] = -2.0f / Length;
-        Result[3][2] = Near / (Near - Far);
+        Result[0][3] = 0.0f;
 
-        Result[0][3] = -((Right + Left) / Width );
-        Result[1][3] = -((Top + Bottom) / Height);
-        Result[2][3] = 0.0f;
+        Result[1][0] = 0.0f;
+        Result[1][1] = 2.0f / Height;
+        Result[1][2] = 0.0f;
+        Result[1][3] = 0.0f;
+
+        Result[2][0] = 0.0f;
+        Result[2][1] = 0.0f;
+        Result[2][2] = -2.0f / Length;
+        Result[2][3] = Near / (Near - Far);
+
+        Result[3][0] = -((Right + Left) / Width );
+        Result[3][1] = -((Top + Bottom) / Height);
+        Result[3][2] = 0.0f;
         Result[3][3] = 1.0f;
         return Result;
     }
