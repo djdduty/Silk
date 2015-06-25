@@ -73,13 +73,13 @@ namespace Silk {
         if(Cam)
         {
             m_Uniforms->MV     = Cam->GetTransform ().Inverse() * m_Uniforms->Model;
-            m_Uniforms->MVP    = Cam->GetProjection() * m_Uniforms->MV;
+            m_Uniforms->MVP    = Cam->GetProjection() * m_Uniforms->MV   ;
             m_Uniforms->Normal = m_Uniforms->Model.Inverse().Inverse().Transpose();
             m_Uniforms->Normal[0][3] = m_Uniforms->Normal[1][3] = m_Uniforms->Normal[2][3] = 0.0f;
         }
         else
         {
-            m_Uniforms->MV     = m_Uniforms->MVP = Mat4::Identity;
+            m_Uniforms->MV     = m_Uniforms->MVP = Mat4::Identity       ;
             m_Uniforms->Normal = m_Uniforms->Model.Inverse().Transpose();
             m_Uniforms->Normal[0][3] = m_Uniforms->Normal[1][3] = m_Uniforms->Normal[2][3] = 0.0f;
         }

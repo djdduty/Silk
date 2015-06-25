@@ -46,7 +46,7 @@ int main(int ArgC,char *ArgV[])
         g->SetFragmentOutput(ShaderGenerator::OFT_COLOR          ,true);
         
         g->AddFragmentModule(const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\nif(NdotL < 0.0) NdotL = -NdotL;[/NdotL]"),0);
-        g->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord) * NdotL;[/SetColor]"),1);
+        g->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord);[/SetColor]"),1);
         
         Win->PollEvents();
         
@@ -130,18 +130,18 @@ int main(int ArgC,char *ArgV[])
         {
             Objs[i] = Render->CreateRenderObject(ROT_MESH,false);
             Objs[i]->SetMesh(mesh,mat);
-            Objs[i]->SetTransform(Translation(Vec3(Random(-50,50),0,Random(-50,50))));
+            Objs[i]->SetTransform(Translation(Vec3(Random(-300,300),0,Random(-300,300))));
             Render->AddRenderObject(Objs[i]);
         }
         
         Scalar Aspect = r->GetContext()->GetResolution().y / r->GetContext()->GetResolution().x;
         
-        Camera* Cam = new Camera(Vec2(60.0f,60.0f * Aspect),0.01f,100.0f);
+        Camera* Cam = new Camera(Vec2(60.0f,60.0f * Aspect),0.001f,100.0f);
         Cam->SetExposure(1.0f);
         Cam->SetFocalPoint(1.0f);
         Render->SetActiveCamera(Cam);
         
-        Mat4 cTrans = Translation(Vec3(0,2,-10));
+        Mat4 cTrans = Translation(Vec3(0,4,-10));
         Scalar a = 0.0f;
         f32 ElapsedTime = 0.0;
         f32 LastTime = Win->GetElapsedTime();
@@ -155,10 +155,20 @@ int main(int ArgC,char *ArgV[])
             r->ClearActiveFramebuffer();
             a += 0.01f;
             Mat4 Rot0 = Rotation(Vec3(0,1,0),a);
-            Rot0      = Rotation(Vec3(1,0,0),10.0f);
-            Cam->SetTransform(Translation(Vec3(0,1,10 + a)));
+            Rot0     *= Rotation(Vec3(1,0,0),10.0f);
+            Cam->SetTransform(Rot0 * Translation(Vec3(0,4,10 + a * 5.0f)));
         
-            for(i32 i = 0;i < ObjsSize;i++) Objs[i]->SetTransform(Rotation(Vec3(1,0,0),0.01f) * Objs[i]->GetTransform());
+            
+            Mat4 T = Mat4::Identity;//Rotation(Vec3(1,0,0),a);
+            for(i32 i = 0;i < ObjsSize;i++)
+            {
+                Mat4 cT = Objs[i]->GetTransform();
+                T[0][3] = cT[0][3];
+                T[1][3] = cT[1][3];
+                T[2][3] = cT[2][3];
+                T[3][3] = 1.0f;
+                Objs[i]->SetTransform(T);
+            }
             Render->Render(GL_TRIANGLES);
             
             f32 DeltaTime = Win->GetElapsedTime() - LastTime;
