@@ -29,7 +29,7 @@ namespace Silk {
         m_Mesh = M;
         m_Material = Mat;
         m_ObjectIdentifier->SetMesh(m_Mesh);
-        MarkAsUpdated();
+        //MarkAsUpdated();
     }
 
     void RenderObject::SetMaterial(Material* Mat)

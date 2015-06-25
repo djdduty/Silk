@@ -183,7 +183,7 @@ int main(int ArgC,char *ArgV[])
                 T[1][3] = cT[1][3];
                 T[2][3] = cT[2][3];
                 T[3][3] = 1.0f;
-                Objs[i]->SetTransform(T);
+                //Objs[i]->SetTransform(T);
             }
             GetTimer(ObjectTime);
 
@@ -198,7 +198,7 @@ int main(int ArgC,char *ArgV[])
             Win->SwapBuffers();
             GetTimer(SwapTime);
 
-            f32 FrameTime = (Win->GetElapsedTime() - FrameStart)*1000;
+            f32 FrameTime = (Win->GetElapsedTime() - FrameStart) * 1000;
 
             #define Percent(Time) (Time / FrameTime) * 100.0
             f32 PollPercent   = Percent(PollTime  );
@@ -207,7 +207,7 @@ int main(int ArgC,char *ArgV[])
             f32 RenderPercent = Percent(RenderTime);
             f32 SwapPercent   = Percent(SwapTime  );
 
-            if(FrameTime > 40)
+            if(FrameTime > 50)
             {
                 printf(
                     "Total Frame Time: %0.2fms\n"
@@ -223,6 +223,7 @@ int main(int ArgC,char *ArgV[])
                     RenderPercent, RenderTime,
                     SwapPercent  , SwapTime);
             }
+            printf("FPS: %0.2f\n",1.0f / DeltaTime);
         }
 
         Render->GetRasterizer()->Destroy(mat->GetShader());

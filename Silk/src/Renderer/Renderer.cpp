@@ -68,6 +68,8 @@ namespace Silk
          */
         
         i32 ShaderCount = m_ObjectList->GetShaderCount();
+        
+        SilkObjectVector MeshesRendered;
         for(i32 i = 0;i < ShaderCount;i++)
         {
             Shader*          Shader = m_ObjectList->GetShader        (i);
@@ -97,10 +99,16 @@ namespace Silk
                     else Count = Obj->m_Mesh->GetVertexCount();
                     
                     Obj->m_ObjectIdentifier->Render(PrimType,0,Count);
+                    MeshesRendered.push_back(Obj);
                 }
             }
             
             Shader->Disable();
+        }
+        
+        for(i32 i = 0;i < MeshesRendered.size();i++)
+        {
+            MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
         }
         
         m_UpdatedObjects.clear();

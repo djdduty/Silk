@@ -83,16 +83,16 @@ namespace Silk
         {
             if(m_ModelMatrixUpdated)
             {
-                m_MV  = Cam->GetInverseTransform() * m_Model;
-                m_MVP = Cam->GetProjection      () * m_MV   ;
-                
-                m_UniformBuffer->SetUniform(m_iMV                 ,m_MV          );
-                m_UniformBuffer->SetUniform(m_iMVP                ,m_MVP         );
                 m_UniformBuffer->SetUniform(m_iNormal             ,m_Normal      );
                 m_UniformBuffer->SetUniform(m_iModel              ,m_Model       );
                 
                 m_ModelMatrixUpdated = false;
             }
+            m_MV  = Cam->GetInverseTransform() * m_Model;
+            m_MVP = Cam->GetProjection      () * m_MV   ;
+            
+            m_UniformBuffer->SetUniform(m_iMV ,m_MV) ;
+            m_UniformBuffer->SetUniform(m_iMVP,m_MVP);
         }
         else if(m_ModelMatrixUpdated)
         {
