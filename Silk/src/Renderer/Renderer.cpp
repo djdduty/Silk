@@ -23,6 +23,7 @@ namespace Silk
         
         m_DoRecompileAllShaders = false;
         m_Prefs.MaxLights = 8;
+        m_Stats.FrameID = 0;
         
         m_ActiveCamera = 0;
         
@@ -55,7 +56,7 @@ namespace Silk
     }
     void Renderer::Render(i32 PrimType)
     {
-        if(m_DefaultTextureNeedsUpdate) UpdateDefaultTexture();
+        if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 5 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         SilkObjectVector Lights = m_ObjectList->GetLightList();
@@ -90,7 +91,11 @@ namespace Silk
                         Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
                     }
                     
-                    i32 Count = Obj->m_Mesh->GetVertexCount();
+                    //To do: Batching
+                    i32 Count = 0;
+                    if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
+                    else Count = Obj->m_Mesh->GetVertexCount();
+                    
                     Obj->m_ObjectIdentifier->Render(PrimType,0,Count);
                 }
             }
@@ -99,6 +104,8 @@ namespace Silk
         }
         
         m_UpdatedObjects.clear();
+        
+        m_Stats.FrameID++;
     }
 
     RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene)
@@ -151,7 +158,7 @@ namespace Silk
                 m_DefaultTexture->SetPixel(Vec2(x,y),Vec4(ColorFunc(n + m_DefaultTexturePhase * 0.2f),1.0));
             }
         }
-        m_DefaultTexturePhase += 0.0025f;
+        m_DefaultTexturePhase += 0.025f;
         
         m_DefaultTexture->UpdateTexture();
     }

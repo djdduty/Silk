@@ -9,6 +9,7 @@ namespace Silk
         m_iMV                  = m_UniformBuffer->DefineUniform("u_MV"        );
         m_iMVP                 = m_UniformBuffer->DefineUniform("u_MVP"       );
         m_iModel               = m_UniformBuffer->DefineUniform("u_Model"     );
+        m_iTexture             = m_UniformBuffer->DefineUniform("u_Texture"   );
         m_iNormal              = m_UniformBuffer->DefineUniform("u_Normal"    );
         m_iLightInfluences     = m_UniformBuffer->DefineUniform("u_Lights"    );
         m_iLightInfluenceCount = m_UniformBuffer->DefineUniform("u_LightCount");
@@ -53,6 +54,7 @@ namespace Silk
         m_UniformBuffer->SetUniform(m_iMVP                ,MVP         );
         m_UniformBuffer->SetUniform(m_iNormal             ,Normal      );
         m_UniformBuffer->SetUniform(m_iModel              ,Model       );
+        m_UniformBuffer->SetUniform(m_iTexture            ,Texture     );
         m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
         m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
         //m_UniformBuffer->UpdateBuffer();
@@ -90,7 +92,7 @@ namespace Silk
             
             m_UniformBuffer->SetUniform(m_iCameraPosition ,cPos                 );
             m_UniformBuffer->SetUniform(m_iCameraDirection,cFwd                 );
-            m_UniformBuffer->SetUniform(m_iView           ,cTrans.Inverse()     );
+            m_UniformBuffer->SetUniform(m_iView           ,cTrans               );
             m_UniformBuffer->SetUniform(m_iProjection     ,Cam->GetProjection ());
             m_UniformBuffer->SetUniform(m_iExposire       ,Cam->GetExposure   ());
             m_UniformBuffer->SetUniform(m_iFieldOfView    ,Cam->GetFieldOfView());

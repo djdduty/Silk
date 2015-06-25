@@ -38,7 +38,6 @@ namespace Silk
         
             void AddAttribute    (GLuint AttributeIndex,GLint ComponentCount,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer);
             void SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLint ComponentCount,GLsizeiptr Size,GLvoid* Data,GLenum Usage);
-            void SetIndexBufferAttributeIndex(GLuint AttributeIndex);
         
             void* MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access);
             void UnmapBuffer(GLuint AttributeIndex);
@@ -47,6 +46,7 @@ namespace Silk
         
         protected:
             i32 GetAttributeBufferIndex(i32 AttribIndex) const;
+            void SetIndexBufferAttributeIndex(GLuint AttributeIndex);
             GLuint m_VAO;
             i32 m_IBIndex;
             vector<struct AttributeBuffer> m_Attributes;

@@ -520,11 +520,12 @@ namespace Silk
     }
     Mat4::Mat4()
     {
+        *this = Identity;
     }
     Mat4::Mat4(Scalar xx,Scalar xy,Scalar xz,Scalar xw,
-                     Scalar yx,Scalar yy,Scalar yz,Scalar yw,
-                     Scalar zx,Scalar zy,Scalar zz,Scalar zw,
-                     Scalar wx,Scalar wy,Scalar wz,Scalar ww)
+               Scalar yx,Scalar yy,Scalar yz,Scalar yw,
+               Scalar zx,Scalar zy,Scalar zz,Scalar zw,
+               Scalar wx,Scalar wy,Scalar wz,Scalar ww)
     {
         x = Vec4(xx,xy,xz,xw);
         y = Vec4(yx,yy,yz,yw);

@@ -38,6 +38,7 @@ namespace Silk
             Mesh();
             ~Mesh();
         
+            void SetIndexBuffer   (i32 Count,void* Indices  ,bool IsStatic = true,i32 Stride = 0);
             void SetVertexBuffer  (i32 Count,void* Vertices ,bool IsStatic = true,i32 Stride = 0);
             void SetNormalBuffer  (i32 Count,void* Normals  ,bool IsStatic = true,i32 Stride = 0);
             void SetTangentBuffer (i32 Count,void* Tangents ,bool IsStatic = true,i32 Stride = 0);
@@ -45,6 +46,8 @@ namespace Silk
             void SetTexCoordBuffer(i32 Count,void* TexCoords,bool IsStatic = true,i32 Stride = 0);
         
             i32 GetVertexCount() const;
+            i32 GetIndexCount() const;
+            bool IsIndexed() const { return m_IndexBufferID != -1; }
         
             void AddAttribute(string ShaderName,i32 ShaderIndex,ATTRIB_TYPE Type,i32 ComponentCount,i32 Size,i32 Count,i32 Stride,void* Pointer,bool IsStatic = true);
         
@@ -53,6 +56,7 @@ namespace Silk
         
         protected:
             i32 GetAttributeIndex(i32 ShaderIndex) const;
+            i32 m_IndexBufferID;
             vector<MeshAttribute> m_Attributes;
     };
 };

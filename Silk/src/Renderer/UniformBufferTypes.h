@@ -23,6 +23,7 @@ namespace Silk
             Mat4 MVP;
             Mat4 Model;
             Mat4 Normal;
+            Mat4 Texture;
         
             void UpdateUniforms();
             UniformBuffer* GetUniforms() const { return m_UniformBuffer; }
@@ -37,6 +38,7 @@ namespace Silk
             i32 m_iMVP;                  //Mat4
             i32 m_iModel;                //Mat4
             i32 m_iNormal;               //Mat4
+            i32 m_iTexture;              //Mat4
             i32 m_iLightInfluenceCount;  //int
             i32 m_iLightInfluences;      //Light[]
         

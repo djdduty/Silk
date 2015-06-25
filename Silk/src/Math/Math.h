@@ -234,9 +234,9 @@ namespace Silk
         public:
             Mat4();
             Mat4(Scalar xx,Scalar xy,Scalar xz,Scalar xw,
-                    Scalar yx,Scalar yy,Scalar yz,Scalar yw,
-                    Scalar zx,Scalar zy,Scalar zz,Scalar zw,
-                    Scalar wx,Scalar wy,Scalar wz,Scalar ww);
+                 Scalar yx,Scalar yy,Scalar yz,Scalar yw,
+                 Scalar zx,Scalar zy,Scalar zz,Scalar zw,
+                 Scalar wx,Scalar wy,Scalar wz,Scalar ww);
             Mat4(const Mat4& m);
             ~Mat4();
         

@@ -34,15 +34,25 @@ namespace Silk
         for(i32 i = 0;i < AttribCount;i++)
         {
             const Mesh::MeshAttribute* Attrib = m->GetAttribute(i);
-            AddAttribute(Attrib->ShaderIndex   ,
-                         Attrib->ComponentCount,
-                         Attrib->Size          ,
-                         Attrib->Type          ,
-                         GL_TRUE               ,
-                         Attrib->Stride        ,
-                         0);
+            if(Attrib->ShaderIndex == -1) //Index buffer
+            {
+                AddAttribute(-1,1,Attrib->Size,Attrib->Type,GL_FALSE,Attrib->Stride,0);
+                SupplyBufferData(-1,GL_ELEMENT_ARRAY_BUFFER,1,Attrib->Size,Attrib->Pointer,Attrib->IsStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
             
-            SupplyBufferData(Attrib->ShaderIndex,GL_ARRAY_BUFFER,Attrib->ComponentCount,Attrib->Size,Attrib->Pointer,Attrib->IsStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+                SetIndexBufferAttributeIndex(-1);
+            }
+            else
+            {
+                AddAttribute(Attrib->ShaderIndex   ,
+                             Attrib->ComponentCount,
+                             Attrib->Size          ,
+                             Attrib->Type          ,
+                             GL_TRUE               ,
+                             Attrib->Stride        ,
+                             0);
+                
+                SupplyBufferData(Attrib->ShaderIndex,GL_ARRAY_BUFFER,Attrib->ComponentCount,Attrib->Size,Attrib->Pointer,Attrib->IsStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+            }
         }
         glBindVertexArray(0);
     }
@@ -99,10 +109,14 @@ namespace Silk
             return;
         }
         
-        glBindBuffer(GL_ARRAY_BUFFER,m_Attributes[Index].BufferID);
-        glEnableVertexAttribArray(AttributeIndex);
-        glVertexAttribPointer(AttributeIndex,ComponentCount,m_Attributes[Index].Type,m_Attributes[Index].Normalized,m_Attributes[Index].Stride,0);
+        glBindBuffer(Target,m_Attributes[Index].BufferID);
+        if(AttributeIndex != -1)
+        {
+            glEnableVertexAttribArray(AttributeIndex);
+            glVertexAttribPointer(AttributeIndex,ComponentCount,m_Attributes[Index].Type,m_Attributes[Index].Normalized,m_Attributes[Index].Stride,0);
+        }
         glBufferData(Target,Size,Data,Usage);
+        glBindBuffer(Target,0);
     }
     void OpenGLObjectIdentifier::SetIndexBufferAttributeIndex(GLuint AttributeIndex)
     {
@@ -162,7 +176,12 @@ namespace Silk
 
         glBindVertexArray(m_VAO);
         
-        if(m_IBIndex != -1) glDrawElements(PrimitiveType,Count,m_Attributes[m_IBIndex].Type,(GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize));
+        if(m_IBIndex != -1)
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Attributes[m_IBIndex].BufferID);
+            glDrawElements(PrimitiveType,Count,m_Attributes[m_IBIndex].Type,(GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize));
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+        }
         else glDrawArrays(PrimitiveType,Start,Count);
         
         glBindVertexArray(0);

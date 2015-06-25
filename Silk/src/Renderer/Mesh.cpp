@@ -10,6 +10,10 @@ namespace Silk
     {
     }
     
+    void Mesh::SetIndexBuffer(i32 Count,void* Indices,bool IsStatic,i32 Stride)
+    {
+        AddAttribute("",-1,AT_UINT,1,Count * sizeof(u32),Count,Stride,Indices);
+    }
     void Mesh::SetVertexBuffer(i32 Count,void* Vertices,bool IsStatic,i32 Stride)
     {
         AddAttribute(PositionAttribName,PositionAttribIndex,AT_FLOAT,3,Count * sizeof(f32) * 3,Count,Stride,Vertices);
@@ -32,9 +36,15 @@ namespace Silk
     }
     i32 Mesh::GetVertexCount() const
     {
+        //Optimize: store Idx for the position attribute
         i32 Idx = GetAttributeIndex(PositionAttribIndex);
         if(Idx != -1) return m_Attributes[Idx].Count;
         return -1;
+    }
+    i32 Mesh::GetIndexCount() const
+    {
+        if(m_IndexBufferID != -1) return m_Attributes[m_IndexBufferID].Count;
+        else return -1;
     }
     void Mesh::AddAttribute(string ShaderName,i32 ShaderIndex,ATTRIB_TYPE Type,i32 ComponentCount,i32 Size,i32 Count,i32 Stride,void *Pointer,bool IsStatic)
     {
@@ -56,6 +66,8 @@ namespace Silk
         a.IsStatic       = IsStatic      ;
         
         m_Attributes.push_back(a);
+        
+        if(ShaderIndex == -1) m_IndexBufferID = m_Attributes.size() - 1;
     }
     
     i32 Mesh::GetAttributeIndex(i32 ShaderIndex) const

@@ -18,7 +18,7 @@ using namespace Silk;
 
 using namespace TestClient;
 
-#define ObjsSize 1000
+#define ObjsSize 650
 
 int main(int ArgC,char *ArgV[])
 {
@@ -37,14 +37,16 @@ int main(int ArgC,char *ArgV[])
         g->SetShaderVersion(330);
         g->SetUniformInput(ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         g->SetUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
+        
         g->SetAttributeInput(ShaderGenerator::IAT_POSITION       ,true);
+        g->SetAttributeInput(ShaderGenerator::IAT_NORMAL         ,true);
         g->SetAttributeInput(ShaderGenerator::IAT_TEXCOORD       ,true);
+        
         g->SetTextureInput  (Material::MT_DIFFUSE                ,true);
         g->SetFragmentOutput(ShaderGenerator::OFT_COLOR          ,true);
         
-        g->AddVertexModule  (const_cast<CString>("[SetTexCoords]o_TexCoord = a_TexCoord;[/SetTexCoords]"),0);
-        //g->AddVertexModule  (const_cast<CString>("[SetPosition]gl_Position = vec4(a_Position,1.0);[/SetPosition]"),1);
-        g->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord);[/SetColor]"),0);
+        g->AddFragmentModule(const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\nif(NdotL < 0.0) NdotL = -NdotL;[/NdotL]"),0);
+        g->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord) * NdotL;[/SetColor]"),1);
         
         Win->PollEvents();
         
@@ -69,6 +71,25 @@ int main(int ArgC,char *ArgV[])
              1, 1, 0
         };
         
+        Scalar normBuff [] =
+        {
+            0,1,0,
+            0,1,0,
+            0,1,0,
+            
+            0,1,0,
+            0,1,0,
+            0,1,0,
+            
+            0,0,1,
+            0,0,1,
+            0,0,1,
+            
+            0,0,1,
+            0,0,1,
+            0,0,1,
+        };
+        
         Scalar TexcBuff [] =
         {
             0,1,
@@ -88,8 +109,18 @@ int main(int ArgC,char *ArgV[])
             1,0
         };
         
-        mesh->SetVertexBuffer  (12,vertBuff );
-        mesh->SetTexCoordBuffer(12,TexcBuff );
+        u32 IndiBuff [] =
+        {
+            0 ,1 ,2 ,
+            3 ,4 ,5 ,
+            6 ,7 ,8 ,
+            9 ,10,11
+        };
+        
+        mesh->SetIndexBuffer   (12,IndiBuff);
+        mesh->SetVertexBuffer  (12,vertBuff);
+        mesh->SetNormalBuffer  (12,normBuff);
+        mesh->SetTexCoordBuffer(12,TexcBuff);
 
 
         RenderObject* Objs[ObjsSize];
@@ -99,7 +130,7 @@ int main(int ArgC,char *ArgV[])
         {
             Objs[i] = Render->CreateRenderObject(ROT_MESH,false);
             Objs[i]->SetMesh(mesh,mat);
-            Objs[i]->SetTransform(Translation(Vec3(Random(-500,500),0,Random(-500,500))));
+            Objs[i]->SetTransform(Translation(Vec3(Random(-50,50),0,Random(-50,50))));
             Render->AddRenderObject(Objs[i]);
         }
         
@@ -124,10 +155,10 @@ int main(int ArgC,char *ArgV[])
             r->ClearActiveFramebuffer();
             a += 0.01f;
             Mat4 Rot0 = Rotation(Vec3(0,1,0),a);
-            Rot0     *= Rotation(Vec3(1,0,0),10.0f);
-            Cam->SetTransform(Rot0 * Translation(Vec3(0,1,10 + a)));
+            Rot0      = Rotation(Vec3(1,0,0),10.0f);
+            Cam->SetTransform(Translation(Vec3(0,1,10 + a)));
         
-            for(i32 i = 0;i < ObjsSize;i++) Objs[i]->SetTransform(Objs[i]->GetTransform() * Rotation(Vec3(1,0,0),0.01f));
+            for(i32 i = 0;i < ObjsSize;i++) Objs[i]->SetTransform(Rotation(Vec3(1,0,0),0.01f) * Objs[i]->GetTransform());
             Render->Render(GL_TRIANGLES);
             
             f32 DeltaTime = Win->GetElapsedTime() - LastTime;

@@ -45,6 +45,7 @@ namespace Silk
             void SetMaterial (Material* Mat             );
         
             void SetTransform(Mat4 Transform);
+            void SetTextureTransform(Mat4 Transform);
         
             ModelUniformSet* GetUniformSet() { return m_Uniforms; }
             void UpdateUniforms();

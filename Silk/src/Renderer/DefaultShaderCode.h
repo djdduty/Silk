@@ -125,10 +125,10 @@ namespace Silk
     "\tfloat Cutoff;\n"                 +
     "\tfloat Soften;\n"                 +
     "\tfloat Power;\n"                  +
-    "\tfloat ConstantAttenuation;\n"    +
-    "\tfloat LinearAttenuation;\n"      +
-    "\tfloat QuadraticAttenuation;\n"   +
+    "\tfloat CAttenuation;\n"           +
+    "\tfloat LAttenuation;\n"           +
+    "\tfloat QAttenuation;\n"           +
     "\tint Type;\n"                     +
-    "\tfloat _Padding;\n"               +
+    //"\tfloat _Padding;\n"               +
     "};\n";
 };

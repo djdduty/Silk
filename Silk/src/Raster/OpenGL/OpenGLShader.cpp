@@ -188,6 +188,10 @@ namespace Silk
         if(m_UniformInputs[ShaderGenerator::IUT_RENDERER_UNIFORMS]) PassUniforms(m_Renderer->GetRendererUniformBuffer());
         if(m_UniformInputs[ShaderGenerator::IUT_ENGINE_UNIFORMS  ]) PassUniforms(m_Renderer->GetEngineUniformBuffer  ());
         
+        /*
+         * To do:
+         * Implement system for fragment shader outputs, use color attachments
+         *
         GLenum Buffers[ShaderGenerator::OFT_COUNT];
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++)
         {
@@ -195,6 +199,7 @@ namespace Silk
             else Buffers[i] = GL_NONE;
         }
         glDrawBuffers(ShaderGenerator::OFT_COUNT,Buffers);
+        */
     }
     void OpenGLShader::PassUniforms(UniformBuffer *Uniforms)
     {

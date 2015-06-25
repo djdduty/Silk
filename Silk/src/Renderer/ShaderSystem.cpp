@@ -161,10 +161,10 @@ namespace Silk
         
         if(!SetPosition  && m_AttributeInputsUsed[IAT_POSITION         ]) VertexShader += string("\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n\t" +
                                                                                                          PositionOutName  + " = "                       + PositionAttribName  + ";\n";
-        if(!SetNormal    && m_AttributeInputsUsed[IAT_NORMAL           ]) VertexShader += string("\t") + NormalOutName    + " = u_NormalMatrix * vec4(" + NormalAttribName    + ",1.0f);\n";
-        if(!SetTangent   && m_AttributeInputsUsed[IAT_TANGENT          ]) VertexShader += string("\t") + TangentOutName   + " = u_NormalMatrix * vec4(" + TangentAttribName   + ",1.0f);\n";
+        if(!SetNormal    && m_AttributeInputsUsed[IAT_NORMAL           ]) VertexShader += string("\t") + NormalOutName    + " = (u_Normal * vec4(" + NormalAttribName    + ",1.0)).xyz;\n";
+        if(!SetTangent   && m_AttributeInputsUsed[IAT_TANGENT          ]) VertexShader += string("\t") + TangentOutName   + " = (u_Normal * vec4(" + TangentAttribName   + ",1.0)).xyz;\n";
         if(!SetColor     && m_AttributeInputsUsed[IAT_COLOR            ]) VertexShader += string("\t") + ColorOutName     + " = " + ColorAttribName + ";\n";
-        if(!SetTexC      && m_AttributeInputsUsed[IAT_TEXCOORD         ]) VertexShader += string("\t") + TexCoordOutName  + " = u_TextureMatrix * vec3(" + TexCoordAttribName + ",1.0f);\n";
+        if(!SetTexC      && m_AttributeInputsUsed[IAT_TEXCOORD         ]) VertexShader += string("\t") + TexCoordOutName  + " = (u_Texture * vec4(" + TexCoordAttribName + ",1.0,1.0)).xy;\n";
         if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += string("\t") + RoughnessOutName + " = u_Roughness;\n";
         if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += string("\t") + MetalnessOutName + " = u_Metalness;\n";
         

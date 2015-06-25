@@ -44,7 +44,12 @@ namespace Silk
             {
                 i32 MaxLights;
             };
+            struct RenderStats
+            {
+                i64 FrameID;
+            };
             RenderPreferences m_Prefs;
+            RenderStats m_Stats;
             bool m_DoRecompileAllShaders;
         
             bool m_DefaultTextureNeedsUpdate;
