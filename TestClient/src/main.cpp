@@ -147,18 +147,34 @@ int main(int ArgC,char *ArgV[])
         f32 ElapsedTime = 0.0;
         f32 LastTime = Win->GetElapsedTime();
         i32 FrameCounter = 0;
+
+        #define StartTimer() StartTrans = Win->GetElapsedTime()
+        #define GetTimer(TimeVar) TimeVar = (Win->GetElapsedTime() - StartTrans)*1000.0
+
         while(!Win->GetCloseRequested())
         {
+            f32 FrameStart = Win->GetElapsedTime();
+            f32 StartTrans = 0;
+            f32 TransDelta = 0;
+
+            f32 PollTime   = 0;
+            f32 CameraTime = 0;
+            f32 ObjectTime = 0;
+            f32 RenderTime = 0;
+            f32 SwapTime   = 0;
+
+            StartTimer();
             Win->PollEvents();
-            Aspect = r->GetContext()->GetResolution().y / r->GetContext()->GetResolution().x;
-            Cam->SetFieldOfView(Vec2(60.0f,60.0f * Aspect));
+            GetTimer(PollTime);
             
+            StartTimer();
             r->ClearActiveFramebuffer();
             a += 0.01f;
             Mat4 Rot0 = Rotation(Vec3(1,0,0),10.0f + sin(a) * 0.5f);
             Cam->SetTransform(Rotation(Vec3(0,1,0),a) * (Rot0 * Translation(Vec3(0,14,10 + a * 2.0f))));
-        
-            
+            GetTimer(CameraTime);
+
+            StartTimer();
             Mat4 T = Rotation(Vec3(1,0,0),a);
             for(i32 i = 0;i < ObjsSize;i++)
             {
@@ -169,22 +185,41 @@ int main(int ArgC,char *ArgV[])
                 T[3][3] = 1.0f;
                 Objs[i]->SetTransform(T);
             }
+            GetTimer(ObjectTime);
+
+            StartTimer();
             Render->Render(GL_TRIANGLES);
+            GetTimer(RenderTime);
             
             f32 DeltaTime = Win->GetElapsedTime() - LastTime;
             LastTime = Win->GetElapsedTime();
 
+            StartTimer();
             Win->SwapBuffers();
-            FrameCounter++;
-            ElapsedTime += DeltaTime;
-            if(ElapsedTime >= 1.0f) {
-                printf("FPS: %d Last frame time: %fms\n", FrameCounter, DeltaTime*1000);
-                //if(DeltaTime*1000 > 50) {
-                    //printf("Excessively long frame time of %f\n", DeltaTime*1000);
-                //}
-                FrameCounter = 0;
-                ElapsedTime = 0.0f;
-            }
+            GetTimer(SwapTime);
+
+            f32 FrameTime = (Win->GetElapsedTime() - FrameStart)*1000;
+
+            #define Percent(Time) (Time / FrameTime) * 100.0
+            f32 PollPercent   = Percent(PollTime  );
+            f32 CameraPercent = Percent(CameraTime);
+            f32 ObjectPercent = Percent(ObjectTime);
+            f32 RenderPercent = Percent(RenderTime);
+            f32 SwapPercent   = Percent(SwapTime  );
+
+            printf(
+                "Total Frame Time: %0.2fms\n"
+                "\tPoll Events        : %0.2f\%% Total: %0.2fms\n"
+                "\tCamera Transforming: %0.2f\%% Total: %0.2fms\n"
+                "\tObject Transforming: %0.2f\%% Total: %0.2fms\n"
+                "\tRender Calls       : %0.2f\%% Total: %0.2fms\n"
+                "\tSwapping Buffers   : %0.2f\%% Total: %0.2fms\n\n", 
+                FrameTime    , 
+                PollPercent  , PollTime  ,
+                CameraPercent, CameraTime,
+                ObjectPercent, ObjectTime,
+                RenderPercent, RenderTime,
+                SwapPercent  , SwapTime);
         }
 
         Render->GetRasterizer()->Destroy(mat->GetShader());
