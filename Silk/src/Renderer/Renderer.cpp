@@ -56,7 +56,7 @@ namespace Silk
     }
     void Renderer::Render(i32 PrimType)
     {
-        if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 5 == 0) UpdateDefaultTexture();
+        //if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 5 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         SilkObjectVector Lights = m_ObjectList->GetLightList();
@@ -85,12 +85,12 @@ namespace Silk
                     Shader->UseMaterial(Obj->GetMaterial());
                     
                     //Pass object uniforms
+                    
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
                     {
                         Obj->UpdateUniforms();
                         Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
                     }
-                    
                     //To do: Batching
                     i32 Count = 0;
                     if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();

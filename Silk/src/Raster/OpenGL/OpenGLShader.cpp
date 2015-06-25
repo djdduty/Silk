@@ -221,6 +221,7 @@ namespace Silk
         for(i32 i = 0;i < UniformCount;i++)
         {
             UniformDef* Def = Uniforms->GetUniformInfo(i);
+            
             if(m_ID + 1 >= Def->PassCalls.size())
             {
                 while(m_ID + 1 >= Def->PassCalls.size()) Def->PassCalls.push_back(0);

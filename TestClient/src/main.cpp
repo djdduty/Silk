@@ -178,7 +178,10 @@ int main(int ArgC,char *ArgV[])
             FrameCounter++;
             ElapsedTime += DeltaTime;
             if(ElapsedTime >= 1.0f) {
-                printf("FPS: %d\n", FrameCounter);
+                printf("FPS: %d Last frame time: %fms\n", FrameCounter, DeltaTime*1000);
+                //if(DeltaTime*1000 > 50) {
+                    //printf("Excessively long frame time of %f\n", DeltaTime*1000);
+                //}
                 FrameCounter = 0;
                 ElapsedTime = 0.0f;
             }

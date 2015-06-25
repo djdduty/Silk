@@ -61,6 +61,8 @@ namespace Silk {
     void RenderObject::SetTransform(Mat4 Transform)
     {
         m_Uniforms->Model = Transform;
+        m_Uniforms->Normal = m_Uniforms->Model.Inverse().Transpose();
+        m_Uniforms->Normal[0][3] = m_Uniforms->Normal[1][3] = m_Uniforms->Normal[2][3] = 0.0f;
         MarkAsUpdated();
     }
     void RenderObject::SetTextureTransform(Mat4 Transform)
@@ -72,19 +74,14 @@ namespace Silk {
         Camera* Cam = m_Renderer->GetActiveCamera();
         if(Cam)
         {
-            m_Uniforms->MV     = Cam->GetTransform ().Inverse() * m_Uniforms->Model;
-            m_Uniforms->MVP    = Cam->GetProjection() * m_Uniforms->MV   ;
-            m_Uniforms->Normal = m_Uniforms->Model.Inverse().Inverse().Transpose();
-            m_Uniforms->Normal[0][3] = m_Uniforms->Normal[1][3] = m_Uniforms->Normal[2][3] = 0.0f;
+            m_Uniforms->MV     = Cam->GetInversed  () * m_Uniforms->Model ;
+            m_Uniforms->MVP    = Cam->GetProjection() * m_Uniforms->MV    ;
         }
         else
         {
             m_Uniforms->MV     = m_Uniforms->MVP = Mat4::Identity       ;
-            m_Uniforms->Normal = m_Uniforms->Model.Inverse().Transpose();
-            m_Uniforms->Normal[0][3] = m_Uniforms->Normal[1][3] = m_Uniforms->Normal[2][3] = 0.0f;
         }
-        
-        
+
         m_Uniforms->UpdateUniforms();
     }
 
