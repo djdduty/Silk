@@ -36,6 +36,7 @@ int main(int ArgC,char *ArgV[])
         
         ShaderGenerator* g = new ShaderGenerator(Render);
         g->SetShaderVersion(330);
+        g->SetAllowInstancing(true);
         g->SetUniformInput(ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         g->SetUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
         
@@ -171,7 +172,7 @@ int main(int ArgC,char *ArgV[])
             r->ClearActiveFramebuffer();
             a += 0.01f;
             Mat4 Rot0 = Rotation(Vec3(1,0,0),10.0f + sin(a) * 0.5f);
-            Cam->SetTransform(Rotation(Vec3(0,1,0),a) * (Rot0 * Translation(Vec3(0,14,10 + a * 2.0f))));
+            Cam->SetTransform(Rotation(Vec3(0,1,0),a) * (Rot0 * Translation(Vec3(0,2,3 + a * 2.0f))));
             GetTimer(CameraTime);
 
             StartTimer();
@@ -183,7 +184,8 @@ int main(int ArgC,char *ArgV[])
                 T[1][3] = cT[1][3];
                 T[2][3] = cT[2][3];
                 T[3][3] = 1.0f;
-                //Objs[i]->SetTransform(T);
+                Objs[i]->SetTransform(T);
+                Objs[i]->SetTextureTransform(Rotation(Vec3(0,0,1),a));
             }
             GetTimer(ObjectTime);
 

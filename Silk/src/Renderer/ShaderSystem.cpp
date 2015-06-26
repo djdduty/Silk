@@ -23,6 +23,7 @@ namespace Silk
     {
         Reset();
         m_NullModelUniforms = new ModelUniformSet(r);
+        m_AllowInstancing = false;
     }
     ShaderGenerator::~ShaderGenerator()
     {
@@ -35,6 +36,7 @@ namespace Silk
         m_LightingMode     = LM_FLAT;
         m_MaterialUniforms = 0;
         m_UserUniforms     = 0;
+        m_AllowInstancing  = false;
         for(i32 i = 0;i < Material::MT_COUNT;i++) m_MapTypesUsed[i] = false;
         for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeInputsUsed  [i] = false;
         for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed    [i] = false;
@@ -52,6 +54,13 @@ namespace Silk
     void ShaderGenerator::AddFragmentModule(CString Code,i32 Index)
     {
         if(ReadBlocks(Code,Index,2) < 0) ERROR("Invalid shader module, no code blocks found.\n");
+    }
+    void ShaderGenerator::SetAllowInstancing(bool Flag)
+    {
+        m_AllowInstancing = Flag;
+        m_AttributeInputsUsed[IAT_INSTANCE_TRANSFORM        ] =
+        m_AttributeInputsUsed[IAT_INSTANCE_NORMAL_TRANSFORM ] =
+        m_AttributeInputsUsed[IAT_INSTANCE_TEXTURE_TRANSFORM] = Flag;
     }
     Shader* ShaderGenerator::Generate()
     {
@@ -78,25 +87,33 @@ namespace Silk
     }
     string ShaderGenerator::GenerateVertexShader()
     {
-        CodeBlock* SetPosition  = 0;
-        CodeBlock* SetNormal    = 0;
-        CodeBlock* SetTangent   = 0;
-        CodeBlock* SetColor     = 0;
-        CodeBlock* SetTexC      = 0;
-        CodeBlock* SetRoughness = 0;
-        CodeBlock* SetMetalness = 0;
+        CodeBlock* SetPositionI  = 0;
+        CodeBlock* SetNormalI    = 0;
+        CodeBlock* SetTangentI   = 0;
+        CodeBlock* SetTexCI      = 0;
+        CodeBlock* SetPositionNI = 0;
+        CodeBlock* SetNormalNI   = 0;
+        CodeBlock* SetTangentNI  = 0;
+        CodeBlock* SetTexCNI     = 0;
+        CodeBlock* SetColor      = 0;
+        CodeBlock* SetRoughness  = 0;
+        CodeBlock* SetMetalness  = 0;
         
         vector<i32> UnsortedBlockIndices;
         
         for(i32 i = 0;i < m_VertexBlocks.size();i++)
         {
-            if     (m_VertexBlocks[i].ID == "SetPosition"      ) SetPosition  = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetNormal"        ) SetNormal    = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetTangent"       ) SetTangent   = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetColor"         ) SetColor     = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetTexCoords"     ) SetTexC      = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetRoughness"     ) SetRoughness = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetMetalness"     ) SetMetalness = &m_VertexBlocks[i];
+            if     (m_VertexBlocks[i].ID == "SetPosition"          ) SetPositionNI = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetNormal"            ) SetNormalNI   = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTangent"           ) SetTangentNI  = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTexCoords"         ) SetTexCNI     = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetPositionInstanced" ) SetPositionI  = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetNormalInstanced"   ) SetNormalI    = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTangentInstanced"  ) SetTangentI   = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTexCoordsInstanced") SetTexCI      = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetColor"             ) SetColor      = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetRoughness"         ) SetRoughness  = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetMetalness"         ) SetMetalness  = &m_VertexBlocks[i];
             
             UnsortedBlockIndices.push_back(i);
         }
@@ -110,27 +127,29 @@ namespace Silk
         {
             if(m_LightingMode == LM_FLAT) SetAttributeInput(IAT_COLOR,true);
         }
-        
-        /* Default code dependencies */
-        if(!SetPosition                       ) m_UniformInputsUsed[IUT_RENDERER_UNIFORMS] = true;
-        
-        if((!SetNormal  && m_AttributeInputsUsed[IAT_NORMAL  ])
-        || (!SetTangent && m_AttributeInputsUsed[IAT_TANGENT ])
-        || (!SetTexC    && m_AttributeInputsUsed[IAT_TEXCOORD])) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = true;
-        
+
         string VertexShader;
         VertexShader += FormatString("#version %d\n",m_ShaderVersion);
+        
         /*
          * Attribute inputs
          */
         VertexShader += "\n";
-        if(m_AttributeInputsUsed[IAT_POSITION   ]) VertexShader += string("in vec3 " ) + PositionAttribName   + ";\n";
-        if(m_AttributeInputsUsed[IAT_NORMAL     ]) VertexShader += string("in vec3 " ) + NormalAttribName     + ";\n";
-        if(m_AttributeInputsUsed[IAT_TANGENT    ]) VertexShader += string("in vec3 " ) + TangentAttribName    + ";\n";
-        if(m_AttributeInputsUsed[IAT_COLOR      ]) VertexShader += string("in vec4 " ) + ColorAttribName      + ";\n";
-        if(m_AttributeInputsUsed[IAT_TEXCOORD   ]) VertexShader += string("in vec2 " ) + TexCoordAttribName   + ";\n";
-        if(m_AttributeInputsUsed[IAT_BONE_IDX   ]) VertexShader += string("in ivec4 ") + BoneIndexAttribName  + ";\n";
-        if(m_AttributeInputsUsed[IAT_BONE_WEIGHT]) VertexShader += string("in vec4 " ) + BoneWeightAttribName + ";\n";
+        if(m_AttributeInputsUsed[IAT_POSITION                  ]) VertexShader += string("in vec3 " ) + PositionAttribName                 + ";\n";
+        if(m_AttributeInputsUsed[IAT_NORMAL                    ]) VertexShader += string("in vec3 " ) + NormalAttribName                   + ";\n";
+        if(m_AttributeInputsUsed[IAT_TANGENT                   ]) VertexShader += string("in vec3 " ) + TangentAttribName                  + ";\n";
+        if(m_AttributeInputsUsed[IAT_COLOR                     ]) VertexShader += string("in vec4 " ) + ColorAttribName                    + ";\n";
+        if(m_AttributeInputsUsed[IAT_TEXCOORD                  ]) VertexShader += string("in vec2 " ) + TexCoordAttribName                 + ";\n";
+        if(m_AttributeInputsUsed[IAT_BONE_IDX                  ]) VertexShader += string("in ivec4 ") + BoneIndexAttribName                + ";\n";
+        if(m_AttributeInputsUsed[IAT_BONE_WEIGHT               ]) VertexShader += string("in vec4 " ) + BoneWeightAttribName               + ";\n";
+        if(m_AttributeInputsUsed[IAT_INSTANCE_TRANSFORM        ]) VertexShader += string("in mat4 " ) + InstanceTransformAttribName        + ";\n";
+        if(m_AttributeInputsUsed[IAT_INSTANCE_NORMAL_TRANSFORM ]) VertexShader += string("in mat4 " ) + InstanceNormalTransformAttribName  + ";\n";
+        if(m_AttributeInputsUsed[IAT_INSTANCE_TEXTURE_TRANSFORM]) VertexShader += string("in mat4 " ) + InstanceTextureTransformAttribName + ";\n";
+
+        
+        
+        /* Uniform dependencies */
+        m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = m_AllowInstancing;
         
         /*
          * Uniform inputs
@@ -139,6 +158,7 @@ namespace Silk
         {
             if(m_UniformInputsUsed[i])
             {
+                VertexShader += "\n";
                 VertexShader += GenerateInputBlock((INPUT_UNIFORM_TYPE)i);
             }
         }
@@ -159,14 +179,29 @@ namespace Silk
         VertexShader += "\n";
         VertexShader += "void main()\n{\n";
         
-        if(!SetPosition  && m_AttributeInputsUsed[IAT_POSITION         ]) VertexShader += string("\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n\t" +
-                                                                                                         PositionOutName  + " = "                       + PositionAttribName  + ";\n";
-        if(!SetNormal    && m_AttributeInputsUsed[IAT_NORMAL           ]) VertexShader += string("\t") + NormalOutName    + " = (u_Normal * vec4(" + NormalAttribName    + ",1.0)).xyz;\n";
-        if(!SetTangent   && m_AttributeInputsUsed[IAT_TANGENT          ]) VertexShader += string("\t") + TangentOutName   + " = (u_Normal * vec4(" + TangentAttribName   + ",1.0)).xyz;\n";
-        if(!SetColor     && m_AttributeInputsUsed[IAT_COLOR            ]) VertexShader += string("\t") + ColorOutName     + " = " + ColorAttribName + ";\n";
-        if(!SetTexC      && m_AttributeInputsUsed[IAT_TEXCOORD         ]) VertexShader += string("\t") + TexCoordOutName  + " = (u_Texture * vec4(" + TexCoordAttribName + ",1.0,1.0)).xy;\n";
-        if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += string("\t") + RoughnessOutName + " = u_Roughness;\n";
-        if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += string("\t") + MetalnessOutName + " = u_Metalness;\n";
+        if(m_AllowInstancing)
+        {
+            VertexShader += IsInstancedConditional_0;
+            if(!SetPositionI ) VertexShader += DefaultPositionInstancedFunc   ;
+            if(!SetNormalI   ) VertexShader += DefaultNormalInstancedFunc     ;
+            if(!SetTexCI     ) VertexShader += DefaultTexCoordInstancedFunc   ;
+            VertexShader += IsInstancedConditional_1;
+            if(!SetPositionNI) VertexShader += DefaultPositionNonInstancedFunc;
+            if(!SetNormalNI  ) VertexShader += DefaultNormalNonInstancedFunc  ;
+            if(!SetTexCNI    ) VertexShader += DefaultTexCoordNonInstancedFunc;
+            VertexShader += IsInstancedConditional_2;
+        }
+        else
+        {
+            if(!SetPositionNI) VertexShader += DefaultPositionNonInstancedFunc;
+            if(!SetNormalNI  ) VertexShader += DefaultNormalNonInstancedFunc  ;
+            if(!SetTexCNI    ) VertexShader += DefaultTexCoordNonInstancedFunc;
+        }
+        
+        
+        if(!SetColor     && m_AttributeInputsUsed[IAT_COLOR            ]) VertexShader += DefaultColorFunc    ;
+        if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultRoughnessFunc;
+        if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultMetalnessFunc;
         
         /*
          *

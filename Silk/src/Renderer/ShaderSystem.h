@@ -4,13 +4,16 @@
 #include <vector>
 using namespace std;
 
-#define PositionAttribName   "a_Position"
-#define NormalAttribName     "a_Normal"
-#define TangentAttribName    "a_Tangent"
-#define ColorAttribName      "a_Color"
-#define TexCoordAttribName   "a_TexCoord"
-#define BoneWeightAttribName "a_Weights"
-#define BoneIndexAttribName  "a_BoneIDs"
+#define PositionAttribName                  "a_Position"
+#define NormalAttribName                    "a_Normal"
+#define TangentAttribName                   "a_Tangent"
+#define ColorAttribName                     "a_Color"
+#define TexCoordAttribName                  "a_TexCoord"
+#define BoneWeightAttribName                "a_Weights"
+#define BoneIndexAttribName                 "a_BoneIDs"
+#define InstanceTransformAttribName         "a_InstanceTransform"
+#define InstanceNormalTransformAttribName   "a_InstanceNormalTransform"
+#define InstanceTextureTransformAttribName   "a_InstanceTextureTransform"
 
 #define PositionOutName   "o_Position"
 #define NormalOutName     "o_Normal"
@@ -67,6 +70,9 @@ namespace Silk
                 IAT_TEXCOORD,
                 IAT_BONE_IDX,
                 IAT_BONE_WEIGHT,
+                IAT_INSTANCE_TRANSFORM,
+                IAT_INSTANCE_NORMAL_TRANSFORM,
+                IAT_INSTANCE_TEXTURE_TRANSFORM,
                 IAT_COUNT,
             };
             enum OUTPUT_FRAGMENT_TYPE
@@ -101,6 +107,7 @@ namespace Silk
             void AddGeometryModule(CString Code,i32 Index);
             void AddFragmentModule(CString Code,i32 Index);
         
+            void SetAllowInstancing(bool Flag);
             void SetTextureInput  (Material::MAP_TYPE   Type,bool Flag) { m_MapTypesUsed       [Type] = Flag; }
             void SetUniformInput  (INPUT_UNIFORM_TYPE   Type,bool Flag) { m_UniformInputsUsed  [Type] = Flag; }
             void SetAttributeInput(INPUT_ATTRIBUTE_TYPE Type,bool Flag) { m_AttributeInputsUsed[Type] = Flag; }
@@ -130,6 +137,7 @@ namespace Silk
             
             i32                 m_ShaderVersion;
 
+            bool                m_AllowInstancing;
             bool                m_MapTypesUsed[Material::MT_COUNT];
             bool                m_UniformInputsUsed[IUT_COUNT];
             bool                m_AttributeInputsUsed[IAT_COUNT];

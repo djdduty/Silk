@@ -3,6 +3,57 @@
 namespace Silk
 {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * *\
+     *  D E F A U L T       O U T P U T      S E T T E R S *
+    \* * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    
+    static string IsInstancedConditional_0 =
+    string("\tif(u_IsInstanced == 1)\n"
+           "\t{\n");
+    static string IsInstancedConditional_1 =
+    string("\t}\n"
+           "\telse\n"
+           "\t{\n");
+    static string IsInstancedConditional_2 =
+    string("\t}\n");
+    
+    static string DefaultPositionInstancedFunc =
+    string("\t\tvec4 __Pos = (") + InstanceTransformAttribName + " * vec4(" + PositionAttribName + ",1.0));\n" +
+           "\t\tgl_Position = u_MVP * __Pos;\n"
+           "\t\t" + PositionOutName + " = __Pos.xyz;\n";
+    
+    static string DefaultPositionNonInstancedFunc =
+    string("\t\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n"
+           "\t\t" + PositionOutName + " = (u_Model * vec4(" PositionAttribName + ",1.0)).xyz;\n";
+    
+    static string DefaultNormalInstancedFunc =
+    string("\t\t") + NormalOutName + " = (" + InstanceNormalTransformAttribName + " * vec4(" + NormalAttribName + ",1.0)).xyz;\n";
+    
+    static string DefaultNormalNonInstancedFunc =
+    string("\t\t") + NormalOutName + " = (u_Normal * vec4(" + NormalAttribName + ",1.0)).xyz;\n";
+    
+    static string DefaultTangentInstancedFunc =
+    string("\t\t") + TangentOutName + " = (" + InstanceNormalTransformAttribName + " * vec4(" + TangentAttribName + ",1.0)).xyz;\n";
+    
+    static string DefaultTangentNonInstancedFunc =
+    string("\t\t") + TangentOutName + " = (u_Normal * vec4(" + TangentAttribName + ",1.0)).xyz;\n";
+    
+    static string DefaultTexCoordInstancedFunc =
+    string("\t\t") + TexCoordOutName + " = (" + InstanceTextureTransformAttribName + " * vec4(" + TexCoordAttribName + ",0.0,1.0)).xy;\n";
+    
+    static string DefaultTexCoordNonInstancedFunc =
+    string("\t\t") + TexCoordOutName + " = (u_Texture * vec4(" + TexCoordAttribName + ",0.0,1.0)).xy;\n";
+    
+    static string DefaultColorFunc =
+    string("\t") + ColorOutName     + " = " + ColorAttribName + ";\n";
+    
+    static string DefaultRoughnessFunc =
+    string("\t") + RoughnessOutName + " = u_Roughness;\n";
+    
+    static string DefaultMetalnessFunc =
+    string("\t") + MetalnessOutName + " = u_Metalness;\n";
+    
+    
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * *\
      *  D E F A U L T    F O R W A R D    L I G H T I N G  *
     \* * * * * * * * * * * * * * * * * * * * * * * * * * * */
     static string DefaultFragmentShaderBase_0 =

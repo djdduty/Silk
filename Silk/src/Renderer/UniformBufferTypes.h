@@ -24,6 +24,8 @@ namespace Silk
             void SetTextureMatrix(const Mat4& T);
             const Mat4& GetTextureMatrix() const { return m_Texture; }
         
+            void SetIsInstanced(bool Flag);
+        
             void UpdateUniforms();
             UniformBuffer* GetUniforms() const { return m_UniformBuffer; }
         
@@ -35,11 +37,14 @@ namespace Silk
             bool m_ModelMatrixUpdated;
             bool m_TexMatrixUpdated  ;
             bool m_LightsChanged     ;
+            bool m_IsInstancedChanged;
+        
             Mat4 m_MV;
             Mat4 m_MVP;
             Mat4 m_Model;
             Mat4 m_Normal;
             Mat4 m_Texture;
+            bool m_HasInstances;
         
             UniformBuffer* m_UniformBuffer;
             i32 m_iMV;                   //Mat4
@@ -47,6 +52,7 @@ namespace Silk
             i32 m_iModel;                //Mat4
             i32 m_iNormal;               //Mat4
             i32 m_iTexture;              //Mat4
+            i32 m_iIsInstanced;          //int
             i32 m_iLightInfluenceCount;  //int
             i32 m_iLightInfluences;      //Light[]
         

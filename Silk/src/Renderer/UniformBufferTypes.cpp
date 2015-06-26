@@ -6,13 +6,14 @@ namespace Silk
     ModelUniformSet::ModelUniformSet(Renderer* r) : m_Renderer(r)
     {
         m_UniformBuffer = r->GetRasterizer()->CreateUniformBuffer(ShaderGenerator::IUT_OBJECT_UNIFORMS);
-        m_iMV                  = m_UniformBuffer->DefineUniform("u_MV"        );
-        m_iMVP                 = m_UniformBuffer->DefineUniform("u_MVP"       );
-        m_iModel               = m_UniformBuffer->DefineUniform("u_Model"     );
-        m_iTexture             = m_UniformBuffer->DefineUniform("u_Texture"   );
-        m_iNormal              = m_UniformBuffer->DefineUniform("u_Normal"    );
-        m_iLightInfluences     = m_UniformBuffer->DefineUniform("u_Lights"    );
-        m_iLightInfluenceCount = m_UniformBuffer->DefineUniform("u_LightCount");
+        m_iMV                  = m_UniformBuffer->DefineUniform("u_MV"         );
+        m_iMVP                 = m_UniformBuffer->DefineUniform("u_MVP"        );
+        m_iModel               = m_UniformBuffer->DefineUniform("u_Model"      );
+        m_iTexture             = m_UniformBuffer->DefineUniform("u_Texture"    );
+        m_iNormal              = m_UniformBuffer->DefineUniform("u_Normal"     );
+        m_iIsInstanced         = m_UniformBuffer->DefineUniform("u_IsInstanced");
+        m_iLightInfluences     = m_UniformBuffer->DefineUniform("u_Lights"     );
+        m_iLightInfluenceCount = m_UniformBuffer->DefineUniform("u_LightCount" );
         
         m_NullLight = new Light();
         m_NullLight->m_Power = 0.0f;
@@ -25,6 +26,7 @@ namespace Silk
         m_Normal  = Mat4::Identity;
         
         m_TexMatrixUpdated = m_ModelMatrixUpdated = true;
+        m_HasInstances = false;
         
         SetLights(vector<Light*>());
         
@@ -33,6 +35,7 @@ namespace Silk
         m_UniformBuffer->SetUniform(m_iNormal             ,m_Normal    );
         m_UniformBuffer->SetUniform(m_iModel              ,m_Model     );
         m_UniformBuffer->SetUniform(m_iTexture            ,m_Texture   );
+        m_UniformBuffer->SetUniform(m_iIsInstanced        ,0           );
         m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
         m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
     }
@@ -76,6 +79,11 @@ namespace Silk
         m_TexMatrixUpdated = true;
         m_Texture = T;
     }
+    void ModelUniformSet::SetIsInstanced(bool Flag)
+    {
+        m_HasInstances = Flag;
+        m_IsInstancedChanged = true;
+    }
     void ModelUniformSet::UpdateUniforms()
     {
         Camera* Cam = m_Renderer->GetActiveCamera();
@@ -111,6 +119,12 @@ namespace Silk
             m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
             m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
             m_LightsChanged = false;
+        }
+        
+        if(m_IsInstancedChanged)
+        {
+            m_UniformBuffer->SetUniform(m_iIsInstanced,1);
+            m_IsInstancedChanged = false;
         }
         
         //m_UniformBuffer->UpdateBuffer();
