@@ -4,6 +4,17 @@
 #include <vector>
 using namespace std;
 
+#define PositionAttribIndex                 0
+#define NormalAttribIndex                   1
+#define TangentAttribIndex                  2
+#define ColorAttribIndex                    3
+#define TexCoordAttribIndex                 4
+#define BoneWeightAttribIndex               5
+#define BoneIndexAttribIndex                6
+#define InstanceTransformAttribIndex        7
+#define InstanceNormalTransformAttribIndex  11
+#define InstanceTextureTransformAttribIndex 15
+
 #define PositionAttribName                  "a_Position"
 #define NormalAttribName                    "a_Normal"
 #define TangentAttribName                   "a_Tangent"
@@ -36,14 +47,6 @@ using namespace std;
 #define FragmentTangentOutputName   "f_Tangent"
 #define FragmentMaterial0OutputName "f_Material0"
 #define FragmentMaterial1OutputName "f_Material1"
-
-#define PositionAttribIndex   0
-#define NormalAttribIndex     1
-#define TangentAttribIndex    2
-#define ColorAttribIndex      3
-#define TexCoordAttribIndex   4
-#define BoneWeightAttribIndex 5
-#define BoneIndexAttribIndex  6
 
 namespace Silk
 {
@@ -109,10 +112,11 @@ namespace Silk
         
             void SetAllowInstancing(bool Flag);
             void SetAllowInstancedTextureMatrix(bool Flag) { m_AllowInstancedTextureMatrix = Flag; }
-            void SetTextureInput  (Material::MAP_TYPE   Type,bool Flag) { m_MapTypesUsed       [Type] = Flag; }
-            void SetUniformInput  (INPUT_UNIFORM_TYPE   Type,bool Flag) { m_UniformInputsUsed  [Type] = Flag; }
-            void SetAttributeInput(INPUT_ATTRIBUTE_TYPE Type,bool Flag) { m_AttributeInputsUsed[Type] = Flag; }
-            void SetFragmentOutput(OUTPUT_FRAGMENT_TYPE Type,bool Flag) { m_FragmentOutputsUsed[Type] = Flag; }
+            void SetTextureInput   (Material::MAP_TYPE   Type,bool Flag) { m_MapTypesUsed        [Type] = Flag; }
+            void SetUniformInput   (INPUT_UNIFORM_TYPE   Type,bool Flag) { m_UniformInputsUsed   [Type] = Flag; }
+            void SetAttributeInput (INPUT_ATTRIBUTE_TYPE Type,bool Flag) { m_AttributeInputsUsed [Type] = Flag; }
+            void SetAttributeOutput(INPUT_ATTRIBUTE_TYPE Type,bool Flag) { m_AttributeOutputsUsed[Type] = Flag; }
+            void SetFragmentOutput (OUTPUT_FRAGMENT_TYPE Type,bool Flag) { m_FragmentOutputsUsed [Type] = Flag; }
         
             void SetShaderVersion(i32 Version) { m_ShaderVersion = Version; }
         
@@ -140,14 +144,17 @@ namespace Silk
 
             bool                m_AllowInstancing;
             bool                m_AllowInstancedTextureMatrix;
-            bool                m_MapTypesUsed[Material::MT_COUNT];
-            bool                m_UniformInputsUsed[IUT_COUNT];
-            bool                m_AttributeInputsUsed[IAT_COUNT];
-            bool                m_FragmentOutputsUsed[OFT_COUNT];
-            UniformBuffer*      m_MaterialUniforms;
-            UniformBuffer*      m_UserUniforms;
+        
+            bool                m_MapTypesUsed        [Material::MT_COUNT];
+            bool                m_UniformInputsUsed   [IUT_COUNT         ];
+            bool                m_AttributeInputsUsed [IAT_COUNT         ];
+            bool                m_AttributeOutputsUsed[IAT_COUNT         ];
+            bool                m_FragmentOutputsUsed [OFT_COUNT         ];
+            
+            UniformBuffer*      m_MaterialUniforms ;
+            UniformBuffer*      m_UserUniforms     ;
             ModelUniformSet*    m_NullModelUniforms;
-            LIGHTING_MODES      m_LightingMode;
+            LIGHTING_MODES      m_LightingMode     ;
         
             Renderer* m_Renderer;
             i32 m_ShadersGenerated;

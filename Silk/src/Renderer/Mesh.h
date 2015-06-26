@@ -7,6 +7,7 @@ using namespace std;
 
 namespace Silk
 {
+    class RenderObject;
     class Mesh
     {
         public:
@@ -36,7 +37,10 @@ namespace Silk
             };
         
             Mesh();
-            ~Mesh();
+        
+            i32 AddRef() { m_RefCount++; return m_RefCount; }
+            i32 Refs() const { return m_RefCount; }
+            void Destroy();
         
             void SetIndexBuffer   (i32 Count,void* Indices  ,bool IsStatic = true,i32 Stride = 0);
             void SetVertexBuffer  (i32 Count,void* Vertices ,bool IsStatic = true,i32 Stride = 0);
@@ -55,9 +59,16 @@ namespace Silk
             const MeshAttribute* GetAttribute(i32 Index) const { return &m_Attributes[Index]; }
         
         protected:
+            friend class RenderObject;
+            friend class Renderer;
+            ~Mesh();
+            RenderObject* m_Obj;
             i32 GetAttributeIndex(i32 ShaderIndex) const;
             i32 m_IndexBufferID;
+            i32 m_RefCount;
             vector<MeshAttribute> m_Attributes;
+            vector<RenderObject*> m_Instances;
+            
     };
 };
 

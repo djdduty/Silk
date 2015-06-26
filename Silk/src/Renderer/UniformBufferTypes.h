@@ -10,11 +10,12 @@ namespace Silk
     class UniformBuffer;
     class Light;
     class Renderer;
+    class RenderObject;
     
     class ModelUniformSet
     {
         public:
-            ModelUniformSet(Renderer* r);
+            ModelUniformSet(Renderer* r,RenderObject* Obj);
             ~ModelUniformSet();
         
             void SetLights(const vector<Light*>& Lights);
@@ -23,6 +24,7 @@ namespace Silk
             const Mat4& GetModelMatrix() const { return m_Model; }
             void SetTextureMatrix(const Mat4& T);
             const Mat4& GetTextureMatrix() const { return m_Texture; }
+            const Mat4& GetNormalMatrix () const { return m_Normal;  }
         
             void SetIsInstanced(bool Flag);
         
@@ -57,6 +59,7 @@ namespace Silk
             i32 m_iLightInfluences;      //Light[]
         
             Renderer* m_Renderer;
+            RenderObject* m_Object;
     };
     
     class Camera;

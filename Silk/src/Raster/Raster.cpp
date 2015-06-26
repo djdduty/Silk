@@ -6,6 +6,15 @@
 
 namespace Silk
 {
+    i32 RasterObject::Destroy(RenderObject *Caller)
+    {
+        Caller->m_Object = 0;
+        Caller->m_Type   = ROT_COUNT;
+        m_RefCount--;
+        if(m_RefCount == 0) { m_Rasterizer->Destroy(this); return 0; }
+        return m_RefCount;
+    }
+    
     static const char* UniformTypeNames[] =
     {
         "bool",

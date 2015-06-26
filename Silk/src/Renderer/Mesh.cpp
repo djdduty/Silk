@@ -3,11 +3,20 @@
 
 namespace Silk
 {
-    Mesh::Mesh()
+    Mesh::Mesh() : m_RefCount(1)
     {
     }
     Mesh::~Mesh()
     {
+    }
+    
+    void Mesh::Destroy()
+    {
+        m_RefCount--;
+        if(m_RefCount == 0)
+        {
+            delete this;
+        }
     }
     
     void Mesh::SetIndexBuffer(i32 Count,void* Indices,bool IsStatic,i32 Stride)

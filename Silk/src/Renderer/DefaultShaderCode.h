@@ -16,14 +16,18 @@ namespace Silk
     static string IsInstancedConditional_2 =
     string("\t}\n");
     
-    static string DefaultPositionInstancedFunc =
+    static string DefaultGLPositionInstancedFunc =
     string("\t\tvec4 _Pos = (") + InstanceTransformAttribName + " * vec4(" + PositionAttribName + ",1.0));\n" +
-           "\t\tgl_Position = u_MVP * _Pos;\n"
-           "\t\t" + PositionOutName + " = _Pos.xyz;\n";
+           "\t\tgl_Position = u_MVP * _Pos;\n";
+    
+    static string DefaultPositionInstancedFunc =
+    string("\t\t") + PositionOutName + " = _Pos.xyz;\n";
+    
+    static string DefaultGLPositionNonInstancedFunc =
+    string("\t\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n";
     
     static string DefaultPositionNonInstancedFunc =
-    string("\t\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n"
-           "\t\t" + PositionOutName + " = (u_Model * vec4(" PositionAttribName + ",1.0)).xyz;\n";
+    string("\t\t") + PositionOutName + " = (u_Model * vec4(" PositionAttribName + ",1.0)).xyz;\n";
     
     static string DefaultNormalInstancedFunc =
     string("\t\t") + NormalOutName + " = (" + InstanceNormalTransformAttribName + " * vec4(" + NormalAttribName + ",1.0)).xyz;\n";

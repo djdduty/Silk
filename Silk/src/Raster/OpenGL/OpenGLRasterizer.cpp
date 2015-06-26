@@ -6,14 +6,17 @@
 
 namespace Silk
 {
-    OpenGLObjectIdentifier::OpenGLObjectIdentifier() : m_VAO(0), m_IBIndex(-1)
+    OpenGLObject::OpenGLObject(Rasterizer* r) : RasterObject(r), m_VAO(0), m_IBIndex(-1), m_IsInstanced(false),
+                m_MiniTransformSet(0), m_MaxiTransformSet(0), m_MiniNTransformSet(0), m_MaxiNTransformSet(0),
+                m_MiniTTransformSet(0), m_MaxiTTransformSet(0), m_InstanceTransformsID(-1),
+                m_InstanceNormalTransformsID(-1), m_InstanceTextureTransformsID(-1)
     {
     }
-    OpenGLObjectIdentifier::~OpenGLObjectIdentifier()
+    OpenGLObject::~OpenGLObject()
     {
         ClearData();
     }
-    void OpenGLObjectIdentifier::ClearData()
+    void OpenGLObject::ClearData()
     {
         if(m_VAO) glDeleteVertexArrays(1,&m_VAO);
         m_VAO = 0;
@@ -24,7 +27,7 @@ namespace Silk
         m_Attributes.clear();
     }
     
-    void OpenGLObjectIdentifier::SetMesh(Mesh* m)
+    void OpenGLObject::SetMesh(Mesh* m)
     {
         ClearData();
         glGenVertexArrays(1, &m_VAO);
@@ -47,7 +50,7 @@ namespace Silk
                              Attrib->ComponentCount,
                              Attrib->Size          ,
                              Attrib->Type          ,
-                             GL_TRUE               ,
+                             GL_FALSE              ,
                              Attrib->Stride        ,
                              0);
                 
@@ -56,7 +59,7 @@ namespace Silk
         }
         glBindVertexArray(0);
     }
-    void OpenGLObjectIdentifier::AddAttribute(GLuint AttribIndex,GLint ComponentCount,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer)
+    void OpenGLObject::AddAttribute(GLuint AttribIndex,GLint ComponentCount,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer)
     {
         if(GetAttributeBufferIndex(AttribIndex) != -1)
         {
@@ -100,7 +103,7 @@ namespace Silk
         
         m_Attributes.push_back(b);
     }
-    void OpenGLObjectIdentifier::SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLint ComponentCount,GLsizeiptr Size,GLvoid* Data,GLenum Usage)
+    void OpenGLObject::SupplyBufferData(GLuint AttributeIndex,GLenum Target,GLint ComponentCount,GLsizeiptr Size,GLvoid* Data,GLenum Usage)
     {
         i32 Index = GetAttributeBufferIndex(AttributeIndex);
         if(Index == -1)
@@ -110,15 +113,150 @@ namespace Silk
         }
         
         glBindBuffer(Target,m_Attributes[Index].BufferID);
-        if(AttributeIndex != -1)
+        if(ComponentCount != 16)
         {
-            glEnableVertexAttribArray(AttributeIndex);
-            glVertexAttribPointer(AttributeIndex,ComponentCount,m_Attributes[Index].Type,m_Attributes[Index].Normalized,m_Attributes[Index].Stride,0);
+            if(AttributeIndex != -1)
+            {
+                glEnableVertexAttribArray(AttributeIndex);
+                glVertexAttribPointer(AttributeIndex,ComponentCount,m_Attributes[Index].Type,m_Attributes[Index].Normalized,m_Attributes[Index].Stride,0);
+            }
+            glBufferData(Target,Size,Data,Usage);
         }
-        glBufferData(Target,Size,Data,Usage);
+        else //For instanced rendering
+        {
+            for(i32 i = 0;i < 4;i++)
+            {
+                glEnableVertexAttribArray(AttributeIndex + i);
+                glVertexAttribPointer(AttributeIndex + i,4,GL_FLOAT,GL_FALSE,sizeof(Mat4),(const GLvoid*)(sizeof(GLfloat) * i * 4));
+                glVertexAttribDivisor(AttributeIndex + i,1);
+            }
+            glBufferData(Target,Size,Data,GL_DYNAMIC_DRAW);
+        }
         glBindBuffer(Target,0);
     }
-    void OpenGLObjectIdentifier::SetIndexBufferAttributeIndex(GLuint AttributeIndex)
+    bool OpenGLObject::IsInstanced()
+    {
+        return m_IsInstanced;
+    }
+    i32 OpenGLObject::AddInstance()
+    {
+        m_IsInstanced = true;
+        m_InstanceCountChanged = true;
+        m_InstanceTransforms       .push_back(Mat4::Identity);
+        m_InstanceNormalTransforms .push_back(Mat4::Identity);
+        if(m_Rasterizer->SupportsInstanceTextureTransforms()) m_InstanceTextureTransforms.push_back(Mat4::Identity);
+    }
+    i32 OpenGLObject::RemoveInstance(i32 InstanceID)
+    {
+        if(InstanceID >= m_InstanceTransforms.size()) return m_InstanceTransforms.size();
+        m_InstanceCountChanged = true;
+        m_InstanceTransforms       .erase(m_InstanceTransforms       .begin() + InstanceID);
+        m_InstanceNormalTransforms .erase(m_InstanceNormalTransforms .begin() + InstanceID);
+        if(m_Rasterizer->SupportsInstanceTextureTransforms())m_InstanceTextureTransforms.erase(m_InstanceTextureTransforms.begin() + InstanceID);
+        
+        if(m_InstanceTransforms.size() == 0)
+        {
+            m_IsInstanced = false;
+            glDeleteBuffers(1,&m_Attributes[m_InstanceTransformsID       ].BufferID);
+            m_Attributes.erase(m_Attributes.begin() + m_InstanceTransformsID);
+            
+            glDeleteBuffers(1,&m_Attributes[m_InstanceNormalTransformsID ].BufferID);
+            m_Attributes.erase(m_Attributes.begin() + m_InstanceNormalTransformsID);
+            
+            if(m_InstanceTextureTransformsID != -1)
+            {
+                glDeleteBuffers(1,&m_Attributes[m_InstanceTextureTransformsID].BufferID);
+                m_Attributes.erase(m_Attributes.begin() + m_InstanceTextureTransformsID);
+                
+            }
+            m_InstanceTransformsID = m_InstanceNormalTransformsID = m_InstanceTextureTransformsID = -1;
+        }
+    }
+    void OpenGLObject::SetInstanceTransform(i32 InstanceID,const Mat4& Transform)
+    {
+        if(InstanceID >= m_InstanceTransforms.size()) return;
+        
+        if(InstanceID < m_MiniTransformSet) m_MiniTransformSet = InstanceID;
+        else if(InstanceID > m_MaxiTransformSet) m_MaxiTransformSet = InstanceID;
+        
+        m_InstanceTransforms[InstanceID] = Transform.Transpose();
+    }
+    void OpenGLObject::SetInstanceNormalTransform(i32 InstanceID,const Mat4& Transform)
+    {
+        if(InstanceID >= m_InstanceTransforms.size()) return;
+        
+        if(InstanceID < m_MiniNTransformSet) m_MiniNTransformSet = InstanceID;
+        else if(InstanceID > m_MaxiNTransformSet) m_MaxiNTransformSet = InstanceID;
+        
+        m_InstanceNormalTransforms[InstanceID] = Transform.Transpose();
+    }
+    void OpenGLObject::SetInstanceTextureTransform(i32 InstanceID,const Mat4& Transform)
+    {
+        if(InstanceID >= m_InstanceTransforms.size() || !m_Rasterizer->SupportsInstanceTextureTransforms()) return;
+        
+        if(InstanceID < m_MiniTTransformSet) m_MiniTTransformSet = InstanceID;
+        else if(InstanceID > m_MaxiTTransformSet) m_MaxiTTransformSet = InstanceID;
+        
+        m_InstanceTextureTransforms[InstanceID] = Transform.Transpose();
+    }
+    void OpenGLObject::UpdateInstanceData()
+    {
+        if(m_InstanceCountChanged)
+        {
+            m_MiniTransformSet = m_MiniNTransformSet = m_MiniTTransformSet =
+            m_MaxiTransformSet = m_MaxiNTransformSet = m_MaxiTTransformSet = -1;
+            
+            glBindVertexArray(m_VAO);
+            
+            i32 Sz = sizeof(Mat4) * m_InstanceTransforms.size();
+            if(m_InstanceTransformsID == -1)
+            {
+                m_InstanceTransformsID = m_Attributes.size();
+                AddAttribute(InstanceTransformAttribIndex,16,Sz,Mesh::AT_FLOAT,GL_FALSE,0,0);
+                
+                m_InstanceNormalTransformsID = m_Attributes.size();
+                AddAttribute(InstanceNormalTransformAttribIndex,16,Sz,Mesh::AT_FLOAT,GL_FALSE,0,0);
+                
+                if(m_Rasterizer->SupportsInstanceTextureTransforms())
+                {
+                    m_InstanceTextureTransformsID = m_Attributes.size();
+                    AddAttribute(InstanceTextureTransformAttribIndex,16,Sz,Mesh::AT_FLOAT,GL_FALSE,0,0);
+                }
+            }
+            
+            m_Attributes[m_InstanceTransformsID      ].Size = sizeof(Mat4) * m_InstanceTransforms.size();
+            m_Attributes[m_InstanceNormalTransformsID].Size = sizeof(Mat4) * m_InstanceTransforms.size();
+            if(m_Rasterizer->SupportsInstanceTextureTransforms()) m_Attributes[m_InstanceTextureTransformsID].Size = sizeof(Mat4) * m_InstanceTransforms.size();
+        
+            SupplyBufferData(InstanceTransformAttribIndex       ,GL_ARRAY_BUFFER,16,Sz,&m_InstanceTransforms       [0].x.x,GL_DYNAMIC_DRAW);
+            SupplyBufferData(InstanceNormalTransformAttribIndex ,GL_ARRAY_BUFFER,16,Sz,&m_InstanceNormalTransforms [0].x.x,GL_DYNAMIC_DRAW);
+            if(m_Rasterizer->SupportsInstanceTextureTransforms()) SupplyBufferData(InstanceTextureTransformAttribIndex,GL_ARRAY_BUFFER,16,Sz,&m_InstanceTextureTransforms[0].x.x,GL_DYNAMIC_DRAW);
+        
+            glBindVertexArray(0);
+        }
+        else if(m_MiniTransformSet != -1)
+        {
+            glBindVertexArray(m_VAO);
+            
+            glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTransformsID].BufferID);
+            glBufferSubData(GL_ARRAY_BUFFER,m_MiniTransformSet  * sizeof(Mat4),(m_MaxiTransformSet  - m_MiniTransformSet ) * sizeof(Mat4),&m_InstanceTransforms      [m_MiniTransformSet].x.x);
+            
+            glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceNormalTransformsID].BufferID);
+            glBufferSubData(GL_ARRAY_BUFFER,m_MiniNTransformSet * sizeof(Mat4),(m_MaxiNTransformSet - m_MiniNTransformSet) * sizeof(Mat4),&m_InstanceNormalTransforms[m_MiniTransformSet].x.x);
+            
+            if(m_Rasterizer->SupportsInstanceTextureTransforms())
+            {
+                glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTextureTransformsID].BufferID);
+                glBufferSubData(GL_ARRAY_BUFFER,m_MiniTTransformSet * sizeof(Mat4),(m_MaxiTTransformSet - m_MiniTTransformSet) * sizeof(Mat4),&m_InstanceTextureTransforms[m_MiniTransformSet].x.x);
+            }
+            
+            m_MiniTransformSet = m_MiniNTransformSet = m_MiniTTransformSet =
+            m_MaxiTransformSet = m_MaxiNTransformSet = m_MaxiTTransformSet = -1;
+            
+            glBindVertexArray(0);
+        }
+    }
+    void OpenGLObject::SetIndexBufferAttributeIndex(GLuint AttributeIndex)
     {
         i32 Index = GetAttributeBufferIndex(AttributeIndex);
         if(Index == -1)
@@ -128,7 +266,7 @@ namespace Silk
         }
         m_IBIndex = Index;
     }
-    void* OpenGLObjectIdentifier::MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access)
+    void* OpenGLObject::MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access)
     {
         i32 Index = GetAttributeBufferIndex(AttributeIndex);
         if(Index == -1)
@@ -158,7 +296,7 @@ namespace Silk
         }
         return 0;
     }
-    void OpenGLObjectIdentifier::UnmapBuffer(GLuint AttributeIndex)
+    void OpenGLObject::UnmapBuffer(GLuint AttributeIndex)
     {
         i32 Index = GetAttributeBufferIndex(AttributeIndex);
         if(Index == -1)
@@ -170,23 +308,43 @@ namespace Silk
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER,0);
     }
-    void OpenGLObjectIdentifier::Render(i32 PrimitiveType,i32 Start,i32 Count)
+    void OpenGLObject::Render(i32 PrimitiveType,i32 Start,i32 Count)
     {
         if(m_VAO == 0 || m_Attributes.size() == 0) return;
 
         glBindVertexArray(m_VAO);
         
-        if(m_IBIndex != -1) 
+        if(m_IsInstanced)
         {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Attributes[m_IBIndex].BufferID);
-            glDrawElements(PrimitiveType,Count,m_Attributes[m_IBIndex].Type,(GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize));
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+            if(m_IBIndex != -1)
+            {
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Attributes[m_IBIndex].BufferID);
+                glDrawElementsInstanced(PrimitiveType,
+                                        Count,
+                                        m_Attributes[m_IBIndex].Type,
+                                        (GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize),
+                                        m_InstanceTransforms.size());
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+            }
+            else glDrawArraysInstanced(PrimitiveType,Start,Count,m_InstanceTransforms.size());
         }
-        else glDrawArrays(PrimitiveType,Start,Count);
+        else
+        {
+            if(m_IBIndex != -1)
+            {
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Attributes[m_IBIndex].BufferID);
+                glDrawElements(PrimitiveType,
+                               Count,
+                               m_Attributes[m_IBIndex].Type,
+                               (GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize));
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+            }
+            else glDrawArrays(PrimitiveType,Start,Count);
+        }
         
         glBindVertexArray(0);
     }
-    i32 OpenGLObjectIdentifier::GetAttributeBufferIndex(i32 AttribIndex) const
+    i32 OpenGLObject::GetAttributeBufferIndex(i32 AttribIndex) const
     {
         for(i32 i = 0;i < m_Attributes.size();i++) { if(m_Attributes[i].Index == AttribIndex) { return i; } }
         return -1;
@@ -347,6 +505,13 @@ namespace Silk
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
     }
+    bool OpenGLRasterizer::SupportsInstanceTextureTransforms()
+    {
+        i32 r = 0;
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS,&r);
+        if(r < 18) return false;
+        return true;
+    }
 
     UniformBuffer* OpenGLRasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
     {
@@ -378,5 +543,9 @@ namespace Silk
     {
         T->FreeMemory();
         delete (OpenGLTexture*)T;
+    }
+    void OpenGLRasterizer::Destroy(RasterObject* O)
+    {
+        delete (OpenGLObject*)O;
     }
 };

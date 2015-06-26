@@ -19,7 +19,7 @@ namespace Silk
     class Renderer;
     class ObjectList;
     class Material;
-    class RasterObjectIdentifier;
+    class RasterObject;
     class Shader;
     class Rasterizer;
 
@@ -39,7 +39,10 @@ namespace Silk
             Light     *   GetLight           () { return m_Light                       ; }
             Material  *   GetMaterial        () { return m_Material                    ; }
             const Mat4&   GetTransform       () { return m_Uniforms->GetModelMatrix  (); }
+            const Mat4&   GetNormalTransform () { return m_Uniforms->GetNormalMatrix (); }
             const Mat4&   GetTextureTransform() { return m_Uniforms->GetTextureMatrix(); }
+        
+            bool IsInstanced();
 
             void SetMesh     (Mesh    * M, Material* Mat);
             void SetLight    (Light   * L               );
@@ -52,30 +55,35 @@ namespace Silk
             void UpdateUniforms();
 
         protected:
-            RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObjectIdentifier* ObjectIdentifier);
+            RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObject* Object);
             ~RenderObject();
         
             friend class Renderer;
             friend class ObjectList;
+            friend class RasterObject;
+            friend class ModelUniformSet;
 
-            RasterObjectIdentifier* m_ObjectIdentifier;
+            RasterObject* m_Object;
 
-            RENDER_OBJECT_TYPE      m_Type       ;
-            bool                    m_Enabled    ;
-            Renderer*               m_Renderer   ;
-            Material*               m_Material   ;
-            Mesh*                   m_Mesh       ;
-            Light*                  m_Light      ;
+            RENDER_OBJECT_TYPE     m_Type           ;
+            bool                   m_Enabled        ;
+            Renderer*              m_Renderer       ;
+            Material*              m_Material       ;
+            Mesh*                  m_Mesh           ;
+            Light*                 m_Light          ;
             //TODO Camera, Light
         
-            ModelUniformSet*        m_Uniforms   ;
+            ModelUniformSet*       m_Uniforms       ;
 
             //List references
-            i32                 m_ShaderListIndex;
-            i32                 m_ListIndex      ;
-            ObjectList*         m_List           ;
+            i32                    m_ShaderListIndex;
+            i32                    m_ListIndex      ;
+            ObjectList*            m_List           ;
+            i32                    m_InstanceIndex  ;
+            vector<RenderObject*>* m_InstanceList   ;
 
         private:
+            bool m_DidUpdate;
             void MarkAsUpdated();
     };
 

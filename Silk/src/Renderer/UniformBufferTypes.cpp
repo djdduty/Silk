@@ -3,7 +3,7 @@
 
 namespace Silk
 {
-    ModelUniformSet::ModelUniformSet(Renderer* r) : m_Renderer(r)
+    ModelUniformSet::ModelUniformSet(Renderer* r,RenderObject* Obj) : m_Renderer(r), m_Object(Obj)
     {
         m_UniformBuffer = r->GetRasterizer()->CreateUniformBuffer(ShaderGenerator::IUT_OBJECT_UNIFORMS);
         m_iMV                  = m_UniformBuffer->DefineUniform("u_MV"         );
@@ -89,15 +89,26 @@ namespace Silk
         Camera* Cam = m_Renderer->GetActiveCamera();
         if(Cam)
         {
+            Mat4 m = m_Model;
             if(m_ModelMatrixUpdated)
             {
-                m_UniformBuffer->SetUniform(m_iNormal             ,m_Normal      );
-                m_UniformBuffer->SetUniform(m_iModel              ,m_Model       );
+                if(m_Object->IsInstanced())
+                {
+                    m_UniformBuffer->SetUniform(m_iModel ,Mat4::Identity);
+                    m_UniformBuffer->SetUniform(m_iNormal,Mat4::Identity);
+                    m = Mat4::Identity;
+                }
+                else
+                {
+                    m_UniformBuffer->SetUniform(m_iModel ,m_Model );
+                    m_UniformBuffer->SetUniform(m_iNormal,m_Normal);
+                }
                 
                 m_ModelMatrixUpdated = false;
             }
-            m_MV  = Cam->GetInverseTransform() * m_Model;
-            m_MVP = Cam->GetProjection      () * m_MV   ;
+
+            m_MV  = Cam->GetInverseTransform() * m   ;
+            m_MVP = Cam->GetProjection      () * m_MV;
             
             m_UniformBuffer->SetUniform(m_iMV ,m_MV) ;
             m_UniformBuffer->SetUniform(m_iMVP,m_MVP);
@@ -112,6 +123,7 @@ namespace Silk
         {
             m_UniformBuffer->SetUniform(m_iTexture,m_Texture);
             m_TexMatrixUpdated = false;
+            if(m_Object->IsInstanced()) m_Object->m_Object->SetInstanceTextureTransform(m_Object->m_InstanceIndex,m_Texture);
         }
         
         if(m_LightsChanged)

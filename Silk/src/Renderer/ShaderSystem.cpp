@@ -22,9 +22,9 @@ namespace Silk
     ShaderGenerator::ShaderGenerator(Renderer* r) : m_Renderer(r), m_ShadersGenerated(0)
     {
         Reset();
-        m_NullModelUniforms = new ModelUniformSet(r);
+        m_NullModelUniforms = new ModelUniformSet(r,0);
         m_AllowInstancing = false;
-        m_AllowInstancedTextureMatrix = false;
+        m_AllowInstancedTextureMatrix = r->GetRasterizer()->SupportsInstanceTextureTransforms();
     }
     ShaderGenerator::~ShaderGenerator()
     {
@@ -38,10 +38,11 @@ namespace Silk
         m_MaterialUniforms = 0;
         m_UserUniforms     = 0;
         m_AllowInstancing  = false;
-        for(i32 i = 0;i < Material::MT_COUNT;i++) m_MapTypesUsed[i] = false;
-        for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeInputsUsed  [i] = false;
-        for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed    [i] = false;
-        for(i32 i = 0;i < OFT_COUNT;i++) m_FragmentOutputsUsed  [i] = false;
+        for(i32 i = 0;i < Material::MT_COUNT;i++) m_MapTypesUsed [i] = false;
+        for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeInputsUsed   [i] = false;
+        for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeOutputsUsed  [i] = false;
+        for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed     [i] = false;
+        for(i32 i = 0;i < OFT_COUNT;i++) m_FragmentOutputsUsed   [i] = false;
     }
     
     void ShaderGenerator::AddVertexModule(CString Code,i32 Index)
@@ -88,33 +89,37 @@ namespace Silk
     }
     string ShaderGenerator::GenerateVertexShader()
     {
-        CodeBlock* SetPositionI  = 0;
-        CodeBlock* SetNormalI    = 0;
-        CodeBlock* SetTangentI   = 0;
-        CodeBlock* SetTexCI      = 0;
-        CodeBlock* SetPositionNI = 0;
-        CodeBlock* SetNormalNI   = 0;
-        CodeBlock* SetTangentNI  = 0;
-        CodeBlock* SetTexCNI     = 0;
-        CodeBlock* SetColor      = 0;
-        CodeBlock* SetRoughness  = 0;
-        CodeBlock* SetMetalness  = 0;
+        CodeBlock* SetGLPositionI  = 0;
+        CodeBlock* SetPositionI    = 0;
+        CodeBlock* SetNormalI      = 0;
+        CodeBlock* SetTangentI     = 0;
+        CodeBlock* SetTexCI        = 0;
+        CodeBlock* SetGLPositionNI = 0;
+        CodeBlock* SetPositionNI   = 0;
+        CodeBlock* SetNormalNI     = 0;
+        CodeBlock* SetTangentNI    = 0;
+        CodeBlock* SetTexCNI       = 0;
+        CodeBlock* SetColor        = 0;
+        CodeBlock* SetRoughness    = 0;
+        CodeBlock* SetMetalness    = 0;
         
         vector<i32> UnsortedBlockIndices;
         
         for(i32 i = 0;i < m_VertexBlocks.size();i++)
         {
-            if     (m_VertexBlocks[i].ID == "SetPosition"          ) SetPositionNI = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetNormal"            ) SetNormalNI   = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetTangent"           ) SetTangentNI  = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetTexCoords"         ) SetTexCNI     = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetPositionInstanced" ) SetPositionI  = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetNormalInstanced"   ) SetNormalI    = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetTangentInstanced"  ) SetTangentI   = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetTexCoordsInstanced") SetTexCI      = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetColor"             ) SetColor      = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetRoughness"         ) SetRoughness  = &m_VertexBlocks[i];
-            else if(m_VertexBlocks[i].ID == "SetMetalness"         ) SetMetalness  = &m_VertexBlocks[i];
+            if     (m_VertexBlocks[i].ID == "SetGLPosition"         ) SetGLPositionNI = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetPosition"           ) SetPositionNI   = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetNormal"             ) SetNormalNI     = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTangent"            ) SetTangentNI    = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTexCoords"          ) SetTexCNI       = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetGLPositionInstanced") SetGLPositionI  = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetPositionInstanced"  ) SetPositionI    = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetNormalInstanced"    ) SetNormalI      = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTangentInstanced"   ) SetTangentI     = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetTexCoordsInstanced" ) SetTexCI        = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetColor"              ) SetColor        = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetRoughness"          ) SetRoughness    = &m_VertexBlocks[i];
+            else if(m_VertexBlocks[i].ID == "SetMetalness"          ) SetMetalness    = &m_VertexBlocks[i];
             
             UnsortedBlockIndices.push_back(i);
         }
@@ -166,11 +171,11 @@ namespace Silk
          * Outputs
          */
         VertexShader += "\n";
-        if(m_AttributeInputsUsed[IAT_POSITION   ]) VertexShader += string("out vec3 ") + PositionOutName   + ";\n";
-        if(m_AttributeInputsUsed[IAT_NORMAL     ]) VertexShader += string("out vec3 ") + NormalOutName     + ";\n";
-        if(m_AttributeInputsUsed[IAT_TANGENT    ]) VertexShader += string("out vec3 ") + TangentOutName    + ";\n";
-        if(m_AttributeInputsUsed[IAT_COLOR      ]) VertexShader += string("out vec4 ") + ColorOutName      + ";\n";
-        if(m_AttributeInputsUsed[IAT_TEXCOORD   ]) VertexShader += string("out vec2 ") + TexCoordOutName   + ";\n";
+        if(m_AttributeOutputsUsed[IAT_POSITION   ]) VertexShader += string("out vec3 ") + PositionOutName   + ";\n";
+        if(m_AttributeOutputsUsed[IAT_NORMAL     ]) VertexShader += string("out vec3 ") + NormalOutName     + ";\n";
+        if(m_AttributeOutputsUsed[IAT_TANGENT    ]) VertexShader += string("out vec3 ") + TangentOutName    + ";\n";
+        if(m_AttributeOutputsUsed[IAT_COLOR      ]) VertexShader += string("out vec4 ") + ColorOutName      + ";\n";
+        if(m_AttributeOutputsUsed[IAT_TEXCOORD   ]) VertexShader += string("out vec2 ") + TexCoordOutName   + ";\n";
         
         /*
          * main
@@ -180,26 +185,36 @@ namespace Silk
         
         if(m_AllowInstancing)
         {
+            bool nSetTexCI = m_AllowInstancedTextureMatrix && !SetTexCI;
             VertexShader += IsInstancedConditional_0;
-            if(!SetPositionI ) VertexShader += DefaultPositionInstancedFunc   ;
-            if(!SetNormalI   ) VertexShader += DefaultNormalInstancedFunc     ;
-            if(m_AllowInstancedTextureMatrix && !SetTexCI) VertexShader += DefaultTexCoordInstancedFunc   ;
-            else if(!SetTexCI) VertexShader += DefaultTexCoordNonInstancedFunc;
+            
+            if(!SetGLPositionI ) VertexShader += DefaultGLPositionInstancedFunc ;
+            if(!SetPositionI   && m_AttributeOutputsUsed[IAT_POSITION]) VertexShader += DefaultPositionInstancedFunc   ;
+            if(!SetNormalI     && m_AttributeOutputsUsed[IAT_NORMAL  ]) VertexShader += DefaultNormalInstancedFunc     ;
+            if(!SetTangentI    && m_AttributeOutputsUsed[IAT_TANGENT ]) VertexShader += DefaultTangentInstancedFunc    ;
+            if(nSetTexCI       && m_AttributeOutputsUsed[IAT_TEXCOORD]) VertexShader += DefaultTexCoordInstancedFunc   ;
+            else if(!SetTexCI  && m_AttributeOutputsUsed[IAT_TEXCOORD]) VertexShader += DefaultTexCoordNonInstancedFunc;
+            
             VertexShader += IsInstancedConditional_1;
-            if(!SetPositionNI) VertexShader += DefaultPositionNonInstancedFunc;
-            if(!SetNormalNI  ) VertexShader += DefaultNormalNonInstancedFunc  ;
-            if(!SetTexCNI    ) VertexShader += DefaultTexCoordNonInstancedFunc;
+            
+            if(!SetGLPositionNI) VertexShader += DefaultGLPositionNonInstancedFunc;
+            if(!SetPositionNI  && m_AttributeOutputsUsed[IAT_POSITION]) VertexShader += DefaultPositionNonInstancedFunc  ;
+            if(!SetNormalNI    && m_AttributeOutputsUsed[IAT_NORMAL  ]) VertexShader += DefaultNormalNonInstancedFunc    ;
+            if(!SetTangentNI   && m_AttributeOutputsUsed[IAT_TANGENT ]) VertexShader += DefaultTangentNonInstancedFunc   ;
+            if(!SetTexCNI      && m_AttributeOutputsUsed[IAT_TEXCOORD]) VertexShader += DefaultTexCoordNonInstancedFunc  ;
+            
             VertexShader += IsInstancedConditional_2;
         }
         else
         {
-            if(!SetPositionNI) VertexShader += DefaultPositionNonInstancedFunc;
-            if(!SetNormalNI  ) VertexShader += DefaultNormalNonInstancedFunc  ;
-            if(!SetTexCNI    ) VertexShader += DefaultTexCoordNonInstancedFunc;
+            if(!SetGLPositionNI) VertexShader += DefaultGLPositionNonInstancedFunc;
+            if(!SetPositionNI  && m_AttributeOutputsUsed[IAT_POSITION]) VertexShader += DefaultPositionNonInstancedFunc  ;
+            if(!SetNormalNI    && m_AttributeOutputsUsed[IAT_NORMAL  ]) VertexShader += DefaultNormalNonInstancedFunc    ;
+            if(!SetTangentNI   && m_AttributeOutputsUsed[IAT_TANGENT ]) VertexShader += DefaultTangentNonInstancedFunc   ;
+            if(!SetTexCNI      && m_AttributeOutputsUsed[IAT_TEXCOORD]) VertexShader += DefaultTexCoordNonInstancedFunc  ;
         }
         
-        
-        if(!SetColor     && m_AttributeInputsUsed[IAT_COLOR            ]) VertexShader += DefaultColorFunc    ;
+        if(!SetColor     && m_AttributeInputsUsed[IAT_COLOR] && m_AttributeOutputsUsed[IAT_COLOR]) VertexShader += DefaultColorFunc;
         if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultRoughnessFunc;
         if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultMetalnessFunc;
         
@@ -242,11 +257,11 @@ namespace Silk
          * Attribute inputs
          */
         FragmentShader += "\n";
-        if(m_AttributeInputsUsed[IAT_POSITION   ]) FragmentShader += string("in vec3 " ) + PositionOutName   + ";\n";
-        if(m_AttributeInputsUsed[IAT_NORMAL     ]) FragmentShader += string("in vec3 " ) + NormalOutName     + ";\n";
-        if(m_AttributeInputsUsed[IAT_TANGENT    ]) FragmentShader += string("in vec3 " ) + TangentOutName    + ";\n";
-        if(m_AttributeInputsUsed[IAT_COLOR      ]) FragmentShader += string("in vec4 " ) + ColorOutName      + ";\n";
-        if(m_AttributeInputsUsed[IAT_TEXCOORD   ]) FragmentShader += string("in vec2 " ) + TexCoordOutName   + ";\n";
+        if(m_AttributeInputsUsed[IAT_POSITION] && m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("in vec3 " ) + PositionOutName   + ";\n";
+        if(m_AttributeInputsUsed[IAT_NORMAL  ] && m_AttributeOutputsUsed[IAT_NORMAL  ]) FragmentShader += string("in vec3 " ) + NormalOutName     + ";\n";
+        if(m_AttributeInputsUsed[IAT_TANGENT ] && m_AttributeOutputsUsed[IAT_TANGENT ]) FragmentShader += string("in vec3 " ) + TangentOutName    + ";\n";
+        if(m_AttributeInputsUsed[IAT_COLOR   ] && m_AttributeOutputsUsed[IAT_COLOR   ]) FragmentShader += string("in vec4 " ) + ColorOutName      + ";\n";
+        if(m_AttributeInputsUsed[IAT_TEXCOORD] && m_AttributeOutputsUsed[IAT_TEXCOORD]) FragmentShader += string("in vec2 " ) + TexCoordOutName   + ";\n";
         
         i32 CustomLightingBlock = -1;
         vector<i32> UnsortedBlockIndices;
@@ -287,6 +302,7 @@ namespace Silk
         {
             if(m_UniformInputsUsed[i])
             {
+                FragmentShader += "\n";
                 FragmentShader += GenerateInputBlock((INPUT_UNIFORM_TYPE)i);
             }
         }

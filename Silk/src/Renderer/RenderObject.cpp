@@ -3,22 +3,26 @@
 #include <Raster/Raster.h>
 
 namespace Silk {
-    RenderObject::RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObjectIdentifier* ObjectIdentifier) : 
-        m_Mesh(0), m_Material(0), m_Renderer(Renderer), m_Type(Type), m_Enabled(true), m_List(0), m_ListIndex(0), m_ObjectIdentifier(ObjectIdentifier),
+    RenderObject::RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObject* Object) : 
+        m_Mesh(0), m_Material(0), m_Renderer(Renderer), m_Type(Type), m_Enabled(true), m_List(0), m_ListIndex(0), m_Object(Object),
         m_Light(0)
     {
-        m_Uniforms = new ModelUniformSet(m_Renderer);
+        m_Uniforms = new ModelUniformSet(m_Renderer,this);
     }
 
     RenderObject::~RenderObject() 
     {
-        delete m_ObjectIdentifier;
+        m_Object->Destroy(this);
         delete m_Uniforms;
     }
 
-    void RenderObject::SetMesh(Mesh* M, Material* Mat)
+    bool RenderObject::IsInstanced()
     {
-        if(M && Mat && m_Type != ROT_MESH) {
+        return m_Object->IsInstanced();
+    }
+    void RenderObject::SetMesh(Mesh* M,Material* Mat)
+    {
+        if(m_Mesh != M && M && Mat && m_Type != ROT_MESH) {
             if(M && Mat)
                 ERROR("Could not set the mesh of RenderObject, this object is not a mesh object!\n");
             else
@@ -26,10 +30,43 @@ namespace Silk {
             return;
         }
 
+        if((m_Mesh && (m_Mesh != M)) && m_Mesh->m_Obj == this)
+        {
+            if((*m_InstanceList)[0] != this) m_Mesh->m_Obj = (*m_InstanceList)[0];
+            else m_Mesh->m_Obj = (*m_InstanceList)[1];
+            
+            m_Object->RemoveInstance(m_InstanceIndex);
+            for(i32 i = m_InstanceIndex;i < m_InstanceList->size();i++)
+            {
+                (*m_InstanceList)[i]->m_InstanceIndex--;
+            }
+            m_InstanceList->pop_back();
+        }
+        
         m_Mesh = M;
         m_Material = Mat;
-        m_ObjectIdentifier->SetMesh(m_Mesh);
-        //MarkAsUpdated();
+        
+        m_Mesh->m_Instances.push_back(this);
+        m_InstanceIndex = m_Mesh->m_Instances.size() - 1;
+        m_InstanceList  = &m_Mesh->m_Instances;
+        
+        if(m_Mesh->Refs() == 1)
+        {
+            m_Object->SetMesh(m_Mesh);
+            m_Mesh->m_Obj = this;
+        }
+        else
+        {
+            if(m_Object) m_Object->Destroy(this);
+            m_Type = ROT_MESH;
+            m_Object = m_Mesh->m_Obj->m_Object;
+            m_Object->AddRef();
+            m_Object->AddInstance();
+            m_Mesh->m_Obj->GetUniformSet()->SetIsInstanced(true);
+        }
+        m_Mesh->AddRef();
+        
+        MarkAsUpdated();
     }
 
     void RenderObject::SetMaterial(Material* Mat)
@@ -69,12 +106,13 @@ namespace Silk {
     void RenderObject::UpdateUniforms()
     {
         m_Uniforms->UpdateUniforms();
+        m_DidUpdate = false;
     }
 
     void RenderObject::MarkAsUpdated()
     {
-        if(m_Renderer)
-            m_Renderer->AddToUpdateList(this);
+        if(m_Renderer) m_Renderer->AddToUpdateList(this);
+        m_DidUpdate = true;
     }
 
     i32 ObjectList::AddObject(RenderObject* Obj)
@@ -153,6 +191,17 @@ namespace Silk {
                         for(i32 o = 0;o < m_ShaderObjects[i].size();o++) m_ShaderObjects[i][o]->m_ShaderListIndex = o;
                     }
                 }
+            }
+            
+            /* Remove it from instance list if necessary*/
+            if(Obj->m_Object->IsInstanced())
+            {
+                Obj->m_Object->RemoveInstance(Obj->m_InstanceIndex);
+                for(i32 i = Obj->m_InstanceIndex;i < Obj->m_InstanceList->size();i++)
+                {
+                    (*Obj->m_InstanceList)[i]->m_InstanceIndex--;
+                }
+                Obj->m_InstanceList->pop_back();
             }
         }
 

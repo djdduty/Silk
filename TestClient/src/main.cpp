@@ -19,7 +19,7 @@ using namespace Silk;
 
 using namespace TestClient;
 
-#define ObjsSize 1000
+#define ObjsSize 10000
 
 int main(int ArgC,char *ArgV[])
 {
@@ -37,7 +37,6 @@ int main(int ArgC,char *ArgV[])
         ShaderGenerator* g = new ShaderGenerator(Render);
         g->SetShaderVersion(330);
         g->SetAllowInstancing(true);
-        g->SetAllowInstancedTextureMatrix(false);
         g->SetUniformInput(ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         g->SetUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
         
@@ -45,10 +44,13 @@ int main(int ArgC,char *ArgV[])
         g->SetAttributeInput(ShaderGenerator::IAT_NORMAL         ,true);
         g->SetAttributeInput(ShaderGenerator::IAT_TEXCOORD       ,true);
         
+        g->SetAttributeOutput(ShaderGenerator::IAT_NORMAL        ,true);
+        g->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD      ,true);
+        
         g->SetTextureInput  (Material::MT_DIFFUSE                ,true);
         g->SetFragmentOutput(ShaderGenerator::OFT_COLOR          ,true);
         
-        g->AddFragmentModule(const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\nif(NdotL < 0.0) NdotL = -NdotL;[/NdotL]"),0);
+        g->AddFragmentModule(const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n\tif(NdotL < 0.0) NdotL = -NdotL;[/NdotL]"),0);
         g->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord) * NdotL;[/SetColor]"),1);
         
         Win->PollEvents();
@@ -125,7 +127,6 @@ int main(int ArgC,char *ArgV[])
         mesh->SetNormalBuffer  (12,normBuff);
         mesh->SetTexCoordBuffer(12,TexcBuff);
 
-
         RenderObject* Objs[ObjsSize];
         Material* mat = Render->CreateMaterial();
         mat->SetShader(g->Generate());
@@ -133,7 +134,7 @@ int main(int ArgC,char *ArgV[])
         {
             Objs[i] = Render->CreateRenderObject(ROT_MESH,false);
             Objs[i]->SetMesh(mesh,mat);
-            Objs[i]->SetTransform(Translation(Vec3(Random(-100,100),0,Random(-100,100))));
+            Objs[i]->SetTransform(Translation(Vec3(Random(-100,100),Random(-100,100),Random(-100,100))));
             Render->AddRenderObject(Objs[i]);
         }
         
@@ -235,7 +236,7 @@ int main(int ArgC,char *ArgV[])
         delete g;
         delete Render;
         delete Cam;
-        delete mesh;
+        mesh->Destroy();
     }
     
     delete Win;

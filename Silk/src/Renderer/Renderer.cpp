@@ -83,22 +83,40 @@ namespace Silk
                 RenderObject* Obj = Meshes[m];
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
                 {
+                    if(Obj->m_Object->IsInstanced())
+                    {
+                        //Update obj instance data on the CPU side
+                        if(Obj->m_DidUpdate)
+                        {
+                            Obj->m_DidUpdate = false;
+                            Obj->m_Object->SetInstanceTransform       (Obj->m_InstanceIndex,Obj->GetTransform       ());
+                            Obj->m_Object->SetInstanceNormalTransform (Obj->m_InstanceIndex,Obj->GetNormalTransform ());
+                            Obj->m_Object->SetInstanceTextureTransform(Obj->m_InstanceIndex,Obj->GetTextureTransform());
+                        }
+                        
+                        //Don't render all instanced render objects, just the Mesh owner
+                        if(Obj != Obj->m_Mesh->m_Obj) continue;
+                        
+                        //Update all instance data for mesh on the GPU side
+                        Obj->m_Object->UpdateInstanceData();
+                    }
+                    
                     //Pass material uniforms
                     Shader->UseMaterial(Obj->GetMaterial());
                     
                     //Pass object uniforms
-                    
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
                     {
                         Obj->UpdateUniforms();
                         Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
                     }
+                    
                     //To do: Batching
                     i32 Count = 0;
                     if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
                     else Count = Obj->m_Mesh->GetVertexCount();
-                    
-                    Obj->m_ObjectIdentifier->Render(PrimType,0,Count);
+                        
+                    Obj->m_Object->Render(PrimType,0,Count);
                     MeshesRendered.push_back(Obj);
                 }
             }
@@ -118,7 +136,7 @@ namespace Silk
 
     RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene)
     {
-        RenderObject* Object = new RenderObject(Rot, this, m_Raster->CreateObjectIdentifier());
+        RenderObject* Object = new RenderObject(Rot, this, m_Raster->CreateObject());
         if(!Object)
             return nullptr;
 

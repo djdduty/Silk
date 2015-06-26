@@ -12,14 +12,30 @@ using namespace std;
 namespace Silk
 {
     class Mesh;
-    class RasterObjectIdentifier
+    class RasterObject
     {
         public:
-            RasterObjectIdentifier() { }
-            virtual ~RasterObjectIdentifier() { }
+            i32 AddRef() { m_RefCount++; return m_RefCount; }
+            i32 Refs() const { return m_RefCount; }
+            i32 Destroy(RenderObject* Caller);
         
             virtual void SetMesh(Mesh* m) = 0;
             virtual void Render(i32 PrimitiveType,i32 Start,i32 Count) = 0;
+        
+            virtual bool IsInstanced() = 0;
+            virtual i32 AddInstance () = 0;
+            virtual i32 RemoveInstance(i32 InstanceID) = 0;
+            virtual void SetInstanceTransform       (i32 InstanceID,const Mat4& Transform) = 0;
+            virtual void SetInstanceNormalTransform (i32 InstanceID,const Mat4& Transform) = 0;
+            virtual void SetInstanceTextureTransform(i32 InstanceID,const Mat4& Transform) = 0;
+            virtual void UpdateInstanceData() = 0;
+        
+        protected:
+            RasterObject(Rasterizer* r) : m_Rasterizer(r), m_RefCount(1) { }
+            virtual ~RasterObject() { }
+        
+            i32 m_RefCount;
+            Rasterizer* m_Rasterizer;
     };
     
     class ColorFormat
@@ -195,27 +211,28 @@ namespace Silk
         
             void SetRenderer(Renderer* r) { m_Renderer = r; }
         
-            virtual bool ValidateContext(RasterContext* Ctx);
             bool SetContext(RasterContext* Ctx);
-            RasterContext* GetContext() const { return m_GraphicsContext; }
+            virtual bool ValidateContext(RasterContext* Ctx);
             virtual void InitializeContext() = 0;
+            RasterContext* GetContext() const { return m_GraphicsContext; }
         
-            virtual Shader  * CreateShader () = 0;
-            virtual Texture * CreateTexture() = 0;
-
-            virtual void Destroy(UniformBuffer* Buffer) = 0;
-            virtual void Destroy(Shader       * S     ) = 0;
-            virtual void Destroy(Texture      * T     ) = 0;
+            virtual bool SupportsInstanceTextureTransforms() = 0;
         
             void SetClearColor(const Vec4& c) { m_ClearColor = c; }
         
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
 
-            virtual UniformBuffer*          CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type) = 0;
-            virtual RasterObjectIdentifier* CreateObjectIdentifier() = 0;
-        
+            virtual UniformBuffer* CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type) = 0;
+            virtual RasterObject * CreateObject () = 0;
             virtual RasterContext* CreateContext() = 0;
+            virtual Shader       * CreateShader () = 0;
+            virtual Texture      * CreateTexture() = 0;
+
+            virtual void Destroy(UniformBuffer* Buffer) = 0;
+            virtual void Destroy(Shader       * S     ) = 0;
+            virtual void Destroy(Texture      * T     ) = 0;
+            virtual void Destroy(RasterObject * O     ) = 0;
         protected:
             Renderer* m_Renderer;
             RasterContext* m_GraphicsContext;

@@ -122,17 +122,19 @@ namespace Silk
             char OutName[8];
             memset(OutName,0,8);
             snprintf(OutName,8,"Out%d",i);
-            
         }
         */
         
-        glBindAttribLocation(m_PID,PositionAttribIndex  ,PositionAttribName  );
-        glBindAttribLocation(m_PID,NormalAttribIndex    ,NormalAttribName    );
-        glBindAttribLocation(m_PID,ColorAttribIndex     ,ColorAttribName     );
-        glBindAttribLocation(m_PID,TangentAttribIndex   ,TangentAttribName   );
-        glBindAttribLocation(m_PID,TexCoordAttribIndex  ,TexCoordAttribName  );
-        glBindAttribLocation(m_PID,BoneWeightAttribIndex,BoneWeightAttribName);
-        glBindAttribLocation(m_PID,BoneIndexAttribIndex ,BoneIndexAttribName );
+        glBindAttribLocation(m_PID,PositionAttribIndex                ,PositionAttribName                );
+        glBindAttribLocation(m_PID,NormalAttribIndex                  ,NormalAttribName                  );
+        glBindAttribLocation(m_PID,ColorAttribIndex                   ,ColorAttribName                   );
+        glBindAttribLocation(m_PID,TangentAttribIndex                 ,TangentAttribName                 );
+        glBindAttribLocation(m_PID,TexCoordAttribIndex                ,TexCoordAttribName                );
+        glBindAttribLocation(m_PID,BoneWeightAttribIndex              ,BoneWeightAttribName              );
+        glBindAttribLocation(m_PID,BoneIndexAttribIndex               ,BoneIndexAttribName               );
+        glBindAttribLocation(m_PID,InstanceTransformAttribIndex       ,InstanceTransformAttribName       );
+        glBindAttribLocation(m_PID,InstanceNormalTransformAttribIndex ,InstanceNormalTransformAttribName );
+        glBindAttribLocation(m_PID,InstanceTextureTransformAttribIndex,InstanceTextureTransformAttribName);
         
         glLinkProgram(m_PID);
         glGetProgramiv(m_PID,GL_LINK_STATUS,&Status);
