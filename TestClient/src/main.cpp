@@ -260,7 +260,7 @@ int main(int ArgC,char *ArgV[])
             r->ClearActiveFramebuffer();
             a += 0.01f;
             Mat4 Rot0 = Rotation(Vec3(1,0,0),45 * sin(a * 0.1f));
-            Scalar Dist = SpawnD * 2.5f + (sin(a * 0.5f) * 150.0f);
+            Scalar Dist = SpawnD * 2.5f + (sin(a * 0.5f) * SpawnD * 2.5f);
             Cam->SetTransform(Rotation(Vec3(0,1,0),a * 5.0f) * Translation(Vec3(0,Dist * sin(a * 0.1f),Dist)) * Rot0);// + (sin(a * 0.5f) * 2.0f)))));
             GetTimer(CameraTime);
 
