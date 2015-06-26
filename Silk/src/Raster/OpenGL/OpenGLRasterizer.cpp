@@ -145,7 +145,7 @@ namespace Silk
         m_InstanceTransforms       .push_back(Mat4::Identity);
         m_InstanceNormalTransforms .push_back(Mat4::Identity);
         if(m_Rasterizer->SupportsInstanceTextureTransforms()) m_InstanceTextureTransforms.push_back(Mat4::Identity);
-        
+
         return m_InstanceTransforms.size() - 1;
     }
     i32 OpenGLObject::RemoveInstance(i32 InstanceID)

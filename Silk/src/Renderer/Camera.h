@@ -1,6 +1,7 @@
 #pragma once
 #include <System/SilkTypes.h>
 #include <Math/Math.h>
+#include <algorithm>
 
 namespace Silk
 {
