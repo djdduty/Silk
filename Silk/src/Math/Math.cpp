@@ -941,7 +941,7 @@ namespace Silk
             tFov / Aspect, 0   , 0                      , 0,
             0            , tFov, 0                      , 0,
             0            , 0   , (Far + Near) / NearmFar,2.0f * Far * Near / NearmFar,
-            0            , 0   ,-1                      , 0);
+            0            , 0   ,-1                      , 1);
     }
 
     Mat4 PerspectiveMultiFov(Scalar FovX, Scalar FovY, Scalar Near, Scalar Far)
@@ -951,13 +951,13 @@ namespace Silk
             1.0f / tanf(PI_OVER_180 * FovX * 0.5f), 0, 0, 0,
             0, 1.0f / tanf(PI_OVER_180 * FovY * 0.5f), 0, 0,
             0, 0, (Far + Near) / NearmFar               ,2.0f * Far * Near / NearmFar,
-            0, 0, -1                                    , 0);
+            0, 0, -1                                    , 1);
     }
 
     Mat4 Rotation(const Vec3& Axis, Scalar Angle)
     {
-        Scalar c = cosf(Angle);
-        Scalar s = sinf(Angle);
+        Scalar c = cosf(Angle * PI_OVER_180);
+        Scalar s = sinf(Angle * PI_OVER_180);
         Scalar t = 1.0f - c;
 
         Vec3 NormalizedAxis = Axis.Normalized();

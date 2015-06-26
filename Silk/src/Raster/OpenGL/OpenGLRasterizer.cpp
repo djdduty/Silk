@@ -145,6 +145,8 @@ namespace Silk
         m_InstanceTransforms       .push_back(Mat4::Identity);
         m_InstanceNormalTransforms .push_back(Mat4::Identity);
         if(m_Rasterizer->SupportsInstanceTextureTransforms()) m_InstanceTextureTransforms.push_back(Mat4::Identity);
+        
+        return m_InstanceTransforms.size() - 1;
     }
     i32 OpenGLObject::RemoveInstance(i32 InstanceID)
     {
@@ -171,6 +173,8 @@ namespace Silk
             }
             m_InstanceTransformsID = m_InstanceNormalTransformsID = m_InstanceTextureTransformsID = -1;
         }
+        
+        return m_InstanceTransforms.size() - 1;
     }
     void OpenGLObject::SetInstanceTransform(i32 InstanceID,const Mat4& Transform)
     {
