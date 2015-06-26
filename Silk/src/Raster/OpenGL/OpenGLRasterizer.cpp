@@ -163,12 +163,12 @@ namespace Silk
             m_Attributes.erase(m_Attributes.begin() + m_InstanceTransformsID);
             
             glDeleteBuffers(1,&m_Attributes[m_InstanceNormalTransformsID ].BufferID);
-            m_Attributes.erase(m_Attributes.begin() + m_InstanceNormalTransformsID);
+            m_Attributes.erase(m_Attributes.begin() + m_InstanceNormalTransformsID - 1);
             
             if(m_InstanceTextureTransformsID != -1)
             {
                 glDeleteBuffers(1,&m_Attributes[m_InstanceTextureTransformsID].BufferID);
-                m_Attributes.erase(m_Attributes.begin() + m_InstanceTextureTransformsID);
+                m_Attributes.erase(m_Attributes.begin() + m_InstanceTextureTransformsID - 2);
                 
             }
             m_InstanceTransformsID = m_InstanceNormalTransformsID = m_InstanceTextureTransformsID = -1;

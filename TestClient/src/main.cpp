@@ -19,7 +19,7 @@ using namespace Silk;
 
 using namespace TestClient;
 
-#define ObjsSize 20000
+#define ObjsSize 10000
 
 typedef struct _Ray
 {
@@ -185,9 +185,7 @@ int main(int ArgC,char *ArgV[])
         Scalar AngularVelocity[ObjsSize];
         Scalar Mass[ObjsSize];
         
-        Scalar SpawnD  = 300.0f;
-        Scalar MinVel  = 60.0f;
-        Scalar MaxVel  = 180.0f;
+        Scalar SpawnD  = 100.0f;
         Scalar MinaVel = 50.0f;
         Scalar MaxaVel = 360.0f;
         Scalar MinMass = 1000.0f;
@@ -310,11 +308,11 @@ int main(int ArgC,char *ArgV[])
                     
                     Velocity[i] = Dir.Cross(Vec3(0,1,0)).Normalized() * sqrtf(((G * (100000000000.0 * Mass[i])) / Dist));
                 }
-                else if(pMag < 15.0f)
+                else if(pMag < 10.0f)
                 {
                     Velocity[i].y = (Random(0.0f,1.0f) < 0.5f) ? Random(-1000.0f,-500.0f) : Random(500.0f,1000.0f);
-                    Velocity[i].x = Random(-0.001f,0.001f);
-                    Velocity[i].z = Random(-0.001f,0.001f);
+                    Velocity[i].x = Random(-0.0001f,0.0001f);
+                    Velocity[i].z = Random(-0.0001f,0.0001f);
                 }
                 
                 Scalar StarMass = 100000000000.0f;
@@ -386,12 +384,12 @@ int main(int ArgC,char *ArgV[])
             }
         }
 
+        for(i32 i = 0;i < ObjsSize;i++) Render->Destroy(Objs[i]);
         Render->GetRasterizer()->Destroy(mat->GetShader());
         Render->Destroy(mat);
-        for(i32 i = 0;i < ObjsSize;i++) Render->Destroy(Objs[i]);
+        delete Cam;
         delete g;
         delete Render;
-        delete Cam;
         mesh->Destroy();
     }
     
