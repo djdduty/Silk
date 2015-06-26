@@ -162,12 +162,28 @@ namespace Silk {
 
     void ObjectList::RemoveObject(RenderObject* Obj)
     {
-        SilkObjectVector TypeVector;
-        switch(Obj->m_Type) {
-            case ROT_MESH:   { TypeVector = m_MeshObjects  ; break; }
-            case ROT_LIGHT:  { TypeVector = m_LightObjects ; break; }
-            case ROT_CAMERA: { TypeVector = m_CameraObjects; break; }
-            default: {
+        switch(Obj->m_Type)
+        {
+            case ROT_MESH  :
+            { 
+                if(Obj && Obj->m_List == this) m_MeshObjects.erase(m_MeshObjects.begin()+Obj->m_ListIndex);
+                for(i32 i = Obj->m_ListIndex;i < m_MeshObjects.size();i++) m_MeshObjects[i]->m_ListIndex = i;
+                break;
+            }
+            case ROT_LIGHT :
+            { 
+                if(Obj && Obj->m_List == this) m_LightObjects.erase(m_LightObjects.begin()+Obj->m_ListIndex);
+                for(i32 i = Obj->m_ListIndex;i < m_LightObjects.size();i++) m_LightObjects[i]->m_ListIndex = i;
+                break;
+            }
+            case ROT_CAMERA:
+            { 
+                if(Obj && Obj->m_List == this) m_CameraObjects.erase(m_CameraObjects.begin()+Obj->m_ListIndex);
+                for(i32 i = Obj->m_ListIndex;i < m_CameraObjects.size();i++) m_CameraObjects[i]->m_ListIndex = i;
+                break;
+            }
+            default:
+            {
                 break;
             }
         }
@@ -193,23 +209,20 @@ namespace Silk {
                 }
             }
             
-            /* Remove it from instance list if necessary*/
+            /* Remove it from instance list if necessary */
             if(Obj->m_Object->IsInstanced())
             {
                 Obj->m_Object->RemoveInstance(Obj->m_InstanceIndex);
-                for(i32 i = Obj->m_InstanceIndex;i < Obj->m_InstanceList->size();i++)
+                
+                for(i32 i = Obj->m_InstanceIndex;i < Obj->m_Mesh->m_Instances.size() - 1;i++)
                 {
-                    (*Obj->m_InstanceList)[i]->m_InstanceIndex--;
+                    Obj->m_Mesh->m_Instances[i] = Obj->m_Mesh->m_Instances[i + 1];
+                    RenderObject* Instance = Obj->m_Mesh->m_Instances[i];
+                    Instance->m_InstanceIndex--;
                 }
-                Obj->m_InstanceList->pop_back();
+                Obj->m_Mesh->m_Instances.pop_back();
             }
         }
-
-        if(Obj && Obj->m_List == this)
-            TypeVector.erase(TypeVector.begin()+Obj->m_ListIndex);
-
-        for(i32 i = Obj->m_ListIndex; i < TypeVector.size(); i++)
-            TypeVector[i]->m_ListIndex = i;
 
         Obj->m_List = 0;
         Obj->m_ListIndex = 0;

@@ -61,6 +61,7 @@ namespace Silk
         protected:
             friend class RenderObject;
             friend class Renderer;
+            friend class ObjectList;
             ~Mesh();
             RenderObject* m_Obj;
             i32 GetAttributeIndex(i32 ShaderIndex) const;

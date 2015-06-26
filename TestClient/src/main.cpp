@@ -19,7 +19,7 @@ using namespace Silk;
 
 using namespace TestClient;
 
-#define ObjsSize 15000
+#define ObjsSize 10000
 
 typedef struct _Ray
 {
@@ -185,9 +185,7 @@ int main(int ArgC,char *ArgV[])
         Scalar AngularVelocity[ObjsSize];
         Scalar Mass[ObjsSize];
         
-        Scalar SpawnD  = 300.0f;
-        Scalar MinVel  = 60.0f;
-        Scalar MaxVel  = 180.0f;
+        Scalar SpawnD  = 100.0f;
         Scalar MinaVel = 50.0f;
         Scalar MaxaVel = 360.0f;
         Scalar MinMass = 1000.0f;
@@ -195,7 +193,7 @@ int main(int ArgC,char *ArgV[])
         Vec3 VelDir(0,1,0);
         Vec3 VelDirVar(0.01f,0.4f,0.01f);
         Scalar AngularDamping = 1;
-        Scalar LinearDamping  = 0.995f;
+        Scalar LinearDamping  = 0.95f;
         
         f64 G = 0.000000000066742;
         
@@ -257,8 +255,14 @@ int main(int ArgC,char *ArgV[])
             GetTimer(PollTime);
             
             StartTimer();
+            f32 DeltaTime = Win->GetElapsedTime() - LastTime;
+            LastTime = Win->GetElapsedTime();
+            Scalar pdt = DeltaTime * 1.9f;
+            if(glfwGetKey(Win->GetWindow(),GLFW_KEY_S) == GLFW_PRESS) pdt *= 0.01f;
+            
             r->ClearActiveFramebuffer();
-            a += 0.01f;
+            
+            a += 0.1f * pdt;
             Mat4 Rot0 = Rotation(Vec3(1,0,0),45 * sin(a * 0.1f));
             Scalar Dist = SpawnD * 2.5f + (sin(a * 0.5f) * SpawnD * 2.5f);
             Cam->SetTransform(Rotation(Vec3(0,1,0),a * 5.0f) * Translation(Vec3(0,Dist * sin(a * 0.1f),Dist)) * Rot0);// + (sin(a * 0.5f) * 2.0f)))));
@@ -279,11 +283,8 @@ int main(int ArgC,char *ArgV[])
             
             Ray r = unProject(Vec3(x,y,0),v,p,Vec4(Viewport[0],Viewport[1],Viewport[2],Viewport[3]));
             Vec3 WorldPt = r.Point + (r.Dir * Dist);
-            f32 DeltaTime = Win->GetElapsedTime() - LastTime;
-            LastTime = Win->GetElapsedTime();
             
             StartTimer();
-            Scalar pdt = DeltaTime * 1.9f;
             for(i32 i = 0;i < ObjsSize;i++)
             {
                 Scalar pMag = Position[i].Magnitude();
@@ -307,11 +308,11 @@ int main(int ArgC,char *ArgV[])
                     
                     Velocity[i] = Dir.Cross(Vec3(0,1,0)).Normalized() * sqrtf(((G * (100000000000.0 * Mass[i])) / Dist));
                 }
-                else if(pMag < 15.0f)
+                else if(pMag < 10.0f)
                 {
                     Velocity[i].y = (Random(0.0f,1.0f) < 0.5f) ? Random(-1000.0f,-500.0f) : Random(500.0f,1000.0f);
-                    Velocity[i].x = Random(-0.001f,0.001f);
-                    Velocity[i].z = Random(-0.001f,0.001f);
+                    Velocity[i].x = Random(-0.0001f,0.0001f);
+                    Velocity[i].z = Random(-0.0001f,0.0001f);
                 }
                 
                 Scalar StarMass = 100000000000.0f;
@@ -330,11 +331,11 @@ int main(int ArgC,char *ArgV[])
                     Acceleration[i] += (Dir * ((G * (StarMass * Mass[i])) / (Dist * Dist)))*2;
                 }
                 
-                Velocity[i] *= LinearDamping;
+                Velocity[i] += -(Velocity[i] - (Velocity[i] * LinearDamping)) * pdt;
                 Velocity[i] += Acceleration[i] * pdt;
                 Position[i] += Velocity[i] * pdt;
                 
-                AngularVelocity[i] *= AngularDamping;
+                AngularVelocity[i] += -(AngularVelocity[i] - (AngularVelocity[i] * AngularDamping)) * pdt;
                 RotationAngle  [i] += AngularVelocity[i] * pdt;
                 
                 if(i == 0) Position[0] = WorldPt;
@@ -383,12 +384,12 @@ int main(int ArgC,char *ArgV[])
             }
         }
 
+        for(i32 i = 0;i < ObjsSize;i++) Render->Destroy(Objs[i]);
         Render->GetRasterizer()->Destroy(mat->GetShader());
         Render->Destroy(mat);
-        for(i32 i = 0;i < ObjsSize;i++) Render->Destroy(Objs[i]);
+        delete Cam;
         delete g;
         delete Render;
-        delete Cam;
         mesh->Destroy();
     }
     
