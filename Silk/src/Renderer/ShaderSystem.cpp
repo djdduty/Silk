@@ -24,6 +24,7 @@ namespace Silk
         Reset();
         m_NullModelUniforms = new ModelUniformSet(r);
         m_AllowInstancing = false;
+        m_AllowInstancedTextureMatrix = false;
     }
     ShaderGenerator::~ShaderGenerator()
     {
@@ -144,10 +145,8 @@ namespace Silk
         if(m_AttributeInputsUsed[IAT_BONE_WEIGHT               ]) VertexShader += string("in vec4 " ) + BoneWeightAttribName               + ";\n";
         if(m_AttributeInputsUsed[IAT_INSTANCE_TRANSFORM        ]) VertexShader += string("in mat4 " ) + InstanceTransformAttribName        + ";\n";
         if(m_AttributeInputsUsed[IAT_INSTANCE_NORMAL_TRANSFORM ]) VertexShader += string("in mat4 " ) + InstanceNormalTransformAttribName  + ";\n";
-        if(m_AttributeInputsUsed[IAT_INSTANCE_TEXTURE_TRANSFORM]) VertexShader += string("in mat4 " ) + InstanceTextureTransformAttribName + ";\n";
+        if(m_AllowInstancedTextureMatrix) if(m_AttributeInputsUsed[IAT_INSTANCE_TEXTURE_TRANSFORM]) VertexShader += string("in mat4 " ) + InstanceTextureTransformAttribName + ";\n";
 
-        
-        
         /* Uniform dependencies */
         m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = m_AllowInstancing;
         
@@ -184,7 +183,8 @@ namespace Silk
             VertexShader += IsInstancedConditional_0;
             if(!SetPositionI ) VertexShader += DefaultPositionInstancedFunc   ;
             if(!SetNormalI   ) VertexShader += DefaultNormalInstancedFunc     ;
-            if(!SetTexCI     ) VertexShader += DefaultTexCoordInstancedFunc   ;
+            if(m_AllowInstancedTextureMatrix && !SetTexCI) VertexShader += DefaultTexCoordInstancedFunc   ;
+            else if(!SetTexCI) VertexShader += DefaultTexCoordNonInstancedFunc;
             VertexShader += IsInstancedConditional_1;
             if(!SetPositionNI) VertexShader += DefaultPositionNonInstancedFunc;
             if(!SetNormalNI  ) VertexShader += DefaultNormalNonInstancedFunc  ;

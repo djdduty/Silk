@@ -37,6 +37,7 @@ int main(int ArgC,char *ArgV[])
         ShaderGenerator* g = new ShaderGenerator(Render);
         g->SetShaderVersion(330);
         g->SetAllowInstancing(true);
+        g->SetAllowInstancedTextureMatrix(false);
         g->SetUniformInput(ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         g->SetUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
         
