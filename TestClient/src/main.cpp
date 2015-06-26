@@ -227,7 +227,13 @@ int main(int ArgC,char *ArgV[])
                     RenderPercent, RenderTime,
                     SwapPercent  , SwapTime);
             }
-            printf("FPS: %0.2f\n",1.0f / DeltaTime);
+			ElapsedTime += DeltaTime;
+			FrameCounter++;
+			if (ElapsedTime >= 1.0) {
+				printf("FPS: %d\n", FrameCounter);
+				FrameCounter = 0;
+				ElapsedTime = 0;
+			}
         }
 
         Render->GetRasterizer()->Destroy(mat->GetShader());
