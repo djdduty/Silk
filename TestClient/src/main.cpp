@@ -19,7 +19,7 @@ using namespace Silk;
 
 using namespace TestClient;
 
-#define ObjsSize 20000
+#define ObjsSize 15000
 
 typedef struct _Ray
 {
@@ -327,7 +327,7 @@ int main(int ArgC,char *ArgV[])
                     Vec3 Dir = (StarPt - Position[i]);
                     Scalar Dist = Dir.Magnitude();
                     StarMass = 1000000000.0f;
-                    Acceleration[i] += Dir * ((G * (StarMass * Mass[i])) / (Dist * Dist));
+                    Acceleration[i] += (Dir * ((G * (StarMass * Mass[i])) / (Dist * Dist)))*2;
                 }
                 
                 Velocity[i] *= LinearDamping;
