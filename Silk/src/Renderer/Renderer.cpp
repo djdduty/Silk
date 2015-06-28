@@ -56,7 +56,7 @@ namespace Silk
     }
     void Renderer::Render(i32 PrimType)
     {
-        if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 5 == 0) UpdateDefaultTexture();
+        if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 3 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         SilkObjectVector Lights = m_ObjectList->GetLightList();

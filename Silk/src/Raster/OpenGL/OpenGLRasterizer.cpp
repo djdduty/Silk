@@ -169,7 +169,6 @@ namespace Silk
             {
                 glDeleteBuffers(1,&m_Attributes[m_InstanceTextureTransformsID].BufferID);
                 m_Attributes.erase(m_Attributes.begin() + m_InstanceTextureTransformsID - 2);
-                
             }
             m_InstanceTransformsID = m_InstanceNormalTransformsID = m_InstanceTextureTransformsID = -1;
         }
