@@ -23,7 +23,7 @@ namespace Silk
         if(m_Pixels) delete [] m_Pixels;
         m_Width   = Width;
         m_Height  = Height;
-        m_Pixels  = new u32[Width * Height];
+        m_Pixels  = new u32[(Width * Height) + 1];
         m_MemSize = Width * Height * sizeof(u32);
     }
     void Texture::SetPixel(const Vec2 &Coord,const Vec4 &Color)
