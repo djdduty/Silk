@@ -35,7 +35,7 @@ namespace Silk
             Vec4 m_Position ;
             Vec4 m_Direction;
             Vec4 m_Color    ;
-            f32 m_Cutoff    ; //this doesn't seem like a proper spotlight value
+            f32 m_Cutoff    ;
             f32 m_Soften    ;
             f32 m_Power     ;
 
@@ -47,7 +47,7 @@ namespace Silk
             } m_Attenuation;
         
             LightType m_Type;
-            f32 _Padding; //Keep this data structure 16-byte aligned
+            f32 _Padding;
     };
 }
 

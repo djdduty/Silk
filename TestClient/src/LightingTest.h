@@ -27,7 +27,8 @@ namespace TestClient
             Mesh        * m_Mesh     ;
             Texture     * m_Diffuse  ;
             Material    * m_Material ;
-            RenderObject* m_Light    ;
+            RenderObject* m_Light0   ;
+            RenderObject* m_Light1   ;
     };
 };
 

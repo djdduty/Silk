@@ -99,16 +99,16 @@ namespace Silk
         {
             Light* Lt = ((Light**)Data)[i];
             
-            glUniform3f(m_PositionLocs   [i],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z  );
-            glUniform3f(m_DirectionLocs  [i],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z  );
-            glUniform4f(m_ColorLocs      [i],Lt->m_Color.x,Lt->m_Color.y,Lt->m_Color.z,Lt->m_Color.w);
-            glUniform1f(m_CutoffLocs     [i],Lt->m_Cutoff                                           );
-            glUniform1f(m_SoftenLocs     [i],Lt->m_Soften                                           );
-            glUniform1f(m_PowerLocs      [i],Lt->m_Power                                            );
-            glUniform1f(m_ConstantLocs   [i],Lt->m_Attenuation.Constant                             );
-            glUniform1f(m_LinearLocs     [i],Lt->m_Attenuation.Linear                               );
-            glUniform1f(m_ExponentialLocs[i],Lt->m_Attenuation.Exponential                          );
-            glUniform1i(m_TypeLocs       [i],Lt->m_Type                                             );
+            glUniform4f(m_PositionLocs   [i],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z,Lt->m_Position .w);
+            glUniform4f(m_DirectionLocs  [i],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z,Lt->m_Direction.w);
+            glUniform4f(m_ColorLocs      [i],Lt->m_Color    .x,Lt->m_Color    .y,Lt->m_Color    .z,Lt->m_Color    .w);
+            glUniform1f(m_CutoffLocs     [i],Lt->m_Cutoff                                                           );
+            glUniform1f(m_SoftenLocs     [i],Lt->m_Soften                                                           );
+            glUniform1f(m_PowerLocs      [i],Lt->m_Power                                                            );
+            glUniform1f(m_ConstantLocs   [i],Lt->m_Attenuation.Constant                                             );
+            glUniform1f(m_LinearLocs     [i],Lt->m_Attenuation.Linear                                               );
+            glUniform1f(m_ExponentialLocs[i],Lt->m_Attenuation.Exponential                                          );
+            glUniform1i(m_TypeLocs       [i],Lt->m_Type                                                             );
         }
     }
     void UC_Light::AcquireLocations(u32 PID)
@@ -137,9 +137,9 @@ namespace Silk
                 m_CutoffLocs     [i] = glGetUniformLocation(PID,FormatString("%s[%d].Cutoff"      ,m_Def->Name.c_str(),i).c_str());
                 m_SoftenLocs     [i] = glGetUniformLocation(PID,FormatString("%s[%d].Soften"      ,m_Def->Name.c_str(),i).c_str());
                 m_PowerLocs      [i] = glGetUniformLocation(PID,FormatString("%s[%d].Power"       ,m_Def->Name.c_str(),i).c_str());
-                m_ConstantLocs   [i] = glGetUniformLocation(PID,FormatString("%s[%d].CAttenuation",m_Def->Name.c_str(),i).c_str());
-                m_LinearLocs     [i] = glGetUniformLocation(PID,FormatString("%s[%d].LAttenuation",m_Def->Name.c_str(),i).c_str());
-                m_ExponentialLocs[i] = glGetUniformLocation(PID,FormatString("%s[%d].QAttenuation",m_Def->Name.c_str(),i).c_str());
+                m_ConstantLocs   [i] = glGetUniformLocation(PID,FormatString("%s[%d].CAtt"        ,m_Def->Name.c_str(),i).c_str());
+                m_LinearLocs     [i] = glGetUniformLocation(PID,FormatString("%s[%d].LAtt"        ,m_Def->Name.c_str(),i).c_str());
+                m_ExponentialLocs[i] = glGetUniformLocation(PID,FormatString("%s[%d].QAtt"        ,m_Def->Name.c_str(),i).c_str());
                 m_TypeLocs       [i] = glGetUniformLocation(PID,FormatString("%s[%d].Type"        ,m_Def->Name.c_str(),i).c_str());
             }
         }
@@ -151,9 +151,9 @@ namespace Silk
             m_CutoffLocs     [0] = glGetUniformLocation(PID,FormatString("%s.Cutoff"      ,m_Def->Name.c_str()).c_str());
             m_SoftenLocs     [0] = glGetUniformLocation(PID,FormatString("%s.Soften"      ,m_Def->Name.c_str()).c_str());
             m_PowerLocs      [0] = glGetUniformLocation(PID,FormatString("%s.Power"       ,m_Def->Name.c_str()).c_str());
-            m_ConstantLocs   [0] = glGetUniformLocation(PID,FormatString("%s.CAttenuation",m_Def->Name.c_str()).c_str());
-            m_LinearLocs     [0] = glGetUniformLocation(PID,FormatString("%s.LAttenuation",m_Def->Name.c_str()).c_str());
-            m_ExponentialLocs[0] = glGetUniformLocation(PID,FormatString("%s.QAttenuation",m_Def->Name.c_str()).c_str());
+            m_ConstantLocs   [0] = glGetUniformLocation(PID,FormatString("%s.CAtt"        ,m_Def->Name.c_str()).c_str());
+            m_LinearLocs     [0] = glGetUniformLocation(PID,FormatString("%s.LAtt"        ,m_Def->Name.c_str()).c_str());
+            m_ExponentialLocs[0] = glGetUniformLocation(PID,FormatString("%s.QAtt"        ,m_Def->Name.c_str()).c_str());
             m_TypeLocs       [0] = glGetUniformLocation(PID,FormatString("%s.Type"        ,m_Def->Name.c_str()).c_str());
         }
     }

@@ -4,6 +4,35 @@
 
 namespace TestClient
 {
+    static string FragmentShaderPointLight =
+    string("[PointLight]") +
+    "\t\t\t\tvec3 Normal = normalize(o_Normal);\n" +
+    "\t\t\t\tvec4 Color = texture(u_DiffuseMap,o_TexCoord);\n" +
+    "\t\t\t\tvec3 Dir = u_Lights[l].Position.xyz - " + PositionOutName + ";\n" +
+    "\t\t\t\tfloat Dist = length(Dir);\n" +
+    "\t\t\t\tfloat FadeFactor = 1.0;\n" +
+    "\t\t\t\tfloat MaxDist = 1.0 / sqrt(u_Lights[l].QAtt * 0.001);\n" +
+    "\t\t\t\tif(Dist > MaxDist) discard;\n" +
+    "\t\t\t\telse FadeFactor = 1.0 - ((Dist / MaxDist) * 2.0);\n" +
+    "\t\t\t\tDir *= (1.0 / Dist);\n\n" +
+    "\t\t\t\t//Compute specular power\n" +
+    "\t\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n" +
+    "\t\t\t\tfloat SpecularPower = 0.0;\n" +
+    "\t\t\t\tif(ndotl > 0.0)\n" +
+    "\t\t\t\t{\n" +
+    "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n" +
+    "\t\t\t\t\tvec3 HalfDir        = normalize(Dir + PosToCam);\n" +
+    "\t\t\t\t\tfloat SpecularAngle = max(dot(HalfDir,Normal),0.0);\n" +
+    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,16.0f);\n" +
+    "\t\t\t\t}\n\n" +
+    "\t\t\t\t//Light equation\n" +
+    "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 1.0);\n" +
+    "\t\t\t\t//Attenuation\n" +
+    "\t\t\t\tFinalColor *= 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n" +
+    "\t\t\t\tFinalColor *= u_Lights[l].Power * FadeFactor;\n" +
+    "\t\t\t\t" + FragmentColorOutputName + " = FinalColor;\n" +
+    "[/PointLight]";
+    
     LightingTest::LightingTest()
     {
     }
@@ -20,16 +49,27 @@ namespace TestClient
     }
     void LightingTest::LoadLight()
     {
-        m_Light = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
+        m_Light0 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
         Light* L = new Light(LT_POINT);
-        m_Light->SetLight(L);
-        L->m_Color = Vec4(1,0,0,1);
-        L->m_Power = 10;//?
-        L->m_Attenuation.Constant    = 10;//?
-        L->m_Attenuation.Linear      = 0; //?
-        L->m_Attenuation.Exponential = 0; //?
-        m_Light->SetTransform(Translation(Vec3(-5,0,0)));
-        m_Renderer->AddRenderObject(m_Light);
+        m_Light0->SetLight(L);
+        L->m_Color = Vec4(1,1,1,1);
+        L->m_Power = 5;//?
+        L->m_Attenuation.Constant    = 0.01f; //?
+        L->m_Attenuation.Linear      = 0.01f; //?
+        L->m_Attenuation.Exponential = 0.80f; //?
+        m_Light0->SetTransform(Translation(Vec3(1,1,1)));
+        m_Renderer->AddRenderObject(m_Light0);
+        
+        m_Light1 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
+        L = new Light(LT_POINT);
+        m_Light1->SetLight(L);
+        L->m_Color = Vec4(1,1,1,1);
+        L->m_Power = 5;//?
+        L->m_Attenuation.Constant    = 0.01f; //?
+        L->m_Attenuation.Linear      = 0.01f; //?
+        L->m_Attenuation.Exponential = 0.80f; //?
+        m_Light1->SetTransform(Translation(Vec3(1,4,0)));
+        m_Renderer->AddRenderObject(m_Light1);
     }
     void LightingTest::LoadMesh()
     {
@@ -58,19 +98,29 @@ namespace TestClient
         m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
         
-        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION       ,true);
-        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL         ,true);
-        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD       ,true);
+        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION         ,true);
+        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL           ,true);
+        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD         ,true);
         
-        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL        ,true);
-        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD      ,true);
+        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION         ,true);
+        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL           ,true);
+        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD         ,true);
         
-        m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                ,true);
-        m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR          ,true);
+        m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                  ,true);
+        m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR            ,true);
+        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_PHONG);
         
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n[/NdotL]"),0);
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[SetColor]f_Color = u_Lights[0].Color;// * max(NdotL,0.2);[/SetColor]"),1);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>(FragmentShaderPointLight.c_str()       ),0);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SpotLight][/SpotLight]"              ),1);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[DirectionalLight][/DirectionalLight]"),2);
         
+        /*
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[LtoS]vec3 LtoS  = o_Position - u_Lights[0].Position.xyz;[/LtoS]"                                             ),0);
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[Dist]float Dist = length(LtoS);\n\tLtoS *= (1.0 / Dist);\n[/Dist]"                                           ),1);
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n[/NdotL]"                                                    ),2);
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[Atten]float Att = u_Lights[0].CAtt + (u_Lights[0].LAtt * Dist) + (u_Lights[0].QAtt * Dist * Dist);\n[/Atten]"),3);
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord) * Att;// * max(NdotL,0.2);[/SetColor]"                   ),4);
+        */
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
         m_ShaderGenerator->Reset();
@@ -109,9 +159,10 @@ namespace TestClient
         while(IsRunning())
         {
             a += 15.0f * GetDeltaTime();
-            //m_Camera->SetTransform(t * Rotation(Vec3(0,1,0),a));
-            m_Object->SetTransform(Rotation(Vec3(0,1,0),a));
-            //m_Object->SetTextureTransform(Rotation(Vec3(0,0,1),a));
+            //m_Object->SetTransform(Rotation(Vec3(0,1,0),a));
+            
+            Mat4 r = Rotation(Vec3(0,1,0),a * 6.0f);
+            m_Light1->SetTransform(r * Translation(Vec3(2,4,0)));
             
             m_Renderer->Render(GL_TRIANGLES);
         }
@@ -119,10 +170,14 @@ namespace TestClient
 
     void LightingTest::Shutdown()
     {
-        delete m_ObjLoader;
+        delete m_Light0->GetLight();
+        delete m_Light1->GetLight();
+        m_Renderer->Destroy(m_Light0);
+        m_Renderer->Destroy(m_Light1);
         m_Renderer->Destroy(m_Material);
         m_Renderer->Destroy(m_Object);
         m_Mesh->Destroy();
+        delete m_ObjLoader;
         
         m_ObjLoader = 0;
         m_Material  = 0;
