@@ -60,7 +60,11 @@ namespace Silk
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         SilkObjectVector Lights = m_ObjectList->GetLightList();
-        
+        std::vector<Light*> LightsVector;
+        for(i32 i = 0; i < Lights.size(); i++) {
+            LightsVector.push_back(Lights[i]->GetLight());
+        }
+
         /*
          * To do:
          * Determine which lights affect which objects using a scene octree
@@ -72,7 +76,7 @@ namespace Silk
         SilkObjectVector MeshesRendered;
         for(i32 i = 0;i < ShaderCount;i++)
         {
-            Shader*          Shader = m_ObjectList->GetShader        (i);
+            Shader* Shader = m_ObjectList->GetShader(i);
             if(!Shader) continue;
             
             Shader->Enable();
@@ -83,6 +87,7 @@ namespace Silk
                 RenderObject* Obj = Meshes[m];
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
                 {
+                    Obj->GetUniformSet()->SetLights(LightsVector);
                     if(Obj->m_Object->IsInstanced())
                     {
                         //Update obj instance data on the CPU side

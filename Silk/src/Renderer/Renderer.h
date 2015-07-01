@@ -15,7 +15,7 @@ namespace Silk
             Renderer(Rasterizer* Raster);
             virtual ~Renderer();
         
-            Rasterizer* GetRasterizer()               { return m_Raster; }
+            Rasterizer*    GetRasterizer           () { return m_Raster; }
         
             Texture*       GetDefaultTexture       ();
             UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }

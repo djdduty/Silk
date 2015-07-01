@@ -16,6 +16,20 @@ namespace TestClient
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
         LoadMesh();
+        LoadLight();
+    }
+    void LightingTest::LoadLight()
+    {
+        m_Light = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
+        Light* L = new Light(LT_POINT);
+        m_Light->SetLight(L);
+        L->m_Color = Vec4(1,0,0,1);
+        L->m_Power = 10;//?
+        L->m_Attenuation.Constant    = 10;//?
+        L->m_Attenuation.Linear      = 0; //?
+        L->m_Attenuation.Exponential = 0; //?
+        m_Light->SetTransform(Translation(Vec3(-5,0,0)));
+        m_Renderer->AddRenderObject(m_Light);
     }
     void LightingTest::LoadMesh()
     {
@@ -55,7 +69,7 @@ namespace TestClient
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR          ,true);
         
         m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n[/NdotL]"),0);
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord);// * max(NdotL,0.2);[/SetColor]"),1);
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[SetColor]f_Color = u_Lights[0].Color;// * max(NdotL,0.2);[/SetColor]"),1);
         
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
@@ -79,7 +93,7 @@ namespace TestClient
                 C.z = f32(Pixels[Idx + 2]) * Inv255;
                 C.w = f32(Pixels[Idx + 3]) * Inv255;
                 
-                m_Diffuse->SetPixel(Vec2(x,h - y),C);
+                m_Diffuse->SetPixel(Vec2(x,(h-1) - y),C);
             }
         }
         m_Diffuse->UpdateTexture();

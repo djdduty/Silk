@@ -13,6 +13,7 @@ namespace TestClient
             virtual void Initialize();
             void LoadMesh();
             void LoadMaterial();
+            void LoadLight();
         
             virtual void Run();
         
@@ -26,6 +27,7 @@ namespace TestClient
             Mesh        * m_Mesh     ;
             Texture     * m_Diffuse  ;
             Material    * m_Material ;
+            RenderObject* m_Light    ;
     };
 };
 

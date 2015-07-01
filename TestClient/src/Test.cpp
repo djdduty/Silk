@@ -122,7 +122,7 @@ namespace TestClient
             m_FramePrintTime += m_DeltaTime;
             if(m_FramePrintTime > m_FramePrintInterval)
             {
-                printf("Average FPS: %0.2f\n",f32(m_FrameCounter) / m_FramePrintInterval);
+                //printf("Average FPS: %0.2f\n",f32(m_FrameCounter) / m_FramePrintInterval);
                 
                 m_FramePrintTime  = 0.0f;
                 m_FrameCounter = 0;
