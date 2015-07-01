@@ -1,6 +1,7 @@
 #include <LightingTest.h>
 #include <LodePNG.h>
 #include <ObjLoader.h>
+#include <math.h>
 
 namespace TestClient
 {
@@ -10,10 +11,6 @@ namespace TestClient
     "\t\t\t\tvec4 Color = texture(u_DiffuseMap,o_TexCoord);\n" +
     "\t\t\t\tvec3 Dir = u_Lights[l].Position.xyz - " + PositionOutName + ";\n" +
     "\t\t\t\tfloat Dist = length(Dir);\n" +
-    "\t\t\t\tfloat FadeFactor = 1.0;\n" +
-    "\t\t\t\tfloat MaxDist = 1.0 / sqrt(u_Lights[l].QAtt * 0.001);\n" +
-    "\t\t\t\tif(Dist > MaxDist) discard;\n" +
-    "\t\t\t\telse FadeFactor = 1.0 - ((Dist / MaxDist) * 2.0);\n" +
     "\t\t\t\tDir *= (1.0 / Dist);\n\n" +
     "\t\t\t\t//Compute specular power\n" +
     "\t\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n" +
@@ -23,14 +20,14 @@ namespace TestClient
     "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n" +
     "\t\t\t\t\tvec3 HalfDir        = normalize(Dir + PosToCam);\n" +
     "\t\t\t\t\tfloat SpecularAngle = max(dot(HalfDir,Normal),0.0);\n" +
-    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,16.0f);\n" +
+    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,32.0f);\n" +
     "\t\t\t\t}\n\n" +
     "\t\t\t\t//Light equation\n" +
     "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 1.0);\n" +
     "\t\t\t\t//Attenuation\n" +
     "\t\t\t\tFinalColor *= 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n" +
-    "\t\t\t\tFinalColor *= u_Lights[l].Power * FadeFactor;\n" +
-    "\t\t\t\t" + FragmentColorOutputName + " = FinalColor;\n" +
+    "\t\t\t\tFinalColor *= u_Lights[l].Power;\n" +
+    "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n" +
     "[/PointLight]";
     
     LightingTest::LightingTest()
@@ -53,22 +50,21 @@ namespace TestClient
         Light* L = new Light(LT_POINT);
         m_Light0->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 5;//?
+        L->m_Power = 20;
         L->m_Attenuation.Constant    = 0.01f; //?
         L->m_Attenuation.Linear      = 0.01f; //?
         L->m_Attenuation.Exponential = 0.80f; //?
-        m_Light0->SetTransform(Translation(Vec3(1,1,1)));
+        m_Light0->SetTransform(Translation(Vec3(0,1,-5)));
         m_Renderer->AddRenderObject(m_Light0);
         
         m_Light1 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
         L = new Light(LT_POINT);
         m_Light1->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 5;//?
+        L->m_Power = 5;
         L->m_Attenuation.Constant    = 0.01f; //?
         L->m_Attenuation.Linear      = 0.01f; //?
         L->m_Attenuation.Exponential = 0.80f; //?
-        m_Light1->SetTransform(Translation(Vec3(1,4,0)));
         m_Renderer->AddRenderObject(m_Light1);
     }
     void LightingTest::LoadMesh()
@@ -94,7 +90,7 @@ namespace TestClient
     void LightingTest::LoadMaterial()
     {
         m_ShaderGenerator->SetShaderVersion  (330);
-        m_ShaderGenerator->SetAllowInstancing(true);
+        m_ShaderGenerator->SetAllowInstancing(false);
         m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
         
@@ -158,10 +154,11 @@ namespace TestClient
         Scalar a = 0.0f;
         while(IsRunning())
         {
-            a += 15.0f * GetDeltaTime();
-            //m_Object->SetTransform(Rotation(Vec3(0,1,0),a));
+            a += 7.5f * GetDeltaTime();
+            m_Object->SetTransform(Rotation(Vec3(0,1,0),a));
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 6.0f);
+            m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
             m_Light1->SetTransform(r * Translation(Vec3(2,4,0)));
             
             m_Renderer->Render(GL_TRIANGLES);

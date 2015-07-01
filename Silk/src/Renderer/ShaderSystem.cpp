@@ -153,7 +153,7 @@ namespace Silk
         if(m_AllowInstancedTextureMatrix) if(m_AttributeInputsUsed[IAT_INSTANCE_TEXTURE_TRANSFORM]) VertexShader += string("in mat4 " ) + InstanceTextureTransformAttribName + ";\n";
 
         /* Uniform dependencies */
-        m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = m_AllowInstancing;
+        if(!m_UniformInputsUsed[IUT_OBJECT_UNIFORMS]) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = m_AllowInstancing;
         
         /*
          * Uniform inputs
@@ -349,8 +349,12 @@ namespace Silk
         if(m_FragmentOutputsUsed[OFT_TANGENT  ] && !SetTangent ) FragmentShader += string("\t") + FragmentTangentOutputName   + " = " + TangentOutName   + ";\n";
         if(m_FragmentOutputsUsed[OFT_COLOR    ] && !SetColor   )
         {
-            if(!m_MapTypesUsed[Material::MT_DIFFUSE ]) FragmentShader += string("\t") + FragmentColorOutputName     + " = " + ColorOutName     + ";\n";
-            else FragmentShader += string("\t") + FragmentColorOutputName + " = texture(" + GetShaderMapName(Material::MT_DIFFUSE  ) + "," + TexCoordOutName + ");\n";
+            if(m_LightingMode == LM_PHONG) FragmentShader += string("\t") + FragmentColorOutputName + " = vec4(0,0,0,0);\n";
+            else
+            {
+                if(!m_MapTypesUsed[Material::MT_DIFFUSE ]) FragmentShader += string("\t") + FragmentColorOutputName     + " = " + ColorOutName     + ";\n";
+                else FragmentShader += string("\t") + FragmentColorOutputName + " = texture(" + GetShaderMapName(Material::MT_DIFFUSE  ) + "," + TexCoordOutName + ");\n";
+            }
         }
         
         while(UnsortedBlockIndices.size() != 0)
