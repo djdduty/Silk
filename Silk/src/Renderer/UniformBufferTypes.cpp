@@ -25,7 +25,7 @@ namespace Silk
         m_MVP     =
         m_Normal  = Mat4::Identity;
         
-        m_TexMatrixUpdated = m_ModelMatrixUpdated = true;
+        m_TexMatrixUpdated = m_ModelMatrixUpdated = m_IsInstancedChanged = true;
         m_HasInstances = false;
         
         SetLights(vector<Light*>());
@@ -71,8 +71,8 @@ namespace Silk
     {
         m_ModelMatrixUpdated = true;
         m_Model = M;
-        m_Normal = m_Model.Inverse().Transpose();
-        m_Normal[0][3] = m_Normal[1][3] = m_Normal[2][3] = 0.0f;
+        //m_Normal = m_Model.Inverse().Transpose();
+        //m_Normal[0][3] = m_Normal[1][3] = m_Normal[2][3] = 0.0f;
     }
     void ModelUniformSet::SetTextureMatrix(const Mat4 &T)
     {
@@ -90,8 +90,17 @@ namespace Silk
         if(Cam)
         {
             Mat4 m = m_Model;
+            m_MV  = Cam->GetInverseTransform() * m   ;
+            m_MVP = Cam->GetProjection      () * m_MV;
+            
+            m_UniformBuffer->SetUniform(m_iMV ,m_MV) ;
+            m_UniformBuffer->SetUniform(m_iMVP,m_MVP);
+            
             if(m_ModelMatrixUpdated)
             {
+                m_Normal = m_MV.Transpose().Inverse();
+                m_Normal[0][3] = m_Normal[1][3] = m_Normal[2][3] = 0.0f;
+                
                 if(m_Object->IsInstanced())
                 {
                     m_UniformBuffer->SetUniform(m_iModel ,Mat4::Identity);
@@ -106,12 +115,6 @@ namespace Silk
                 
                 m_ModelMatrixUpdated = false;
             }
-
-            m_MV  = Cam->GetInverseTransform() * m   ;
-            m_MVP = Cam->GetProjection      () * m_MV;
-            
-            m_UniformBuffer->SetUniform(m_iMV ,m_MV) ;
-            m_UniformBuffer->SetUniform(m_iMVP,m_MVP);
         }
         else if(m_ModelMatrixUpdated)
         {
@@ -135,7 +138,7 @@ namespace Silk
         
         if(m_IsInstancedChanged)
         {
-            m_UniformBuffer->SetUniform(m_iIsInstanced,1);
+            m_UniformBuffer->SetUniform(m_iIsInstanced,(i32)m_HasInstances);
             m_IsInstancedChanged = false;
         }
         

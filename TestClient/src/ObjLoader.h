@@ -1,42 +1,32 @@
 #pragma once
-#include <vector>
 #include <Math/Math.h>
+#include <vector>
 
+using namespace std;
 using namespace Silk;
 namespace TestClient
 {
-    struct Face
-    {
-        int a;
-        int b;
-        int c;
-    };
-
     class ObjLoader
     {
         public:
-            ObjLoader();
+            ObjLoader () { }
+            ObjLoader (CString Filename) { Load(Filename); }
+            ~ObjLoader() { }
 
-            void load(char* filename);
+            void Load(CString Filename);
 
-            int getIndexCount();
-            int getVertCount();
+            i32 GetIndexCount() const { return m_Indices  .size(); }
+            i32 GetVertCount () const { return m_Positions.size(); }
 
-            const unsigned int* getFaces();
-            const float* getPositions();
-            const float* getNormals();
-
-            int getTexCoordLayers();
-            const float* getTexCoords(int multiTexCoordLayer);
+            const u32* GetIndices  () { return &m_Indices  [0]  ; }
+            const f32* GetPositions() { return &m_Positions[0].x; }
+            const f32* GetNormals  () { return &m_Normals  [0].x; }
+            const f32* GetTexCoords() { return &m_TexCoords[0].x; }
 
         private:
-
-            std::vector<Face> Faces;
-            std::vector<Vec3> Positions;
-            std::vector<Vec3> Normals;
-
-            // obj's only have 1 layer ever
-            std::vector<Vec2> TexCoords;
-            unsigned int TexCoordLayers;
+            vector<u32 > m_Indices;
+            vector<Vec3> m_Positions;
+            vector<Vec3> m_Normals;
+            vector<Vec2> m_TexCoords;
     };
 }

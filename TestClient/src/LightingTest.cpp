@@ -19,22 +19,23 @@ namespace TestClient
     }
     void LightingTest::LoadMesh()
     {
-        m_ObjLoader->load(const_cast<CString>("LightingTest/Scene.obj"));
+        m_ObjLoader->Load(const_cast<CString>("LightingTest/Scene.object"));
         
         m_Mesh = new Mesh();
-        m_Mesh->SetVertexBuffer  (m_ObjLoader->getVertCount (),const_cast<f32*>(m_ObjLoader->getPositions( )));
-        m_Mesh->SetNormalBuffer  (m_ObjLoader->getVertCount (),const_cast<f32*>(m_ObjLoader->getNormals  ( )));
-        m_Mesh->SetTexCoordBuffer(m_ObjLoader->getVertCount (),const_cast<f32*>(m_ObjLoader->getTexCoords(0)));
-        m_Mesh->SetIndexBuffer   (m_ObjLoader->getIndexCount(),const_cast<u32*>(m_ObjLoader->getFaces    ( )));
+        m_Mesh->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
+        m_Mesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
+        m_Mesh->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
         
         m_Object = m_Renderer->CreateRenderObject(ROT_MESH,false);
         m_Object->SetMesh(m_Mesh,m_Material);
         m_Renderer->AddRenderObject(m_Object);
         
-        m_Object->SetTransform(Mat4::Identity);
+        m_Object->SetTransform(Translation(Vec3(0,0,0)));
         m_Object->SetTextureTransform(Mat4::Identity);
         
-        glDisable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
     }
     void LightingTest::LoadMaterial()
     {
@@ -53,8 +54,8 @@ namespace TestClient
         m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                ,true);
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR          ,true);
         
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n\tif(NdotL < 0.0) NdotL = -NdotL;[/NdotL]"),0);
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[SetColor]f_Color = vec4(1,1,1,1);//texture(u_DiffuseMap,o_TexCoord) * min(NdotL,0.5);[/SetColor]"),1);
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n[/NdotL]"),0);
+        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord);// * max(NdotL,0.2);[/SetColor]"),1);
         
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
@@ -62,7 +63,7 @@ namespace TestClient
         
         vector<u8> Pixels;
         u32 w,h;
-        lodepng::decode(Pixels,w,h,"LightingTest/Test.png");
+        lodepng::decode(Pixels,w,h,"LightingTest/Diffuse.png");
         m_Diffuse = m_Rasterizer->CreateTexture();
         m_Diffuse->CreateTexture(w,h);
         f32 Inv255 = 1.0f / 255.0f;
@@ -88,12 +89,15 @@ namespace TestClient
 
     void LightingTest::Run()
     {
-        Mat4 t = Translation(Vec3(0,0,-10));
+        Mat4 t = Translation(Vec3(0,4,10));
+        m_Camera->SetTransform(t);
         Scalar a = 0.0f;
         while(IsRunning())
         {
             a += 15.0f * GetDeltaTime();
-            m_Camera->SetTransform(Rotation(Vec3(0,1,0),a));
+            //m_Camera->SetTransform(t * Rotation(Vec3(0,1,0),a));
+            m_Object->SetTransform(Rotation(Vec3(0,1,0),a));
+            //m_Object->SetTextureTransform(Rotation(Vec3(0,0,1),a));
             
             m_Renderer->Render(GL_TRIANGLES);
         }

@@ -30,16 +30,16 @@ namespace Silk
     string("\t\t") + PositionOutName + " = (u_Model * vec4(" PositionAttribName + ",1.0)).xyz;\n";
     
     static string DefaultNormalInstancedFunc =
-    string("\t\t") + NormalOutName + " = (" + InstanceNormalTransformAttribName + " * vec4(" + NormalAttribName + ",1.0)).xyz;\n";
+    string("\t\t") + NormalOutName + " = normalize((" + InstanceNormalTransformAttribName + " * vec4(" + NormalAttribName + ",1.0)).xyz);\n";
     
     static string DefaultNormalNonInstancedFunc =
-    string("\t\t") + NormalOutName + " = (u_Normal * vec4(" + NormalAttribName + ",1.0)).xyz;\n";
+    string("\t\t") + NormalOutName + " = normalize((u_Normal * vec4(" + NormalAttribName + ",1.0)).xyz);\n";
     
     static string DefaultTangentInstancedFunc =
-    string("\t\t") + TangentOutName + " = (" + InstanceNormalTransformAttribName + " * vec4(" + TangentAttribName + ",1.0)).xyz;\n";
+    string("\t\t") + TangentOutName + " = normalize(" + InstanceNormalTransformAttribName + " * vec4(" + TangentAttribName + ",1.0)).xyz);\n";
     
     static string DefaultTangentNonInstancedFunc =
-    string("\t\t") + TangentOutName + " = (u_Normal * vec4(" + TangentAttribName + ",1.0)).xyz;\n";
+    string("\t\t") + TangentOutName + " = normalize((u_Normal * vec4(" + TangentAttribName + ",1.0)).xyz);\n";
     
     static string DefaultTexCoordInstancedFunc =
     string("\t\t") + TexCoordOutName + " = (" + InstanceTextureTransformAttribName + " * vec4(" + TexCoordAttribName + ",0.0,1.0)).xy;\n";

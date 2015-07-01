@@ -22,11 +22,10 @@ namespace Silk {
     }
     void RenderObject::SetMesh(Mesh* M,Material* Mat)
     {
-        if(m_Mesh != M && M && Mat && m_Type != ROT_MESH) {
-            if(M && Mat)
-                ERROR("Could not set the mesh of RenderObject, this object is not a mesh object!\n");
-            else
-                ERROR("Coult not set the mesh of RenderObject, the material and or the mesh is null!\n");
+        if(m_Mesh != M && M && Mat && m_Type != ROT_MESH)
+        {
+            if(M && Mat) ERROR("Could not set the mesh of RenderObject, this object is not a mesh object! (Object: 0x%lX)\n",intptr_t(this));
+            else         ERROR("Could not set the mesh of RenderObject, the material and/or the mesh is null! (Object: 0x%lX)\n",intptr_t(this));
             return;
         }
 

@@ -37,5 +37,7 @@ CMakeScripts/*.*
 Dependencies/glfw/CMakeScripts/*.*
 Dependencies/glfw/GLFW.xcodeproj/*.*
 Silk.xcodeproj/
+bin/Debug/*.*
+bin/Release/*.*
 
 
