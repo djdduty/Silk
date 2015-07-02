@@ -50,14 +50,14 @@ namespace TestClient
         Light* L = new Light(LT_POINT);
         m_Light0->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 20;
-        L->m_Attenuation.Constant    = 0.01f; //?
-        L->m_Attenuation.Linear      = 0.01f; //?
-        L->m_Attenuation.Exponential = 0.80f; //?
+        L->m_Power = 10;
+        L->m_Attenuation.Constant    = 0.05f; //?
+        L->m_Attenuation.Linear      = 0.50f; //?
+        L->m_Attenuation.Exponential = 0.50f; //?
         m_Light0->SetTransform(Translation(Vec3(0,1,-5)));
         m_Renderer->AddRenderObject(m_Light0);
         
-        m_Light1 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
+        /*m_Light1 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
         L = new Light(LT_POINT);
         m_Light1->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
@@ -65,7 +65,7 @@ namespace TestClient
         L->m_Attenuation.Constant    = 0.01f; //?
         L->m_Attenuation.Linear      = 0.01f; //?
         L->m_Attenuation.Exponential = 0.80f; //?
-        m_Renderer->AddRenderObject(m_Light1);
+        m_Renderer->AddRenderObject(m_Light1);*/
     }
     void LightingTest::LoadMesh()
     {
@@ -158,8 +158,8 @@ namespace TestClient
             m_Object->SetTransform(Rotation(Vec3(0,1,0),a));
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 6.0f);
-            m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Light1->SetTransform(r * Translation(Vec3(2,4,0)));
+            //m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
+            m_Light0->SetTransform(r * Translation(Vec3(2,4,0)));
             
             m_Renderer->Render(GL_TRIANGLES);
         }
@@ -168,9 +168,9 @@ namespace TestClient
     void LightingTest::Shutdown()
     {
         delete m_Light0->GetLight();
-        delete m_Light1->GetLight();
+        //delete m_Light1->GetLight();
         m_Renderer->Destroy(m_Light0);
-        m_Renderer->Destroy(m_Light1);
+        //m_Renderer->Destroy(m_Light1);
         m_Renderer->Destroy(m_Material);
         m_Renderer->Destroy(m_Object);
         m_Mesh->Destroy();
