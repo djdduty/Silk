@@ -20,10 +20,10 @@ namespace TestClient
     "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n" +
     "\t\t\t\t\tvec3 HalfDir        = normalize(Dir + PosToCam);\n" +
     "\t\t\t\t\tfloat SpecularAngle = max(dot(HalfDir,Normal),0.0);\n" +
-    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,32.0f);\n" +
+    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,1.0f);\n" +
     "\t\t\t\t}\n\n" +
     "\t\t\t\t//Light equation\n" +
-    "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 1.0);\n" +
+    "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 0.07);\n" +
     "\t\t\t\t//Attenuation\n" +
     "\t\t\t\tFinalColor *= 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n" +
     "\t\t\t\tFinalColor *= u_Lights[l].Power;\n" +
@@ -41,8 +41,8 @@ namespace TestClient
     {
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
-        LoadMesh();
-        LoadLight();
+        LoadMesh    ();
+        LoadLight   ();
     }
     void LightingTest::LoadLight()
     {
@@ -50,22 +50,22 @@ namespace TestClient
         Light* L = new Light(LT_POINT);
         m_Light0->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 20;
-        L->m_Attenuation.Constant    = 0.01f; //?
-        L->m_Attenuation.Linear      = 0.01f; //?
+        L->m_Power = 15;
+        L->m_Attenuation.Constant    = 5.0f; //?
+        L->m_Attenuation.Linear      = 0.5f; //?
         L->m_Attenuation.Exponential = 0.80f; //?
-        m_Light0->SetTransform(Translation(Vec3(0,1,-5)));
+        m_Light0->SetTransform(Translation(Vec3(0,5,-3)));
         m_Renderer->AddRenderObject(m_Light0);
         
         m_Light1 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
         L = new Light(LT_POINT);
         m_Light1->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 5;
+        L->m_Power = 15;
         L->m_Attenuation.Constant    = 0.01f; //?
         L->m_Attenuation.Linear      = 0.01f; //?
         L->m_Attenuation.Exponential = 0.80f; //?
-        m_Renderer->AddRenderObject(m_Light1);
+        //m_Renderer->AddRenderObject(m_Light1);
     }
     void LightingTest::LoadMesh()
     {
@@ -82,6 +82,20 @@ namespace TestClient
         
         m_Object->SetTransform(Translation(Vec3(0,0,0)));
         m_Object->SetTextureTransform(Mat4::Identity);
+        
+        m_ObjLoader->Load(const_cast<CString>("LightingTest/LightDisplay.object"));
+        m_LDispMesh = new Mesh();
+        m_LDispMesh->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
+        m_LDispMesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
+        m_LDispMesh->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
+        
+        m_DisplayL0 = m_Renderer->CreateRenderObject(ROT_MESH,false);
+        m_DisplayL0->SetMesh(m_LDispMesh,m_LDispMat);
+        m_Renderer->AddRenderObject(m_DisplayL0);
+        
+        m_DisplayL1 = m_Renderer->CreateRenderObject(ROT_MESH,false);
+        m_DisplayL1->SetMesh(m_LDispMesh,m_LDispMat);
+        m_Renderer->AddRenderObject(m_DisplayL1);
         
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -119,6 +133,10 @@ namespace TestClient
         */
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
+        
+        m_LDispMat = m_Renderer->CreateMaterial();
+        m_LDispMat->SetShader(m_Material->GetShader());
+        
         m_ShaderGenerator->Reset();
         
         vector<u8> Pixels;
@@ -149,17 +167,25 @@ namespace TestClient
 
     void LightingTest::Run()
     {
-        Mat4 t = Translation(Vec3(0,4,10));
+        Mat4 t = Translation(Vec3(0,4,8));
         m_Camera->SetTransform(t);
         Scalar a = 0.0f;
         while(IsRunning())
         {
             a += 7.5f * GetDeltaTime();
-            m_Object->SetTransform(Rotation(Vec3(0,1,0),a));
             
-            Mat4 r = Rotation(Vec3(0,1,0),a * 6.0f);
+            m_Camera->SetTransform((Rotation(Vec3(1,0,0),10 + sin(a * 0.500f) *  8.0f) *
+                                    Rotation(Vec3(0,1,0),sin(a * 0.250f) * 20.0f) *
+                                    Rotation(Vec3(0,0,1),sin(a * 0.125f) * 18.0f)) *
+                                    Translation(Vec3(0,3,6)));
+            
+            Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
+            
             m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Light1->SetTransform(r * Translation(Vec3(2,4,0)));
+            m_Light1->SetTransform(r * Translation(Vec3(2,2,0)));
+            
+            m_DisplayL0->SetTransform(m_Light0->GetTransform() * Scale(0.25f));
+            m_DisplayL1->SetTransform(m_Light1->GetTransform() * Scale(0.25f));
             
             m_Renderer->Render(GL_TRIANGLES);
         }

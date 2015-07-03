@@ -83,6 +83,7 @@ namespace Silk
             for(i32 i = 0;i < OFT_COUNT;i++) S->m_FragmentOutputs[i] = m_FragmentOutputsUsed[i];
             for(i32 i = 0;i < IUT_COUNT;i++) S->m_UniformInputs  [i] = m_UniformInputsUsed  [i];
             S->m_ID = m_ShadersGenerated;
+            S->m_SupportsInstancing = m_AllowInstancing;
             m_ShadersGenerated++;
         }
         return S;

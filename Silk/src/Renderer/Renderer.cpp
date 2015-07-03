@@ -65,8 +65,16 @@ namespace Silk
         {
             LightsVector.push_back(Lights[i]->GetLight());
             Mat4 T = Lights[i]->GetTransform();
-            Lights[i]->GetLight()->m_Position  = Vec4(T.x.w,T.y.w,T.z.w,1.0f);
-            Lights[i]->GetLight()->m_Direction = Vec4(T.x.z,T.y.z,T.z.z,1.0f);
+           
+            Lights[i]->GetLight()->m_Position  = Vec4(T.x.w,
+                                                      T.y.w,
+                                                      T.z.w,
+                                                      1.0f);
+            
+            Lights[i]->GetLight()->m_Direction = Vec4(T.x.z,
+                                                      T.y.z,
+                                                      T.z.z,
+                                                      1.0f);
         }
 
         /*

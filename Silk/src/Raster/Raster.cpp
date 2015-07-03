@@ -229,6 +229,7 @@ namespace Silk
     {
         for(i32 i = 0;i < ShaderGenerator::IUT_COUNT;i++) m_UniformInputs  [i] = false;
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_FragmentOutputs[i] = false;
+        m_SupportsInstancing = false;
     }
     
     void RasterContext::SetResolution(const Vec2& Resolution) 

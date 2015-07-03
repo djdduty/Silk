@@ -189,6 +189,7 @@ namespace Silk
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode) = 0;
         
             bool UsesUniformInput(ShaderGenerator::INPUT_UNIFORM_TYPE Type) const { return m_UniformInputs[Type]; }
+            bool SupportsInstancing() const { return m_SupportsInstancing; }
         
             virtual void Enable() = 0;
             virtual void PassUniforms(UniformBuffer* Uniforms) = 0;
@@ -199,6 +200,7 @@ namespace Silk
             friend class ShaderGenerator;
             bool m_UniformInputs[ShaderGenerator::IUT_COUNT];
             bool m_FragmentOutputs[ShaderGenerator::OFT_COUNT];
+            bool m_SupportsInstancing;
             Renderer* m_Renderer;
             i32 m_ID;
     };

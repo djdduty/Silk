@@ -14,6 +14,7 @@ namespace Silk {
     {
         m_Object->Destroy(this);
         delete m_Uniforms;
+        m_Mesh->Destroy(); 
     }
 
     bool RenderObject::IsInstanced()
@@ -45,23 +46,30 @@ namespace Silk {
         m_Mesh = M;
         m_Material = Mat;
         
-        m_Mesh->m_Instances.push_back(this);
-        m_InstanceIndex = m_Mesh->m_Instances.size() - 1;
-        m_InstanceList  = &m_Mesh->m_Instances;
-        
-        if(m_Mesh->Refs() == 1)
+        if(Mat->GetShader()->SupportsInstancing())
         {
-            m_Object->SetMesh(m_Mesh);
-            m_Mesh->m_Obj = this;
+            m_Mesh->m_Instances.push_back(this);
+            m_InstanceIndex = m_Mesh->m_Instances.size() - 1;
+            m_InstanceList  = &m_Mesh->m_Instances;
+            
+            if(m_Mesh->Refs() == 1)
+            {
+                m_Object->SetMesh(m_Mesh);
+                m_Mesh->m_Obj = this;
+            }
+            else
+            {
+                if(m_Object) m_Object->Destroy(this);
+                m_Type = ROT_MESH;
+                m_Object = m_Mesh->m_Obj->m_Object;
+                m_Object->AddRef();
+                m_Object->AddInstance();
+                m_Mesh->m_Obj->GetUniformSet()->SetIsInstanced(true);
+            }
         }
         else
         {
-            if(m_Object) m_Object->Destroy(this);
-            m_Type = ROT_MESH;
-            m_Object = m_Mesh->m_Obj->m_Object;
-            m_Object->AddRef();
-            m_Object->AddInstance();
-            m_Mesh->m_Obj->GetUniformSet()->SetIsInstanced(true);
+            m_Object->SetMesh(m_Mesh);
         }
         m_Mesh->AddRef();
         
