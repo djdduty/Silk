@@ -14,7 +14,9 @@ namespace Silk {
     {
         m_Object->Destroy(this);
         delete m_Uniforms;
-        m_Mesh->Destroy(); 
+        if(m_Mesh  ) m_Mesh  ->Destroy();
+        //if(m_Light ) m_Light ->Destroy();
+        //if(m_Camera) m_Camera->Destroy();
     }
 
     bool RenderObject::IsInstanced()

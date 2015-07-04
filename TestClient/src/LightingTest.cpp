@@ -7,27 +7,27 @@ namespace TestClient
 {
     static string FragmentShaderPointLight =
     string("[PointLight]") +
-    "\t\t\t\tvec3 Normal = normalize(o_Normal);\n" +
-    "\t\t\t\tvec4 Color = texture(u_DiffuseMap,o_TexCoord);\n" +
-    "\t\t\t\tvec3 Dir = u_Lights[l].Position.xyz - " + PositionOutName + ";\n" +
-    "\t\t\t\tfloat Dist = length(Dir);\n" +
-    "\t\t\t\tDir *= (1.0 / Dist);\n\n" +
-    "\t\t\t\t//Compute specular power\n" +
-    "\t\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n" +
-    "\t\t\t\tfloat SpecularPower = 0.0;\n" +
-    "\t\t\t\tif(ndotl > 0.0)\n" +
-    "\t\t\t\t{\n" +
+    "\t\t\t\tvec3  Normal = normalize(o_Normal);\n"                                 +
+    "\t\t\t\tvec4  Color  = texture(u_DiffuseMap,o_TexCoord);\n"                    +
+    "\t\t\t\tvec3  Dir    = u_Lights[l].Position.xyz - " + PositionOutName + ";\n"  +
+    "\t\t\t\tfloat Dist   = length(Dir);\n"                                         +
+    "\t\t\t\tDir *= (1.0 / Dist);\n\n"                                              +
+    "\t\t\t\t//Compute specular power\n"                                            +
+    "\t\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n"                             +
+    "\t\t\t\tfloat SpecularPower = 0.0;\n"                                          +
+    "\t\t\t\tif(ndotl > 0.0)\n"                                                     +
+    "\t\t\t\t{\n"                                                                   +
     "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n" +
-    "\t\t\t\t\tvec3 HalfDir        = normalize(Dir + PosToCam);\n" +
-    "\t\t\t\t\tfloat SpecularAngle = max(dot(HalfDir,Normal),0.0);\n" +
-    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,1.0f);\n" +
-    "\t\t\t\t}\n\n" +
-    "\t\t\t\t//Light equation\n" +
+    "\t\t\t\t\tvec3 HalfDir        = normalize(Dir + PosToCam);\n"                  +
+    "\t\t\t\t\tfloat SpecularAngle = max(dot(HalfDir,Normal),0.0);\n"               +
+    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,1.0f);\n"                    +
+    "\t\t\t\t}\n\n"                                                                 +
+    "\t\t\t\t//Light equation\n"                                                    +
     "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 0.07);\n" +
-    "\t\t\t\t//Attenuation\n" +
-    "\t\t\t\tFinalColor *= 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n" +
-    "\t\t\t\tFinalColor *= u_Lights[l].Power;\n" +
-    "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n" +
+    "\t\t\t\t//Attenuation\n"                                                       +
+    "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n" +
+    "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                    +
+    "\t\t\t\t" + FragmentColorOutputName + " = vec4(vec3(Att),1.0);\n" +
     "[/PointLight]";
     
     LightingTest::LightingTest()
@@ -95,9 +95,9 @@ namespace TestClient
         m_DisplayL0->SetMesh(m_LDispMesh,m_LDispMat);
         m_Renderer->AddRenderObject(m_DisplayL0);
         
-        m_DisplayL1 = m_Renderer->CreateRenderObject(ROT_MESH,false);
-        m_DisplayL1->SetMesh(m_LDispMesh,m_LDispMat);
-        m_Renderer->AddRenderObject(m_DisplayL1);
+        //m_DisplayL1 = m_Renderer->CreateRenderObject(ROT_MESH,false);
+        //m_DisplayL1->SetMesh(m_LDispMesh,m_LDispMat);
+        // m_Renderer->AddRenderObject(m_DisplayL1);
         
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -176,21 +176,23 @@ namespace TestClient
         {
             a += 7.5f * GetDeltaTime();
             
+            /*
             m_Camera->SetTransform((Rotation(Vec3(1,0,0),20 + sin(a * 0.300f) * 9.0f) *
                                     Rotation(Vec3(0,1,0),     sin(a * 0.250f) * 20.0f) *
                                     Rotation(Vec3(0,0,1),     sin(a * 0.125f) * 18.0f)) *
                                     Translation(Vec3(0,3,6)));
+             */
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
             
-            m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
+            //m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
             //m_Light1->SetTransform(r * Translation(Vec3(2,2,0)));
             
             m_DisplayL0->SetTransform(m_Light0->GetTransform() * Scale(0.25f));
             //m_DisplayL1->SetTransform(m_Light1->GetTransform() * Scale(0.25f));
             
             //m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Light0->SetTransform(r * Translation(Vec3(2,4,0)));
+            m_Light0->SetTransform(Translation(Vec3(0,4 + (sin(a * 0.1f) * 3.0f),0)));
             
             m_Renderer->Render(GL_TRIANGLES);
         }
