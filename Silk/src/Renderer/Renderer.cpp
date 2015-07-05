@@ -154,6 +154,7 @@ namespace Silk
     RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene)
     {
         RenderObject* Object = new RenderObject(Rot, this, m_Raster->CreateObject());
+        
         if(!Object)
             return nullptr;
 

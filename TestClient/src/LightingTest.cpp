@@ -5,31 +5,6 @@
 
 namespace TestClient
 {
-    static string FragmentShaderPointLight =
-    string("[PointLight]") +
-    "\t\t\t\tvec3  Normal = normalize(o_Normal);\n"                                 +
-    "\t\t\t\tvec4  Color  = texture(u_DiffuseMap,o_TexCoord);\n"                    +
-    "\t\t\t\tvec3  Dir    = u_Lights[l].Position.xyz - " + PositionOutName + ";\n"  +
-    "\t\t\t\tfloat Dist   = length(Dir);\n"                                         +
-    "\t\t\t\tDir *= (1.0 / Dist);\n\n"                                              +
-    "\t\t\t\t//Compute specular power\n"                                            +
-    "\t\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n"                             +
-    "\t\t\t\tfloat SpecularPower = 0.0;\n"                                          +
-    "\t\t\t\tif(ndotl > 0.0)\n"                                                     +
-    "\t\t\t\t{\n"                                                                   +
-    "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n" +
-    "\t\t\t\t\tvec3 HalfDir        = normalize(Dir + PosToCam);\n"                  +
-    "\t\t\t\t\tfloat SpecularAngle = max(dot(HalfDir,Normal),0.0);\n"               +
-    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,1.0f);\n"                    +
-    "\t\t\t\t}\n\n"                                                                 +
-    "\t\t\t\t//Light equation\n"                                                    +
-    "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 0.07);\n" +
-    "\t\t\t\t//Attenuation\n"                                                       +
-    "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n" +
-    "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                    +
-    "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n" +
-    "[/PointLight]";
-    
     LightingTest::LightingTest()
     {
     }
@@ -41,31 +16,57 @@ namespace TestClient
     {
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
-        LoadMesh    ();
         LoadLight   ();
+        LoadMesh    ();
     }
     void LightingTest::LoadLight()
     {
-        m_Light0 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
-        Light* L = new Light(LT_POINT);
-        m_Light0->SetLight(L);
+        RenderObject* LObj = 0;
+        Light* L = 0;
+        
+        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
+        L = new Light(LT_POINT);
+        
+        LObj->SetLight(L);
         L->m_Color = Vec4(0,0,1,1);
         L->m_Power = 0.2;
         L->m_Attenuation.Constant    = 0.00f; //?
         L->m_Attenuation.Linear      = 0.10f; //?
         L->m_Attenuation.Exponential = 0.01f; //?
-        m_Light0->SetTransform(Translation(Vec3(0,1,-5)));
-        m_Renderer->AddRenderObject(m_Light0);
+        LObj->SetTransform(Translation(Vec3(0,1,-5)));
         
-        m_Light1 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
+        m_Renderer->AddRenderObject(LObj);
+        m_Lights.push_back(LObj);
+        
+        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
+        L = new Light(LT_SPOT);
+        
+        LObj->SetLight(L);
+        L->m_Color = Vec4(1,1,1,1);
+        L->m_Power = 1.2;
+        L->m_Cutoff = 45.0f;
+        L->m_Soften = 0.5f;
+        L->m_Attenuation.Constant    = 0.00f; //?
+        L->m_Attenuation.Linear      = 0.10f; //?
+        L->m_Attenuation.Exponential = 0.01f; //?
+        LObj->SetTransform(Translation(Vec3(0,8,0)));
+        
+        m_Renderer->AddRenderObject(LObj);
+        m_Lights.push_back(LObj);
+        
+        
+        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
         L = new Light(LT_POINT);
-        m_Light1->SetLight(L);
+        
+        LObj->SetLight(L);
         L->m_Color = Vec4(1,0,0,1);
         L->m_Power = 0.1;
         L->m_Attenuation.Constant    = 0.00f; //?
         L->m_Attenuation.Linear      = 0.10f; //?
         L->m_Attenuation.Exponential = 0.01f; //?
-        m_Renderer->AddRenderObject(m_Light1);
+        
+        m_Renderer->AddRenderObject(LObj);
+        m_Lights.push_back(LObj);
     }
     void LightingTest::LoadMesh()
     {
@@ -89,13 +90,13 @@ namespace TestClient
         m_LDispMesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
         m_LDispMesh->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
         
-        m_DisplayL0 = m_Renderer->CreateRenderObject(ROT_MESH,false);
-        m_DisplayL0->SetMesh(m_LDispMesh,m_LDispMat);
-        m_Renderer->AddRenderObject(m_DisplayL0);
-        
-        //m_DisplayL1 = m_Renderer->CreateRenderObject(ROT_MESH,false);
-        //m_DisplayL1->SetMesh(m_LDispMesh,m_LDispMat);
-        // m_Renderer->AddRenderObject(m_DisplayL1);
+        for(i32 i = 0;i < m_Lights.size();i++)
+        {
+            RenderObject* d = m_Renderer->CreateRenderObject(ROT_MESH,false);
+            d->SetMesh(m_LDispMesh,m_LDispMat);
+            m_Renderer->AddRenderObject(d);
+            m_LightDisplays.push_back(d);
+        }
         
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -118,19 +119,8 @@ namespace TestClient
         
         m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                  ,true);
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR            ,true);
-        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_PHONG);
+        m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_PHONG);
         
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>(FragmentShaderPointLight.c_str()       ),0);
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SpotLight][/SpotLight]"              ),1);
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[DirectionalLight][/DirectionalLight]"),2);
-        
-        /*
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[LtoS]vec3 LtoS  = o_Position - u_Lights[0].Position.xyz;[/LtoS]"                                             ),0);
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[Dist]float Dist = length(LtoS);\n\tLtoS *= (1.0 / Dist);\n[/Dist]"                                           ),1);
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n[/NdotL]"                                                    ),2);
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[Atten]float Att = u_Lights[0].CAtt + (u_Lights[0].LAtt * Dist) + (u_Lights[0].QAtt * Dist * Dist);\n[/Atten]"),3);
-        m_ShaderGenerator->AddFragmentModule (const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord) * Att;// * max(NdotL,0.2);[/SetColor]"                   ),4);
-        */
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
         
@@ -183,14 +173,23 @@ namespace TestClient
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
             
-            //m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            //m_Light1->SetTransform(r * Translation(Vec3(2,2,0)));
+            //m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
+            //m_Lights[0]->SetTransform(r * Translation(Vec3(2,2,0)));
             
-            m_DisplayL0->SetTransform(m_Light0->GetTransform() * Scale(0.25f));
-            //m_DisplayL1->SetTransform(m_Light1->GetTransform() * Scale(0.25f));
+            m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a * 0.01f),1.0f);
+            m_Lights[0]->GetLight()->m_Power = 0.3f + (sin(a * 0.01f) * 0.2f);
             
-            //m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Light0->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
+            for(i32 i = 0;i < m_Lights.size();i++)
+            {
+                m_LightDisplays[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.25f));
+            }
+            
+            //m_Light[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
+            m_Lights[0]->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
+            m_Lights[1]->SetTransform(Translation(Vec3(0,6,-1.5f)) * Rotation(Vec3(1,0,0),90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
+            m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
+            
+            printf("Soften: %f\n",m_Lights[1]->GetLight()->m_Soften);
             
             m_Renderer->Render(GL_TRIANGLES);
         }
@@ -198,10 +197,12 @@ namespace TestClient
 
     void LightingTest::Shutdown()
     {
-        delete m_Light0->GetLight();
-        //delete m_Light1->GetLight();
-        m_Renderer->Destroy(m_Light0);
-        //m_Renderer->Destroy(m_Light1);
+        for(i32 i = 0;i < m_Lights.size();i++)
+        {
+            delete m_Lights[i]->GetLight();
+            m_Renderer->Destroy(m_Lights[i]);
+            m_Renderer->Destroy(m_LightDisplays[i]);
+        }
         m_Renderer->Destroy(m_Material);
         m_Renderer->Destroy(m_Object);
         m_Mesh->Destroy();

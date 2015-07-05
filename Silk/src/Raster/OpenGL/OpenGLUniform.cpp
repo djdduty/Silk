@@ -2,6 +2,7 @@
 #include <Raster/OpenGL/OpenGLUniform.h>
 #include <Raster/OpenGL/PlatformSpecificOpenGL.h>
 #include <Utilities/Utilities.h>
+#include <math.h>
 
 namespace Silk
 {
@@ -102,8 +103,8 @@ namespace Silk
             glUniform4f(m_PositionLocs   [i],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z,Lt->m_Position .w);
             glUniform4f(m_DirectionLocs  [i],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z,Lt->m_Direction.w);
             glUniform4f(m_ColorLocs      [i],Lt->m_Color    .x,Lt->m_Color    .y,Lt->m_Color    .z,Lt->m_Color    .w);
-            glUniform1f(m_CutoffLocs     [i],Lt->m_Cutoff                                                           );
-            glUniform1f(m_SoftenLocs     [i],Lt->m_Soften                                                           );
+            glUniform1f(m_CutoffLocs     [i],cos(Lt->m_Cutoff * PI_OVER_180                                        ));
+            glUniform1f(m_SoftenLocs     [i],cos((Lt->m_Soften * Lt->m_Cutoff) * PI_OVER_180                       ));
             glUniform1f(m_PowerLocs      [i],Lt->m_Power                                                            );
             glUniform1f(m_ConstantLocs   [i],Lt->m_Attenuation.Constant                                             );
             glUniform1f(m_LinearLocs     [i],Lt->m_Attenuation.Linear                                               );
