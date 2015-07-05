@@ -189,8 +189,6 @@ namespace TestClient
             m_Lights[1]->SetTransform(Translation(Vec3(0,6,-1.5f)) * Rotation(Vec3(1,0,0),90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
             m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
             
-            printf("Soften: %f\n",m_Lights[1]->GetLight()->m_Soften);
-            
             m_Renderer->Render(GL_TRIANGLES);
         }
     }

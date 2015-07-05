@@ -104,7 +104,7 @@ namespace Silk
             glUniform4f(m_DirectionLocs  [i],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z,Lt->m_Direction.w);
             glUniform4f(m_ColorLocs      [i],Lt->m_Color    .x,Lt->m_Color    .y,Lt->m_Color    .z,Lt->m_Color    .w);
             glUniform1f(m_CutoffLocs     [i],cos(Lt->m_Cutoff * PI_OVER_180                                        ));
-            glUniform1f(m_SoftenLocs     [i],cos((Lt->m_Soften * Lt->m_Cutoff) * PI_OVER_180                       ));
+            glUniform1f(m_SoftenLocs     [i],cos(((1.0f - Lt->m_Soften) * Lt->m_Cutoff) * PI_OVER_180              ));
             glUniform1f(m_PowerLocs      [i],Lt->m_Power                                                            );
             glUniform1f(m_ConstantLocs   [i],Lt->m_Attenuation.Constant                                             );
             glUniform1f(m_LinearLocs     [i],Lt->m_Attenuation.Linear                                               );
