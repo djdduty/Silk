@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-#define DEFAULT_TEXTURE_SIZE 64
+#define DEFAULT_TEXTURE_SIZE 32
 
 namespace Silk
 {
@@ -27,7 +27,7 @@ namespace Silk
         
         m_ActiveCamera = 0;
         
-        m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS  );
+        m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS);
         m_RendererUniforms = new RenderUniformSet(this);
         
         UpdateDefaultTexture();
@@ -56,7 +56,7 @@ namespace Silk
     }
     void Renderer::Render(i32 PrimType)
     {
-        if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 3 == 0) UpdateDefaultTexture();
+        if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 5 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         SilkObjectVector Lights = m_ObjectList->GetLightList();

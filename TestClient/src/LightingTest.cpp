@@ -28,11 +28,8 @@ namespace TestClient
         L = new Light(LT_POINT);
         
         LObj->SetLight(L);
-        L->m_Color = Vec4(0,0,1,1);
-        L->m_Power = 0.2;
         L->m_Attenuation.Constant    = 0.00f; //?
         L->m_Attenuation.Linear      = 0.10f; //?
-        L->m_Attenuation.Exponential = 0.01f; //?
         LObj->SetTransform(Translation(Vec3(0,1,-5)));
         
         m_Renderer->AddRenderObject(LObj);
@@ -43,9 +40,8 @@ namespace TestClient
         
         LObj->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 1.2;
+        L->m_Power = 1.02;
         L->m_Cutoff = 45.0f;
-        L->m_Soften = 0.5f;
         L->m_Attenuation.Constant    = 0.00f; //?
         L->m_Attenuation.Linear      = 0.10f; //?
         L->m_Attenuation.Exponential = 0.01f; //?
@@ -56,14 +52,11 @@ namespace TestClient
         
         
         LObj = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
-        L = new Light(LT_POINT);
+        L = new Light(LT_DIRECTIONAL);
         
         LObj->SetLight(L);
-        L->m_Color = Vec4(1,0,0,1);
+        L->m_Color = Vec4(1,1,1,1);
         L->m_Power = 0.1;
-        L->m_Attenuation.Constant    = 0.00f; //?
-        L->m_Attenuation.Linear      = 0.10f; //?
-        L->m_Attenuation.Exponential = 0.01f; //?
         
         m_Renderer->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
@@ -153,11 +146,12 @@ namespace TestClient
         m_Diffuse->UpdateTexture();
         
         m_Material->SetMap(Material::MT_DIFFUSE,m_Diffuse);
+        m_LDispMat->SetMap(Material::MT_DIFFUSE,m_Diffuse);
     }
 
     void LightingTest::Run()
     {
-        Mat4 t = Translation(Vec3(0,4,8));
+        Mat4 t = Translation(Vec3(0,4,18));
         m_Camera->SetTransform(t);
         Scalar a = 0.0f;
         while(IsRunning())
@@ -173,21 +167,23 @@ namespace TestClient
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
             
-            //m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            //m_Lights[0]->SetTransform(r * Translation(Vec3(2,2,0)));
-            
+            //Point
+            m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
             m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a * 0.01f),1.0f);
-            m_Lights[0]->GetLight()->m_Power = 0.3f + (sin(a * 0.01f) * 0.2f);
+            m_Lights[0]->GetLight()->m_Power = 5.0f + (sin(a * 0.01f) * 10.0f);
+            m_Lights[0]->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
+            
+            //Spot
+            m_Lights[1]->SetTransform(Translation(Vec3(0,6,-1.5f)) * Rotation(Vec3(1,0,0),90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
+            m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
+            
+            //Directional
+            m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),a * 2.0f) * Rotation(Vec3(1,0,0),-90.0f));
             
             for(i32 i = 0;i < m_Lights.size();i++)
             {
-                m_LightDisplays[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.25f));
+                m_LightDisplays[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
             }
-            
-            //m_Light[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Lights[0]->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
-            m_Lights[1]->SetTransform(Translation(Vec3(0,6,-1.5f)) * Rotation(Vec3(1,0,0),90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
-            m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
             
             m_Renderer->Render(GL_TRIANGLES);
         }

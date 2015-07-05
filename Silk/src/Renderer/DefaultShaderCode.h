@@ -69,11 +69,6 @@ namespace Silk
     "\t\t\tint t = u_Lights[l].Type;\n"                                          +
     "\t\t\tvec3  Normal = normalize(" + NormalOutName + ");\n"                   +
     "\t\t\tvec4  Color  = texture(u_DiffuseMap," + TexCoordOutName + ");\n"      +
-    "\t\t\tvec3  Dir    = u_Lights[l].Position.xyz - " + PositionOutName + ";\n" +
-    "\t\t\tfloat Dist   = length(Dir);\n"                                        +
-    "\t\t\tDir *= (1.0 / Dist);\n\n"                                             +
-    "\t\t\t//Compute specular power\n"                                           +
-    "\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n\n"                          +
     "\t\t\t//Do lighting\n"                                                      +
     "\t\t\tif(t == 0) //Point\n"                                                 +
     "\t\t\t{\n";
@@ -95,7 +90,12 @@ namespace Silk
     "\t}\n";
 
     static string DefaultFragmentShaderPointLight =
-    string("\t\t\t\tfloat SpecularPower = 0.0;\n")                                                                                  +
+    string("\t\t\tvec3  Dir    = u_Lights[l].Position.xyz - ") + PositionOutName + ";\n"                                            +
+    "\t\t\tfloat Dist   = length(Dir);\n"                                                                                           +
+    "\t\t\tDir *= (1.0 / Dist);\n\n"                                                                                                +
+    "\t\t\t//Compute specular power\n"                                                                                              +
+    "\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n\n"                                                                             +
+    "\t\t\t\tfloat SpecularPower = 0.0;\n"                                                                                          +
     "\t\t\t\tif(ndotl > 0.0)\n"                                                                                                     +
     "\t\t\t\t{\n"                                                                                                                   +
     "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n"                                      +
@@ -107,11 +107,16 @@ namespace Silk
     "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 3.0);\n" +
     "\t\t\t\t//Attenuation\n"                                                                                                       +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"              +
-    "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                                                                    +
+    "\t\t\t\tFinalColor *= u_Lights[l].Power * Att;\n"                                                                              +
     "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n";
 
     static string DefaultFragmentShaderSpotLight = 
-    string("\t\t\t\tfloat SpecularPower = 0.0;\n")                                                                                  +
+    string("\t\t\tvec3  Dir    = u_Lights[l].Position.xyz - ") + PositionOutName + ";\n"                                            +
+    "\t\t\tfloat Dist   = length(Dir);\n"                                                                                           +
+    "\t\t\tDir *= (1.0 / Dist);\n\n"                                                                                                +
+    "\t\t\t//Compute specular power\n"                                                                                              +
+    "\t\t\tfloat ndotl = max(dot(Normal,Dir),0.0);\n\n"                                                                             +
+    "\t\t\t\tfloat SpecularPower = 0.0;\n"                                                                                          +
     "\t\t\t\tif(ndotl > 0.0)\n"                                                                                                     +
     "\t\t\t\t{\n"                                                                                                                   +
     "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n"                                      +
@@ -126,10 +131,26 @@ namespace Silk
     "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 3.0);\n" +
     "\t\t\t\t//Attenuation\n"                                                                                                       +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"              +
-    "\t\t\t\tFinalColor *= u_Lights[l].Power * Soften;\n"                                                                           +
+    "\t\t\t\tFinalColor *= u_Lights[l].Power * Soften * Att;\n"                                                                     +
     "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n";
 
-    static string DefaultFragmentShaderDirectionalLight = "";
+    static string DefaultFragmentShaderDirectionalLight =
+    string("\t\t\t\tfloat SpecularPower = 0.0;\n")                                                                                  +
+    "\t\t\tfloat ndotl = max(dot(Normal,u_Lights[l].Direction.xyz),0.0);\n\n"                                                       +
+    "\t\t\t\tif(ndotl > 0.0)\n"                                                                                                     +
+    "\t\t\t\t{\n"                                                                                                                   +
+    "\t\t\t\t\tvec3 PosToCam       = normalize(u_CameraPosition - " + PositionOutName + ");\n"                                      +
+    "\t\t\t\t\tvec3 HalfDir        = normalize(u_Lights[l].Direction.xyz + PosToCam);\n"                                            +
+    "\t\t\t\t\tfloat SpecularAngle = max(dot(HalfDir,Normal),0.0);\n"                                                               +
+    "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,128.0f);\n"                                                                  +
+    "\t\t\t\t}\n\n"                                                                                                                 +
+    "\t\t\t\t//Light equation\n"                                                                                                    +
+    "\t\t\t\tvec4 FinalColor = (0.2f * Color) + (ndotl * Color * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * 3.0);\n" +
+    "\t\t\t\t//Attenuation\n"                                                                                                       +
+    "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                                                                    +
+    "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n";
+    
+    
     /* * * * * * * * * * * * * * * * * * * * * * * *\
      *  D E F A U L T    F L A T    S H A D I N G  *
     \* * * * * * * * * * * * * * * * * * * * * * * */
