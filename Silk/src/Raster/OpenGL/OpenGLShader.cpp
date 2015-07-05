@@ -219,10 +219,10 @@ namespace Silk
             return;
         }
         
-        i32 UniformCount = Uniforms->GetUpdatedUniformCount();
+        i32 UniformCount = Uniforms->GetUniformCount();
         for(i32 i = 0;i < UniformCount;i++)
         {
-            UniformDef* Def = Uniforms->GetUpdatedUniformInfo(i);
+            UniformDef* Def = Uniforms->GetUniformInfo(i);
             if(m_ID + 1 >= Def->PassCalls.size())
             {
                 while(m_ID + 1 >= Def->PassCalls.size()) Def->PassCalls.push_back(0);
@@ -234,8 +234,8 @@ namespace Silk
                 Def->PassCalls[m_ID + 1]->AcquireLocations(m_PID);
             }
             
-            if(Def->ArraySize == -1) Def->PassCalls[m_ID + 1]->Call     (Uniforms->GetUniformPointer(Uniforms->GetUpdatedUniformIndex(i)));
-            else                     Def->PassCalls[m_ID + 1]->CallArray(Uniforms->GetUniformPointer(Uniforms->GetUpdatedUniformIndex(i)));
+            if(Def->ArraySize == -1) Def->PassCalls[m_ID + 1]->Call     (Uniforms->GetUniformPointer(i));
+            else                     Def->PassCalls[m_ID + 1]->CallArray(Uniforms->GetUniformPointer(i));
         }
         
         /*

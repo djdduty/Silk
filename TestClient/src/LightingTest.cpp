@@ -27,7 +27,7 @@ namespace TestClient
     "\t\t\t\t//Attenuation\n"                                                       +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n" +
     "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                    +
-    "\t\t\t\t" + FragmentColorOutputName + " = vec4(vec3(Att),1.0);\n" +
+    "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n" +
     "[/PointLight]";
     
     LightingTest::LightingTest()
@@ -49,25 +49,23 @@ namespace TestClient
         m_Light0 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
         Light* L = new Light(LT_POINT);
         m_Light0->SetLight(L);
-        L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 10;
-        L->m_Attenuation.Constant    = 0.05f; //?
-        L->m_Attenuation.Linear      = 0.50f; //?
-        L->m_Attenuation.Exponential = 0.50f; //?
+        L->m_Color = Vec4(0,0,1,1);
+        L->m_Power = 0.2;
+        L->m_Attenuation.Constant    = 0.00f; //?
+        L->m_Attenuation.Linear      = 0.10f; //?
+        L->m_Attenuation.Exponential = 0.01f; //?
         m_Light0->SetTransform(Translation(Vec3(0,1,-5)));
         m_Renderer->AddRenderObject(m_Light0);
         
-        /*
         m_Light1 = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
         L = new Light(LT_POINT);
         m_Light1->SetLight(L);
-        L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 15;
-        L->m_Attenuation.Constant    = 0.01f; //?
-        L->m_Attenuation.Linear      = 0.01f; //?
-        L->m_Attenuation.Exponential = 0.80f; //?
+        L->m_Color = Vec4(1,0,0,1);
+        L->m_Power = 0.1;
+        L->m_Attenuation.Constant    = 0.00f; //?
+        L->m_Attenuation.Linear      = 0.10f; //?
+        L->m_Attenuation.Exponential = 0.01f; //?
         m_Renderer->AddRenderObject(m_Light1);
-        */
     }
     void LightingTest::LoadMesh()
     {
@@ -192,7 +190,7 @@ namespace TestClient
             //m_DisplayL1->SetTransform(m_Light1->GetTransform() * Scale(0.25f));
             
             //m_Light0->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Light0->SetTransform(Translation(Vec3(0,4 + (sin(a * 0.1f) * 3.0f),0)));
+            m_Light0->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
             
             m_Renderer->Render(GL_TRIANGLES);
         }
