@@ -5,8 +5,10 @@
 #endif
 
 #include <Test.h>
+
 #include <InstancingTest.h>
 #include <LightingTest.h>
+#include <NormalMappingTest.h>
 using namespace TestClient;
 
 int main(int ArgC,char *ArgV[])
@@ -27,8 +29,9 @@ int main(int ArgC,char *ArgV[])
     
     #endif
 
-    //InstancingTest* Test = new InstancingTest();
-    LightingTest* Test = new LightingTest();
+    //Test* Test = new InstancingTest();
+    //Test* Test = new LightingTest();
+    Test* Test = new NormalMappingTest();
     
     Test->Init    ();
     Test->Run     ();

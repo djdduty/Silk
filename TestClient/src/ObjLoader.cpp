@@ -44,28 +44,28 @@ namespace TestClient
                 continue;
 
             // verts look like:
-            // v float float float
+            // v f32 f32 f32
             if (strcmp(token,"v") == 0)
             {
-                float x=0, y=0, z=0;
+                f32 x=0, y=0, z=0;
                 sscanf(line+2,"%f %f %f", &x, &y, &z);
                 verts.push_back( Vec3(x,y,z) );
             }
             
             // normals:
-            // nv float float float
+            // nv f32 f32 f32
             else if (strcmp(token,"vn") == 0)
             {
-                float x=0, y=0, z=0;
+                f32 x=0, y=0, z=0;
                 sscanf(line+3,"%f %f %f", &x, &y, &z);
                 norms.push_back(Vec3(x,y,z));
             }
             
             // texcoords:
-            // vt float float
+            // vt f32 f32
             else if (strcmp(token,"vt") == 0)
             {
-                float x=0, y=0;
+                f32 x=0, y=0;
                 sscanf(line+3,"%f %f", &x, &y);
                 texcoords.push_back(Vec2(x,y));
             }
@@ -123,6 +123,51 @@ namespace TestClient
         for(i32 i = 0;i < tindices.size();i++)
         {
             m_TexCoords.push_back(texcoords[tindices[i]]);
+        }
+    }
+    void ObjLoader::ComputeTangents()
+    {
+        //Stolen from Assimp
+        m_Tangents.resize(m_Positions.size());
+        for(i32 a = 0;a < m_Positions.size();a += 3)
+        {
+            i32 p0 = a + 0,
+                p1 = a + 1,
+                p2 = a + 2;
+
+            //position differences p1->p2 and p1->p3
+            Vec3 v = m_Positions[p1] - m_Positions[p0],
+                 w = m_Positions[p2] - m_Positions[p0];
+
+            //texture offset p1->p2 and p1->p3
+            f32 sx = m_TexCoords[p1].x - m_TexCoords[p0].x, sy = m_TexCoords[p1].y - m_TexCoords[p0].y;
+            f32 tx = m_TexCoords[p2].x - m_TexCoords[p0].x, ty = m_TexCoords[p2].y - m_TexCoords[p0].y;
+            
+            f32 dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
+
+            Vec3 tangent, bitangent;
+            tangent.x = (w.x * sy - v.x * ty) * dirCorrection;
+            tangent.y = (w.y * sy - v.y * ty) * dirCorrection;
+            tangent.z = (w.z * sy - v.z * ty) * dirCorrection;
+            
+            bitangent.x = (w.x * sx - v.x * tx) * dirCorrection;
+            bitangent.y = (w.y * sx - v.y * tx) * dirCorrection;
+            bitangent.z = (w.z * sx - v.z * tx) * dirCorrection;
+
+            //store for every vertex of that face
+            for(i32 b = 0;b < 3;b++)
+            {
+                i32 p = a + b;
+
+                //project tangent and bitangent into the plane formed by the vertex' normal
+                Vec3 localTangent   = tangent   - m_Normals[p] * (tangent   * m_Normals[p]);
+                Vec3 localBitangent = bitangent - m_Normals[p] * (bitangent * m_Normals[p]);
+                
+                localTangent  .Normalize();
+                localBitangent.Normalize();
+
+                m_Tangents[p] = localTangent;
+            }
         }
     }
 };

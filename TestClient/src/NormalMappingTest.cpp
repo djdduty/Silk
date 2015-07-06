@@ -1,25 +1,25 @@
-#include <LightingTest.h>
+#include <NormalMappingTest.h>
 #include <LodePNG.h>
 #include <ObjLoader.h>
 #include <math.h>
 
 namespace TestClient
 {
-    LightingTest::LightingTest()
+    NormalMappingTest::NormalMappingTest()
     {
     }
-    LightingTest::~LightingTest()
+    NormalMappingTest::~NormalMappingTest()
     {
     }
 
-    void LightingTest::Initialize()
+    void NormalMappingTest::Initialize()
     {
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
         LoadLight   ();
         LoadMesh    ();
     }
-    void LightingTest::LoadLight()
+    void NormalMappingTest::LoadLight()
     {
         RenderObject* LObj = 0;
         Light* L = 0;
@@ -61,13 +61,15 @@ namespace TestClient
         m_Renderer->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
     }
-    void LightingTest::LoadMesh()
+    void NormalMappingTest::LoadMesh()
     {
-        m_ObjLoader->Load(const_cast<CString>("LightingTest/Scene.object"));
+        m_ObjLoader->Load(const_cast<CString>("NormalMappingTest/Scene.object"));
+        m_ObjLoader->ComputeTangents();
         
         m_Mesh = new Mesh();
         m_Mesh->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
         m_Mesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
+        m_Mesh->SetTangentBuffer (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTangents ()));
         m_Mesh->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
         
         m_Object = m_Renderer->CreateRenderObject(ROT_MESH,false);
@@ -77,7 +79,7 @@ namespace TestClient
         m_Object->SetTransform(Translation(Vec3(0,0,0)));
         m_Object->SetTextureTransform(Mat4::Identity);
         
-        m_ObjLoader->Load(const_cast<CString>("LightingTest/LightDisplay.object"));
+        m_ObjLoader->Load(const_cast<CString>("NormalMappingTest/LightDisplay.object"));
         m_LDispMesh = new Mesh();
         m_LDispMesh->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
         m_LDispMesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
@@ -95,7 +97,7 @@ namespace TestClient
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
     }
-    void LightingTest::LoadMaterial()
+    void NormalMappingTest::LoadMaterial()
     {
         m_ShaderGenerator->SetShaderVersion  (330);
         m_ShaderGenerator->SetAllowInstancing(false);
@@ -105,14 +107,19 @@ namespace TestClient
         m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION         ,true);
         m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL           ,true);
         m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD         ,true);
+        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TANGENT          ,true);
         
         m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION         ,true);
         m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL           ,true);
         m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD         ,true);
+        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT          ,true);
         
         m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                  ,true);
+        m_ShaderGenerator->SetTextureInput   (Material::MT_NORMAL                   ,true);
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR            ,true);
-        m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_PHONG);
+        m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_FLAT);
+        
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
         
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
@@ -124,7 +131,7 @@ namespace TestClient
         
         vector<u8> Pixels;
         u32 w,h;
-        lodepng::decode(Pixels,w,h,"LightingTest/Diffuse.png");
+        lodepng::decode(Pixels,w,h,"NormalMappingTest/Diffuse.png");
         m_Diffuse = m_Rasterizer->CreateTexture();
         m_Diffuse->CreateTexture(w,h);
         f32 Inv255 = 1.0f / 255.0f;
@@ -145,11 +152,35 @@ namespace TestClient
         }
         m_Diffuse->UpdateTexture();
         
+        Pixels.clear();
+        lodepng::decode(Pixels,w,h,"NormalMappingTest/Normal.png");
+        m_Normal = m_Rasterizer->CreateTexture();
+        m_Normal->CreateTexture(w,h);
+        for(i32 x = 0;x < w;x++)
+        {
+            for(i32 y = 0;y < h;y++)
+            {
+                i32 Idx = (y * (w * 4)) + (x * 4);
+                
+                Vec4 C;
+                C.x = f32(Pixels[Idx + 0]) * Inv255;
+                C.y = f32(Pixels[Idx + 1]) * Inv255;
+                C.z = f32(Pixels[Idx + 2]) * Inv255;
+                C.w = f32(Pixels[Idx + 3]) * Inv255;
+                
+                m_Normal->SetPixel(Vec2(x,(h-1) - y),C);
+            }
+        }
+        m_Normal->UpdateTexture();
+        
         m_Material->SetMap(Material::MT_DIFFUSE,m_Diffuse);
         m_LDispMat->SetMap(Material::MT_DIFFUSE,m_Diffuse);
+        
+        m_Material->SetMap(Material::MT_NORMAL ,m_Normal);
+        m_LDispMat->SetMap(Material::MT_NORMAL ,m_Normal);
     }
 
-    void LightingTest::Run()
+    void NormalMappingTest::Run()
     {
         Mat4 t = Translation(Vec3(0,4,9));
         m_Camera->SetTransform(t);
@@ -166,6 +197,8 @@ namespace TestClient
              */
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
+            
+            m_Object->SetTransform(r);
             
             //Point
             m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
@@ -189,7 +222,7 @@ namespace TestClient
         }
     }
 
-    void LightingTest::Shutdown()
+    void NormalMappingTest::Shutdown()
     {
         for(i32 i = 0;i < m_Lights.size();i++)
         {

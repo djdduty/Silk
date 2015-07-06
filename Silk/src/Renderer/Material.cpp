@@ -6,14 +6,12 @@ namespace Silk
 {
     static string MaterialMapNames[Material::MT_COUNT] =
     {
-        "u_PositionMap"    ,
         "u_NormalMap"      ,
         "u_DiffuseMap"     ,
-        "u_SpecularMap"    ,
         "u_EmissiveMap"    ,
         "u_DisplacementMap",
-        "u_RoughnessMap"   ,
-        "u_MetalnessMap"   ,
+        "u_Material0"      ,
+        "u_Material1"      ,
         "u_CustomMap0"     ,
         "u_CustomMap1"     ,
         "u_CustomMap2"     ,

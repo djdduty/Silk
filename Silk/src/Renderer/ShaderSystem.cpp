@@ -258,11 +258,11 @@ namespace Silk
          * Attribute inputs
          */
         FragmentShader += "\n";
-        if(m_AttributeInputsUsed[IAT_POSITION] && m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("in vec3 " ) + PositionOutName   + ";\n";
-        if(m_AttributeInputsUsed[IAT_NORMAL  ] && m_AttributeOutputsUsed[IAT_NORMAL  ]) FragmentShader += string("in vec3 " ) + NormalOutName     + ";\n";
-        if(m_AttributeInputsUsed[IAT_TANGENT ] && m_AttributeOutputsUsed[IAT_TANGENT ]) FragmentShader += string("in vec3 " ) + TangentOutName    + ";\n";
-        if(m_AttributeInputsUsed[IAT_COLOR   ] && m_AttributeOutputsUsed[IAT_COLOR   ]) FragmentShader += string("in vec4 " ) + ColorOutName      + ";\n";
-        if(m_AttributeInputsUsed[IAT_TEXCOORD] && m_AttributeOutputsUsed[IAT_TEXCOORD]) FragmentShader += string("in vec2 " ) + TexCoordOutName   + ";\n";
+        if(m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("in vec3 " ) + PositionOutName   + ";\n";
+        if(m_AttributeOutputsUsed[IAT_NORMAL  ]) FragmentShader += string("in vec3 " ) + NormalOutName     + ";\n";
+        if(m_AttributeOutputsUsed[IAT_TANGENT ]) FragmentShader += string("in vec3 " ) + TangentOutName    + ";\n";
+        if(m_AttributeOutputsUsed[IAT_COLOR   ]) FragmentShader += string("in vec4 " ) + ColorOutName      + ";\n";
+        if(m_AttributeOutputsUsed[IAT_TEXCOORD]) FragmentShader += string("in vec2 " ) + TexCoordOutName   + ";\n";
         
         i32 CustomLightingBlock = -1;
         vector<i32> UnsortedBlockIndices;
@@ -270,13 +270,13 @@ namespace Silk
         CodeBlock* PointLight       = 0;
         CodeBlock* SpotLight        = 0;
         CodeBlock* DirectionalLight = 0;
-        CodeBlock* SetPosition  = 0;
-        CodeBlock* SetNormal    = 0;
-        CodeBlock* SetTangent   = 0;
-        CodeBlock* SetColor     = 0;
-        CodeBlock* SetTexC      = 0;
-        CodeBlock* SetMaterial0 = 0;
-        CodeBlock* SetMaterial1 = 0;
+        CodeBlock* SetPosition      = 0;
+        CodeBlock* SetNormal        = 0;
+        CodeBlock* SetTangent       = 0;
+        CodeBlock* SetColor         = 0;
+        CodeBlock* SetTexC          = 0;
+        CodeBlock* SetMaterial0     = 0;
+        CodeBlock* SetMaterial1     = 0;
         
         for(i32 i = 0;i < m_FragmentBlocks.size();i++)
         {
@@ -337,25 +337,34 @@ namespace Silk
         FragmentShader += "\n";
         FragmentShader += "void main()\n{\n";
         
-        if(m_FragmentOutputsUsed[OFT_POSITION ] && !SetPosition)
+        if(!SetPosition ) FragmentShader += string("\tvec3 sPosition = ") + PositionOutName + ";\n";
+        if(!SetTexC     ) FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
+        
+        if(!SetTangent  && m_AttributeOutputsUsed[IAT_TANGENT]) FragmentShader += string("\tvec3 sTangent  = normalize(") + TangentOutName  + ");\n";
+        if(!SetNormal   )
         {
-            if(!m_MapTypesUsed[Material::MT_POSITION]) FragmentShader += string("\t") + FragmentPositionOutputName  + " = " + PositionOutName  + ";\n";
-            else FragmentShader += string("\t") + FragmentPositionOutputName + " = texture(" + GetShaderMapName(Material::MT_POSITION) + "," + TexCoordOutName + ");\n";
-        }
-        if(m_FragmentOutputsUsed[OFT_NORMAL   ] && !SetNormal  )
-        {
-            if(!m_MapTypesUsed[Material::MT_NORMAL  ]) FragmentShader += string("\t") + FragmentNormalOutputName    + " = " + NormalOutName    + ";\n";
-            else FragmentShader += string("\t") + FragmentPositionOutputName + " = texture(" + GetShaderMapName(Material::MT_NORMAL  ) + "," + TexCoordOutName + ");\n";
-        }
-        if(m_FragmentOutputsUsed[OFT_TANGENT  ] && !SetTangent ) FragmentShader += string("\t") + FragmentTangentOutputName   + " = " + TangentOutName   + ";\n";
-        if(m_FragmentOutputsUsed[OFT_COLOR    ] && !SetColor   )
-        {
-            if(m_LightingMode == LM_PHONG) FragmentShader += string("\t") + FragmentColorOutputName + " = vec4(0,0,0,0);\n";
-            else
+            if(!m_MapTypesUsed[Material::MT_NORMAL] && m_AttributeOutputsUsed[IAT_NORMAL ]) FragmentShader += string("\tvec3 sNormal = normalize(") + NormalOutName + ");\n";
+            else if(m_MapTypesUsed[Material::MT_NORMAL])
             {
-                if(!m_MapTypesUsed[Material::MT_DIFFUSE ]) FragmentShader += string("\t") + FragmentColorOutputName     + " = " + ColorOutName     + ";\n";
-                else FragmentShader += string("\t") + FragmentColorOutputName + " = texture(" + GetShaderMapName(Material::MT_DIFFUSE  ) + "," + TexCoordOutName + ");\n";
+                FragmentShader += string("\tvec3 N = normalize(") + NormalOutName + ");\n";
+                FragmentShader += "\tvec3 B = cross(sTangent,N);\n";
+                FragmentShader += "\tmat3 sTransform = mat3(sTangent,B,N);\n";
+                FragmentShader += string("\tvec3 sNormal = sTransform * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
             }
+        }
+        if(!SetColor    )
+        {
+            if(!m_MapTypesUsed[Material::MT_DIFFUSE] && m_AttributeOutputsUsed[IAT_COLOR]) FragmentShader += string("\tvec4 sColor = ") + ColorOutName + ";\n";
+            else if(m_MapTypesUsed[Material::MT_DIFFUSE]) FragmentShader += string("\tvec4 sColor = texture(") + GetShaderMapName(Material::MT_DIFFUSE) + ",sTexCoord);\n";
+        }
+        if(!SetMaterial0)
+        {
+            if(!m_MapTypesUsed[Material::MT_MATERIAL0] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("\tvec4 sMaterial0 = vec4(") + RoughnessOutName + "," + MetalnessOutName + ",0,0);\n";
+            else if(m_MapTypesUsed[Material::MT_MATERIAL0]) FragmentShader += string("\tvec4 sMaterial0 = texture(") + GetShaderMapName(Material::MT_MATERIAL0) + ",sTexCoord);\n";
+        }
+        if(!SetMaterial1 && m_MapTypesUsed[Material::MT_MATERIAL0]) //Only use Material1 if a map is going to be set
+        {
+            FragmentShader += string("\tvec4 sMaterial1 = texture(") + GetShaderMapName(Material::MT_MATERIAL1) + ",sTexCoord);\n";
         }
         
         while(UnsortedBlockIndices.size() != 0)
@@ -373,6 +382,7 @@ namespace Silk
             UnsortedBlockIndices.erase(UnsortedBlockIndices.begin() + BlockIndexIndex);
             FragmentShader += "\t" + m_FragmentBlocks[MinExecutionIndexIndex].Code + "\n";
         }
+        
         
         if(CustomLightingBlock != -1) FragmentShader += m_FragmentBlocks[CustomLightingBlock].Code;
         else
@@ -407,6 +417,13 @@ namespace Silk
                 }
             }
         }
+        
+        if(m_FragmentOutputsUsed[OFT_NORMAL   ]) FragmentShader += string(FragmentNormalOutputName   ) + " = sNormal   ;\n";
+        if(m_FragmentOutputsUsed[OFT_TANGENT  ]) FragmentShader += string(FragmentTangentOutputName  ) + " = sTangent  ;\n";
+        if(m_FragmentOutputsUsed[OFT_POSITION ]) FragmentShader += string(FragmentPositionOutputName ) + " = sPosition ;\n";
+        if(m_FragmentOutputsUsed[OFT_MATERIAL0]) FragmentShader += string(FragmentMaterial0OutputName) + " = sMaterial0;\n";
+        if(m_FragmentOutputsUsed[OFT_MATERIAL1]) FragmentShader += string(FragmentMaterial1OutputName) + " = sMaterial1;\n";
+        if(m_FragmentOutputsUsed[OFT_COLOR    ] && m_LightingMode == LM_FLAT) FragmentShader += string("\t") + FragmentColorOutputName + " = sColor;\n";
         
         FragmentShader += "}\n";
         

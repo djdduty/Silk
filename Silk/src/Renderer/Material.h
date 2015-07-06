@@ -17,14 +17,12 @@ namespace Silk
         public:
             enum MAP_TYPE
             {
-                MT_POSITION    ,
                 MT_NORMAL      ,
                 MT_DIFFUSE     ,
-                MT_SPECULAR    ,
                 MT_EMISSIVE    ,
                 MT_DISPLACEMENT,
-                MT_ROUGHNESS   ,
-                MT_METALNESS   ,
+                MT_MATERIAL0   ,
+                MT_MATERIAL1   ,
                 MT_CUSTOM0     ,
                 MT_CUSTOM1     ,
                 MT_CUSTOM2     ,
