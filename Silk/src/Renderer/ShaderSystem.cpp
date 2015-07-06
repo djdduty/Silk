@@ -347,9 +347,9 @@ namespace Silk
             else if(m_MapTypesUsed[Material::MT_NORMAL])
             {
                 FragmentShader += string("\tvec3 N = normalize(") + NormalOutName + ");\n";
-                FragmentShader += "\tvec3 B = cross(sTangent,N);\n";
+                FragmentShader += "\tvec3 B = normalize(cross(sTangent,N));\n";
                 FragmentShader += "\tmat3 sTransform = mat3(sTangent,B,N);\n";
-                FragmentShader += string("\tvec3 sNormal = sTransform * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
+                FragmentShader += string("\tvec3 sNormal = normalize(sTransform * texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
             }
         }
         if(!SetColor    )

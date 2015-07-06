@@ -117,9 +117,9 @@ namespace TestClient
         m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                  ,true);
         m_ShaderGenerator->SetTextureInput   (Material::MT_NORMAL                   ,true);
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR            ,true);
-        m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_FLAT);
+        m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_PHONG);
         
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
+        //m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
         
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
@@ -198,7 +198,7 @@ namespace TestClient
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
             
-            m_Object->SetTransform(r);
+            //m_Object->SetTransform(r);
             
             //Point
             m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
