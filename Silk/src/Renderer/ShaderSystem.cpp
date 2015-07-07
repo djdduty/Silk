@@ -367,7 +367,7 @@ namespace Silk
             if(m_MapTypesUsed[Material::MT_PARALLAX])
             {
                 FragmentShader += "\tfloat Ht;\n";
-                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(sPosition - u_CameraPosition),") + TexCoordOutName + ",0.1,Ht);\n";
+                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(sPosition - u_CameraPosition),") + TexCoordOutName + ",0.2,Ht);\n";
             }
             else FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
         }
@@ -438,7 +438,7 @@ namespace Silk
                     
                     if(m_MapTypesUsed[Material::MT_PARALLAX])
                     {
-                        FragmentShader += "\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,sTexCoord,0.1,Ht - 0.05),4);\n";
+                        //FragmentShader += "\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,sTexCoord,0.1,Ht - 0.05),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_1;
