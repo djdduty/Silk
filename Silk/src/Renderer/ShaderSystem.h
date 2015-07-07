@@ -31,8 +31,6 @@ using namespace std;
 #define TangentOutName    "o_Tangent"
 #define ColorOutName      "o_Color"
 #define TexCoordOutName   "o_TexCoord"
-#define RoughnessOutName  "o_Roughness"
-#define MetalnessOutName  "o_Metalness"
 
 #define FragmentColorOutputIndex     0
 #define FragmentPositionOutputIndex  1
@@ -120,7 +118,6 @@ namespace Silk
         
             void SetShaderVersion(i32 Version) { m_ShaderVersion = Version; }
         
-            void SetMaterialUniformBuffer(UniformBuffer* MaterialUniforms) { m_MaterialUniforms = MaterialUniforms; }
             void SetUserUniformBuffer    (UniformBuffer* UserUniforms    ) { m_UserUniforms     = UserUniforms    ; }
         
             void SetLightingMode(LIGHTING_MODES Type) { m_LightingMode = Type; }
@@ -150,11 +147,11 @@ namespace Silk
             bool                m_AttributeInputsUsed [IAT_COUNT         ];
             bool                m_AttributeOutputsUsed[IAT_COUNT         ];
             bool                m_FragmentOutputsUsed [OFT_COUNT         ];
-            
-            UniformBuffer*      m_MaterialUniforms ;
-            UniformBuffer*      m_UserUniforms     ;
-            ModelUniformSet*    m_NullModelUniforms;
-            LIGHTING_MODES      m_LightingMode     ;
+        
+            UniformBuffer*      m_UserUniforms        ;
+            ModelUniformSet*    m_NullModelUniforms   ;
+            MaterialUniformSet* m_NullMaterialUniforms;
+            LIGHTING_MODES      m_LightingMode        ;
         
             Renderer* m_Renderer;
             i32 m_ShadersGenerated;

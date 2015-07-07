@@ -201,6 +201,23 @@ namespace Silk
     MaterialUniformSet::MaterialUniformSet(Renderer* r) : m_Renderer(r)
     {
         m_UniformBuffer = m_Renderer->GetRasterizer()->CreateUniformBuffer(ShaderGenerator::IUT_MATERIAL_UNIFORMS);
+        
+        m_iRoughness = m_UniformBuffer->DefineUniform("u_Roughness");
+        m_iMetalness = m_UniformBuffer->DefineUniform("u_Metalness");
+        m_iShininess = m_UniformBuffer->DefineUniform("u_Shininess");
+        
+        m_iSpecular  = m_UniformBuffer->DefineUniform("u_Specular");
+        m_iDiffuse   = m_UniformBuffer->DefineUniform("u_Diffuse" );
+        m_iEmissive  = m_UniformBuffer->DefineUniform("u_Emissive");
+        
+        SetMetalness(0.5f);
+        SetRoughness(0.1f);
+        SetShininess(1.0f);
+        SetSpecular(Vec4(1,1,1,1));
+        SetDiffuse (Vec4(1,1,1,1));
+        SetEmissive(Vec4(1,1,1,1));
+        
+        UpdateUniforms();
     }
     MaterialUniformSet::~MaterialUniformSet()
     {
@@ -209,6 +226,13 @@ namespace Silk
         
     void MaterialUniformSet::UpdateUniforms()
     {
+        if(m_MetalnessUpdated) { m_UniformBuffer->SetUniform(m_iMetalness,m_Metalness); m_MetalnessUpdated = false; }
+        if(m_RoughnessUpdated) { m_UniformBuffer->SetUniform(m_iRoughness,m_Roughness); m_RoughnessUpdated = false; }
+        if(m_ShininessUpdated) { m_UniformBuffer->SetUniform(m_iShininess,m_Shininess); m_ShininessUpdated = false; }
+        
+        if(m_SpecularUpdated)  { m_UniformBuffer->SetUniform(m_iSpecular,m_Specular);   m_SpecularUpdated  = false; }
+        if(m_DiffuseUpdated )  { m_UniformBuffer->SetUniform(m_iDiffuse ,m_Diffuse );   m_DiffuseUpdated   = false; }
+        if(m_EmissiveUpdated)  { m_UniformBuffer->SetUniform(m_iEmissive,m_Emissive);   m_EmissiveUpdated  = false; }
         //m_UniformBuffer->UpdateBuffer();
     }
 };

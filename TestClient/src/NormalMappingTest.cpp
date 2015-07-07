@@ -28,8 +28,9 @@ namespace TestClient
         L = new Light(LT_POINT);
         
         LObj->SetLight(L);
-        L->m_Attenuation.Constant    = 0.00f; //?
-        L->m_Attenuation.Linear      = 0.10f; //?
+        L->m_Attenuation.Constant    = 0.00f;
+        L->m_Attenuation.Linear      = 2.10f;
+        L->m_Attenuation.Exponential = 5.90f;
         LObj->SetTransform(Translation(Vec3(0,1,-5)));
         
         m_Renderer->AddRenderObject(LObj);
@@ -40,11 +41,11 @@ namespace TestClient
         
         LObj->SetLight(L);
         L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 1.02;
+        L->m_Power = 0.24;
         L->m_Cutoff = 45.0f;
-        L->m_Attenuation.Constant    = 0.00f; //?
-        L->m_Attenuation.Linear      = 0.10f; //?
-        L->m_Attenuation.Exponential = 0.01f; //?
+        L->m_Attenuation.Constant    = 0.00f;
+        L->m_Attenuation.Linear      = 0.10f;
+        L->m_Attenuation.Exponential = 0.01f;
         LObj->SetTransform(Translation(Vec3(0,8,0)));
         
         m_Renderer->AddRenderObject(LObj);
@@ -102,6 +103,7 @@ namespace TestClient
         m_ShaderGenerator->SetShaderVersion  (330);
         m_ShaderGenerator->SetAllowInstancing(false);
         m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
+        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
         m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
         
         m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION         ,true);
@@ -122,6 +124,8 @@ namespace TestClient
         //m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
         
         m_Material = m_Renderer->CreateMaterial();
+        m_Material->SetShininess(1.0f);
+        m_Material->SetSpecular(Vec4(1,1,1,0));
         m_Material->SetShader(m_ShaderGenerator->Generate());
         
         m_LDispMat = m_Renderer->CreateMaterial();
@@ -131,10 +135,11 @@ namespace TestClient
         
         vector<u8> Pixels;
         u32 w,h;
+        f32 Inv255 = 1.0f / 255.0f;
+        
         lodepng::decode(Pixels,w,h,"NormalMappingTest/Diffuse.png");
         m_Diffuse = m_Rasterizer->CreateTexture();
         m_Diffuse->CreateTexture(w,h);
-        f32 Inv255 = 1.0f / 255.0f;
         for(i32 x = 0;x < w;x++)
         {
             for(i32 y = 0;y < h;y++)
@@ -162,10 +167,16 @@ namespace TestClient
             {
                 i32 Idx = (y * (w * 4)) + (x * 4);
                 
+                /*
+                 * For some reason, normal maps need to have X and Z flipped?
+                 * Pay attention to this in the future, it will save a lot of
+                 * trouble debugging things. I now know this from experience.
+                 */
+                
                 Vec4 C;
-                C.x = f32(Pixels[Idx + 0]) * Inv255;
+                C.x = f32(Pixels[Idx + 2]) * Inv255; //Notice the + 2 (blue)
                 C.y = f32(Pixels[Idx + 1]) * Inv255;
-                C.z = f32(Pixels[Idx + 2]) * Inv255;
+                C.z = f32(Pixels[Idx + 0]) * Inv255; //Notice the + 0 (red )
                 C.w = f32(Pixels[Idx + 3]) * Inv255;
                 
                 m_Normal->SetPixel(Vec2(x,(h-1) - y),C);
@@ -201,13 +212,13 @@ namespace TestClient
             //m_Object->SetTransform(r);
             
             //Point
-            m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
+            //m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
             m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a * 0.01f),1.0f);
-            m_Lights[0]->GetLight()->m_Power = 5.0f + (sin(a * 0.01f) * 10.0f);
+            m_Lights[0]->GetLight()->m_Power = 15.0f + (sin(a * 0.01f) * 5.0f);
             m_Lights[0]->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
             
             //Spot
-            m_Lights[1]->SetTransform(Translation(Vec3(0,6,-1.5f)) * Rotation(Vec3(1,0,0),90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
+            m_Lights[1]->SetTransform(Translation(Vec3(0,6,0.0f)) * Rotation(Vec3(1,0,0),-90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
             m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
             
             //Directional

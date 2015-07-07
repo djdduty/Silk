@@ -94,12 +94,45 @@ namespace Silk
             MaterialUniformSet(Renderer* r);
             ~MaterialUniformSet();
         
+            void SetRoughness(f32 Roughness) { m_Roughness = Roughness; m_RoughnessUpdated = true; }
+            f32 GetRoughness() const { return m_Roughness; }
+            void SetMetalness(f32 Metalness) { m_Metalness = Metalness; m_MetalnessUpdated = true; }
+            f32 GetMetalness() const { return m_Metalness; }
+            void SetShininess(f32 Shininess) { m_Shininess = Shininess; m_ShininessUpdated = true; }
+            f32 GetShininess() const { return m_Shininess; }
+            
+            void SetDiffuse (const Vec4& Color) { m_Diffuse  = Color; m_DiffuseUpdated  = true; }
+            Vec4 GetDiffuse() const { return m_Diffuse; }
+            void SetSpecular(const Vec4& Color) { m_Specular = Color; m_SpecularUpdated = true; }
+            Vec4 GetSpecular() const { return m_Specular; }
+            void SetEmissive(const Vec4& Color) { m_Emissive = Color; m_EmissiveUpdated = true; }
+            Vec4 GetEmissive() const { return m_Emissive; }
+        
             void UpdateUniforms();
             UniformBuffer* GetUniforms() const { return m_UniformBuffer; }
         
         protected:
             UniformBuffer* m_UniformBuffer;
-            
+            i32 m_iRoughness;
+            i32 m_iMetalness;
+            i32 m_iShininess;
+            i32 m_iDiffuse;
+            i32 m_iSpecular;
+            i32 m_iEmissive;
+        
+            f32 m_Roughness;
+            bool m_RoughnessUpdated;
+            f32 m_Metalness;
+            bool m_MetalnessUpdated;
+            f32 m_Shininess;
+            bool m_ShininessUpdated;
+            Vec4 m_Diffuse;
+            bool m_DiffuseUpdated;
+            Vec4 m_Specular;
+            bool m_SpecularUpdated;
+            Vec4 m_Emissive;
+            bool m_EmissiveUpdated;
+        
             Renderer* m_Renderer;
     };
 };

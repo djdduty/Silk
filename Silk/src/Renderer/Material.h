@@ -1,5 +1,6 @@
 #pragma once
 #include <System/SilkTypes.h>
+#include <Math/Math.h>
 
 #include <string>
 using namespace std;
@@ -19,6 +20,7 @@ namespace Silk
             {
                 MT_NORMAL      ,
                 MT_DIFFUSE     ,
+                MT_SPECULAR    ,
                 MT_EMISSIVE    ,
                 MT_DISPLACEMENT,
                 MT_MATERIAL0   ,
@@ -39,6 +41,20 @@ namespace Silk
         
             void SetShader(Shader* Shdr) { m_Shader = Shdr; }
             Shader* GetShader() const { return m_Shader; }
+        
+            void SetRoughness(f32 Roughness);
+            f32 GetRoughness() const;
+            void SetMetalness(f32 Metalness);
+            f32 GetMetalness() const;
+            void SetShininess(f32 Shininess);
+            f32 GetShininess() const;
+            
+            void SetDiffuse (const Vec4& Color);
+            Vec4 GetDiffuse() const;
+            void SetSpecular(const Vec4& Color);
+            Vec4 GetSpecular() const;
+            void SetEmissive(const Vec4& Color);
+            Vec4 GetEmissive() const;
         
             UniformBuffer* GetUniforms();
             void UpdateUniforms();

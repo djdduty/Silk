@@ -23,19 +23,20 @@ namespace Silk
     {
         Reset();
         m_NullModelUniforms = new ModelUniformSet(r,0);
+        m_NullMaterialUniforms = new MaterialUniformSet(r);
         m_AllowInstancing = false;
         m_AllowInstancedTextureMatrix = r->GetRasterizer()->SupportsInstanceTextureTransforms();
     }
     ShaderGenerator::~ShaderGenerator()
     {
         delete m_NullModelUniforms;
+        delete m_NullMaterialUniforms;
     }
     
     void ShaderGenerator::Reset()
     {
         m_ShaderVersion    = 330;
         m_LightingMode     = LM_FLAT;
-        m_MaterialUniforms = 0;
         m_UserUniforms     = 0;
         m_AllowInstancing  = false;
         for(i32 i = 0;i < Material::MT_COUNT;i++) m_MapTypesUsed [i] = false;
@@ -216,8 +217,8 @@ namespace Silk
         }
         
         if(!SetColor     && m_AttributeInputsUsed[IAT_COLOR] && m_AttributeOutputsUsed[IAT_COLOR]) VertexShader += DefaultColorFunc;
-        if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultRoughnessFunc;
-        if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultMetalnessFunc;
+        //if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultRoughnessFunc;
+        //if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultMetalnessFunc;
         
         /*
          *
@@ -277,6 +278,8 @@ namespace Silk
         CodeBlock* SetTexC          = 0;
         CodeBlock* SetMaterial0     = 0;
         CodeBlock* SetMaterial1     = 0;
+        CodeBlock* SetSpecular      = 0;
+        CodeBlock* SetEmissive      = 0;
         
         for(i32 i = 0;i < m_FragmentBlocks.size();i++)
         {
@@ -293,6 +296,8 @@ namespace Silk
             else if(m_FragmentBlocks[i].ID == "SetTexCoords"    ) SetTexC             = &m_FragmentBlocks[i];
             else if(m_FragmentBlocks[i].ID == "SetMaterial0"    ) SetMaterial0        = &m_FragmentBlocks[i];
             else if(m_FragmentBlocks[i].ID == "SetMaterial1"    ) SetMaterial1        = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetSpecular"     ) SetSpecular         = &m_FragmentBlocks[i];
+            else if(m_FragmentBlocks[i].ID == "SetEmissive"     ) SetEmissive         = &m_FragmentBlocks[i];
         }
         if(CustomLightingBlock == -1 && m_LightingMode == LM_PHONG) SetUniformInput(IUT_RENDERER_UNIFORMS,true);
         
@@ -347,9 +352,9 @@ namespace Silk
             else if(m_MapTypesUsed[Material::MT_NORMAL])
             {
                 FragmentShader += string("\tvec3 N = normalize(") + NormalOutName + ");\n";
-                FragmentShader += "\tvec3 B = normalize(cross(sTangent,N));\n";
+                FragmentShader += "\tvec3 B = normalize(cross(N,sTangent));\n";
                 FragmentShader += "\tmat3 sTransform = mat3(sTangent,B,N);\n";
-                FragmentShader += string("\tvec3 sNormal = normalize(sTransform * texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
+                FragmentShader += string("\tvec3 sNormal = sTransform * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
             }
         }
         if(!SetColor    )
@@ -357,12 +362,23 @@ namespace Silk
             if(!m_MapTypesUsed[Material::MT_DIFFUSE] && m_AttributeOutputsUsed[IAT_COLOR]) FragmentShader += string("\tvec4 sColor = ") + ColorOutName + ";\n";
             else if(m_MapTypesUsed[Material::MT_DIFFUSE]) FragmentShader += string("\tvec4 sColor = texture(") + GetShaderMapName(Material::MT_DIFFUSE) + ",sTexCoord);\n";
         }
-        if(!SetMaterial0)
+        if(!SetSpecular )
         {
-            if(!m_MapTypesUsed[Material::MT_MATERIAL0] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("\tvec4 sMaterial0 = vec4(") + RoughnessOutName + "," + MetalnessOutName + ",0,0);\n";
-            else if(m_MapTypesUsed[Material::MT_MATERIAL0]) FragmentShader += string("\tvec4 sMaterial0 = texture(") + GetShaderMapName(Material::MT_MATERIAL0) + ",sTexCoord);\n";
+            if(!m_MapTypesUsed[Material::MT_SPECULAR] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("\tvec4 sSpecular = u_Specular;\n");
+            else if(m_MapTypesUsed[Material::MT_SPECULAR]) FragmentShader += string("\tvec4 sSpecular = ") + GetShaderMapName(Material::MT_SPECULAR) + ",sTexCoord);\n";
         }
-        if(!SetMaterial1 && m_MapTypesUsed[Material::MT_MATERIAL0]) //Only use Material1 if a map is going to be set
+        if(!SetEmissive )
+        {
+            if(!m_MapTypesUsed[Material::MT_EMISSIVE] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("\tvec4 sEmissive = u_Emissive;\n");
+            else if(m_MapTypesUsed[Material::MT_EMISSIVE]) FragmentShader += string("\tvec4 sEmissive = ") + GetShaderMapName(Material::MT_EMISSIVE) + ",sTexCoord);\n";
+        }
+        
+        //Two custom material maps, not sure if this is useful or not yet
+        if(!SetMaterial0 && m_MapTypesUsed[Material::MT_MATERIAL0]) //Only use Material0 if a map is going to be set
+        {
+            FragmentShader += string("\tvec4 sMaterial0 = texture(") + GetShaderMapName(Material::MT_MATERIAL0) + ",sTexCoord);\n";
+        }
+        if(!SetMaterial1 && m_MapTypesUsed[Material::MT_MATERIAL1]) //Only use Material1 if a map is going to be set
         {
             FragmentShader += string("\tvec4 sMaterial1 = texture(") + GetShaderMapName(Material::MT_MATERIAL1) + ",sTexCoord);\n";
         }
@@ -469,7 +485,7 @@ namespace Silk
         UniformBuffer* eUniforms = 0;
         switch(Type)
         {
-            case IUT_MATERIAL_UNIFORMS: { eUniforms = m_MaterialUniforms                    ; break; }
+            case IUT_MATERIAL_UNIFORMS: { eUniforms = m_NullMaterialUniforms->GetUniforms() ; break; }
             case IUT_ENGINE_UNIFORMS  : { eUniforms = m_Renderer->GetEngineUniformBuffer  (); break; }
             case IUT_RENDERER_UNIFORMS: { eUniforms = m_Renderer->GetRendererUniformBuffer(); break; }
             case IUT_OBJECT_UNIFORMS  : { eUniforms = m_NullModelUniforms->GetUniforms()    ; break; }

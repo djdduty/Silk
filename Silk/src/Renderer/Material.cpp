@@ -8,6 +8,7 @@ namespace Silk
     {
         "u_NormalMap"      ,
         "u_DiffuseMap"     ,
+        "u_SpecularMap"    ,
         "u_EmissiveMap"    ,
         "u_DisplacementMap",
         "u_Material0"      ,
@@ -40,6 +41,21 @@ namespace Silk
     {
         return m_Uniforms->GetUniforms();
     }
+    
+    
+    void Material::SetRoughness(f32 Roughness) { m_Uniforms->SetRoughness(Roughness); }
+    f32 Material::GetRoughness() const { return m_Uniforms->GetRoughness(); }
+    void Material::SetMetalness(f32 Metalness) { m_Uniforms->SetMetalness(Metalness); }
+    f32 Material::GetMetalness() const { return m_Uniforms->GetMetalness(); }
+    void Material::SetShininess(f32 Shininess) { m_Uniforms->SetShininess(Shininess); }
+    f32 Material::GetShininess() const { return m_Uniforms->GetShininess(); }
+    
+    void Material::SetDiffuse (const Vec4& Color) { m_Uniforms->SetDiffuse(Color); }
+    Vec4 Material::GetDiffuse() const { return m_Uniforms->GetDiffuse(); }
+    void Material::SetSpecular(const Vec4& Color) { m_Uniforms->SetSpecular(Color); }
+    Vec4 Material::GetSpecular() const { return m_Uniforms->GetSpecular(); }
+    void Material::SetEmissive(const Vec4& Color) { m_Uniforms->SetEmissive(Color); }
+    Vec4 Material::GetEmissive() const { return m_Uniforms->GetEmissive(); }
     
     void Material::UpdateUniforms()
     {
