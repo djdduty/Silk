@@ -10,6 +10,7 @@ namespace Silk
         "u_DiffuseMap"     ,
         "u_SpecularMap"    ,
         "u_EmissiveMap"    ,
+        "u_ParallaxMap"    ,
         "u_DisplacementMap",
         "u_Material0"      ,
         "u_Material1"      ,

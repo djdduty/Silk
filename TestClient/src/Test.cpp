@@ -47,7 +47,11 @@ namespace TestClient
     void Test::Init()
     {
         m_Window = new Window();
+        #ifdef __APPLE__
+        if(m_Window->Create(Vec2(400,300),GetTestName(),true))
+        #else
         if(m_Window->Create(Vec2(800,600),GetTestName(),true))
+        #endif
         {
             m_Rasterizer = m_Window->GetRasterizer();
             ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

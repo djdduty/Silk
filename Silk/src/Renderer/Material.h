@@ -22,6 +22,7 @@ namespace Silk
                 MT_DIFFUSE     ,
                 MT_SPECULAR    ,
                 MT_EMISSIVE    ,
+                MT_PARALLAX    ,
                 MT_DISPLACEMENT,
                 MT_MATERIAL0   ,
                 MT_MATERIAL1   ,

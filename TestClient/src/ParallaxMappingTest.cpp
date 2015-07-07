@@ -1,25 +1,25 @@
-#include <NormalMappingTest.h>
+#include <ParallaxMappingTest.h>
 #include <LodePNG.h>
 #include <ObjLoader.h>
 #include <math.h>
 
 namespace TestClient
 {
-    NormalMappingTest::NormalMappingTest()
+    ParallaxMappingTest::ParallaxMappingTest()
     {
     }
-    NormalMappingTest::~NormalMappingTest()
+    ParallaxMappingTest::~ParallaxMappingTest()
     {
     }
 
-    void NormalMappingTest::Initialize()
+    void ParallaxMappingTest::Initialize()
     {
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
         LoadLight   ();
         LoadMesh    ();
     }
-    void NormalMappingTest::LoadLight()
+    void ParallaxMappingTest::LoadLight()
     {
         RenderObject* LObj = 0;
         Light* L = 0;
@@ -62,9 +62,9 @@ namespace TestClient
         m_Renderer->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
     }
-    void NormalMappingTest::LoadMesh()
+    void ParallaxMappingTest::LoadMesh()
     {
-        m_ObjLoader->Load(const_cast<CString>("NormalMappingTest/Scene.object"));
+        m_ObjLoader->Load(const_cast<CString>("ParallaxMappingTest/Scene.object"));
         m_ObjLoader->ComputeTangents();
         
         m_Mesh = new Mesh();
@@ -80,7 +80,7 @@ namespace TestClient
         m_Object->SetTransform(Translation(Vec3(0,0,0)));
         m_Object->SetTextureTransform(Mat4::Identity);
         
-        m_ObjLoader->Load(const_cast<CString>("NormalMappingTest/LightDisplay.object"));
+        m_ObjLoader->Load(const_cast<CString>("ParallaxMappingTest/LightDisplay.object"));
         m_LDispMesh = new Mesh();
         m_LDispMesh->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
         m_LDispMesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
@@ -98,7 +98,7 @@ namespace TestClient
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
     }
-    void NormalMappingTest::LoadMaterial()
+    void ParallaxMappingTest::LoadMaterial()
     {
         m_ShaderGenerator->SetShaderVersion  (330);
         m_ShaderGenerator->SetAllowInstancing(false);
@@ -118,6 +118,7 @@ namespace TestClient
         
         m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                  ,true);
         m_ShaderGenerator->SetTextureInput   (Material::MT_NORMAL                   ,true);
+        m_ShaderGenerator->SetTextureInput   (Material::MT_PARALLAX                 ,true);
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR            ,true);
         m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_PHONG);
         
@@ -137,7 +138,7 @@ namespace TestClient
         u32 w,h;
         f32 Inv255 = 1.0f / 255.0f;
         
-        lodepng::decode(Pixels,w,h,"NormalMappingTest/Diffuse.png");
+        lodepng::decode(Pixels,w,h,"ParallaxMappingTest/Diffuse.png");
         m_Diffuse = m_Rasterizer->CreateTexture();
         m_Diffuse->CreateTexture(w,h);
         for(i32 x = 0;x < w;x++)
@@ -158,7 +159,7 @@ namespace TestClient
         m_Diffuse->UpdateTexture();
         
         Pixels.clear();
-        lodepng::decode(Pixels,w,h,"NormalMappingTest/Normal.png");
+        lodepng::decode(Pixels,w,h,"ParallaxMappingTest/Normal.png");
         m_Normal = m_Rasterizer->CreateTexture();
         m_Normal->CreateTexture(w,h);
         for(i32 x = 0;x < w;x++)
@@ -184,14 +185,39 @@ namespace TestClient
         }
         m_Normal->UpdateTexture();
         
-        m_Material->SetMap(Material::MT_DIFFUSE,m_Diffuse);
-        m_LDispMat->SetMap(Material::MT_DIFFUSE,m_Diffuse);
+        Pixels.clear();
+        lodepng::decode(Pixels,w,h,"ParallaxMappingTest/Parallax.png");
+        m_Parallax = m_Rasterizer->CreateTexture();
+        m_Parallax->CreateTexture(w,h);
+        for(i32 x = 0;x < w;x++)
+        {
+            for(i32 y = 0;y < h;y++)
+            {
+                i32 Idx = (y * (w * 4)) + (x * 4);
+                
+                Vec4 C;
+                C.x = f32(Pixels[Idx + 2]) * Inv255;
+                C.y = f32(Pixels[Idx + 1]) * Inv255;
+                C.z = f32(Pixels[Idx + 0]) * Inv255;
+                C.w = f32(Pixels[Idx + 3]) * Inv255;
+                
+                m_Parallax->SetPixel(Vec2(x,(h-1) - y),C);
+            }
+        }
+        m_Parallax->UpdateTexture();
         
-        m_Material->SetMap(Material::MT_NORMAL ,m_Normal);
-        m_LDispMat->SetMap(Material::MT_NORMAL ,m_Normal);
+        m_Material->SetMap(Material::MT_DIFFUSE ,m_Diffuse );
+        m_Material->SetMap(Material::MT_NORMAL  ,m_Normal  );
+        m_Material->SetMap(Material::MT_PARALLAX,m_Parallax);
+        
+        m_LDispMat->SetMap(Material::MT_DIFFUSE ,m_Diffuse );
+        m_LDispMat->SetMap(Material::MT_NORMAL  ,m_Normal  );
+        m_LDispMat->SetMap(Material::MT_PARALLAX,m_Parallax);
+    
+        
     }
 
-    void NormalMappingTest::Run()
+    void ParallaxMappingTest::Run()
     {
         Mat4 t = Translation(Vec3(0,4,9));
         m_Camera->SetTransform(t);
@@ -207,7 +233,7 @@ namespace TestClient
                                     Translation(Vec3(0,3,6)));
              */
             
-            Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
+            Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
             
             m_Object->SetTransform(r);
             
@@ -215,7 +241,7 @@ namespace TestClient
             //m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
             m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a * 0.01f),1.0f);
             m_Lights[0]->GetLight()->m_Power = 15.0f + (sin(a * 0.01f) * 5.0f);
-            m_Lights[0]->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
+            m_Lights[0]->SetTransform(Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
             
             //Spot
             m_Lights[1]->SetTransform(Translation(Vec3(0,6,0.0f)) * Rotation(Vec3(1,0,0),-90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
@@ -233,7 +259,7 @@ namespace TestClient
         }
     }
 
-    void NormalMappingTest::Shutdown()
+    void ParallaxMappingTest::Shutdown()
     {
         for(i32 i = 0;i < m_Lights.size();i++)
         {

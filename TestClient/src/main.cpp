@@ -6,9 +6,10 @@
 
 #include <Test.h>
 
-#include <InstancingTest.h>
-#include <LightingTest.h>
-#include <NormalMappingTest.h>
+//#include <InstancingTest.h>
+//#include <LightingTest.h>
+//#include <NormalMappingTest.h>
+#include <ParallaxMappingTest.h>
 using namespace TestClient;
 
 int main(int ArgC,char *ArgV[])
@@ -31,7 +32,8 @@ int main(int ArgC,char *ArgV[])
 
     //Test* Test = new InstancingTest();
     //Test* Test = new LightingTest();
-    Test* Test = new NormalMappingTest();
+    //Test* Test = new NormalMappingTest();
+    Test* Test = new ParallaxMappingTest();
     
     Test->Init    ();
     Test->Run     ();

@@ -307,7 +307,8 @@ namespace Silk
             else if(m_FragmentBlocks[i].ID == "SetSpecular"     ) SetSpecular         = &m_FragmentBlocks[i];
             else if(m_FragmentBlocks[i].ID == "SetEmissive"     ) SetEmissive         = &m_FragmentBlocks[i];
         }
-        if(CustomLightingBlock == -1 && m_LightingMode == LM_PHONG) SetUniformInput(IUT_RENDERER_UNIFORMS,true);
+        if((CustomLightingBlock == -1 && m_LightingMode == LM_PHONG) || m_MapTypesUsed[Material::MT_NORMAL]) SetUniformInput(IUT_RENDERER_UNIFORMS,true);
+        if(m_MapTypesUsed[Material::MT_PARALLAX]) SetUniformInput(IUT_MATERIAL_UNIFORMS,true);
         
         /*
          * Uniform inputs
@@ -345,13 +346,31 @@ namespace Silk
         if(m_FragmentOutputsUsed[OFT_MATERIAL1]) FragmentShader += string("out vec4 ") + FragmentMaterial1OutputName + ";\n";
         
         /*
+         * Fragment calculation functions
+         */
+        if(m_MapTypesUsed[Material::MT_PARALLAX])
+        {
+            //To do: Switch statement for each type of parallax function
+            FragmentShader += ReliefParallaxMappingFunction;
+            FragmentShader += ParallaxMappingShadowMultiplier;
+        }
+        
+        /*
          * main
          */
         FragmentShader += "\n";
         FragmentShader += "void main()\n{\n";
         
         if(!SetPosition ) FragmentShader += string("\tvec3 sPosition = ") + PositionOutName + ";\n";
-        if(!SetTexC     ) FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
+        if(!SetTexC     )
+        {
+            if(m_MapTypesUsed[Material::MT_PARALLAX])
+            {
+                FragmentShader += "\tfloat Ht;\n";
+                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(sPosition - u_CameraPosition),") + TexCoordOutName + ",0.1,Ht);\n";
+            }
+            else FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
+        }
         
         if(!SetTangent  && m_AttributeOutputsUsed[IAT_TANGENT]) FragmentShader += string("\tvec3 sTangent  = normalize(") + TangentOutName  + ");\n";
         if(!SetNormal   )
@@ -416,6 +435,11 @@ namespace Silk
                     
                     if(!PointLight) FragmentShader += DefaultFragmentShaderPointLight;
                     else FragmentShader += PointLight->Code;
+                    
+                    if(m_MapTypesUsed[Material::MT_PARALLAX])
+                    {
+                        FragmentShader += "\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,sTexCoord,0.1,Ht - 0.05),4);\n";
+                    }
                     
                     FragmentShader += DefaultFragmentShaderBase_1;
                     
