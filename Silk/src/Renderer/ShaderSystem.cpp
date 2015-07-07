@@ -156,6 +156,7 @@ namespace Silk
 
         /* Uniform dependencies */
         if(!m_UniformInputsUsed[IUT_OBJECT_UNIFORMS]) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = m_AllowInstancing;
+        if(m_MapTypesUsed[Material::MT_NORMAL]) m_UniformInputsUsed[IUT_OBJECT_UNIFORMS] = true;
         
         /*
          * Uniform inputs
@@ -178,6 +179,7 @@ namespace Silk
         if(m_AttributeOutputsUsed[IAT_TANGENT    ]) VertexShader += string("out vec3 ") + TangentOutName    + ";\n";
         if(m_AttributeOutputsUsed[IAT_COLOR      ]) VertexShader += string("out vec4 ") + ColorOutName      + ";\n";
         if(m_AttributeOutputsUsed[IAT_TEXCOORD   ]) VertexShader += string("out vec2 ") + TexCoordOutName   + ";\n";
+        if(m_MapTypesUsed[Material::MT_NORMAL    ]) VertexShader += string("out mat3 TBN;\n");
         
         /*
          * main
@@ -220,6 +222,11 @@ namespace Silk
         //if(!SetRoughness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultRoughnessFunc;
         //if(!SetMetalness && m_UniformInputsUsed  [IUT_MATERIAL_UNIFORMS]) VertexShader += DefaultMetalnessFunc;
         
+        if(m_MapTypesUsed[Material::MT_NORMAL])
+        {
+            VertexShader += string("\t\tTBN = mat3(") + TangentOutName + ",normalize(cross(" + NormalOutName + "," + TangentOutName + "))," + NormalOutName + ");\n";
+        }
+        
         /*
          *
          *   Don't forget the default animation stuff
@@ -259,11 +266,12 @@ namespace Silk
          * Attribute inputs
          */
         FragmentShader += "\n";
-        if(m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("in vec3 " ) + PositionOutName   + ";\n";
-        if(m_AttributeOutputsUsed[IAT_NORMAL  ]) FragmentShader += string("in vec3 " ) + NormalOutName     + ";\n";
-        if(m_AttributeOutputsUsed[IAT_TANGENT ]) FragmentShader += string("in vec3 " ) + TangentOutName    + ";\n";
-        if(m_AttributeOutputsUsed[IAT_COLOR   ]) FragmentShader += string("in vec4 " ) + ColorOutName      + ";\n";
-        if(m_AttributeOutputsUsed[IAT_TEXCOORD]) FragmentShader += string("in vec2 " ) + TexCoordOutName   + ";\n";
+        if(m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("in vec3 ") + PositionOutName   + ";\n";
+        if(m_AttributeOutputsUsed[IAT_NORMAL  ]) FragmentShader += string("in vec3 ") + NormalOutName     + ";\n";
+        if(m_AttributeOutputsUsed[IAT_TANGENT ]) FragmentShader += string("in vec3 ") + TangentOutName    + ";\n";
+        if(m_AttributeOutputsUsed[IAT_COLOR   ]) FragmentShader += string("in vec4 ") + ColorOutName      + ";\n";
+        if(m_AttributeOutputsUsed[IAT_TEXCOORD]) FragmentShader += string("in vec2 ") + TexCoordOutName   + ";\n";
+        if(m_MapTypesUsed[Material::MT_NORMAL ]) FragmentShader += string("in mat3 TBN;\n");
         
         i32 CustomLightingBlock = -1;
         vector<i32> UnsortedBlockIndices;
@@ -351,10 +359,7 @@ namespace Silk
             if(!m_MapTypesUsed[Material::MT_NORMAL] && m_AttributeOutputsUsed[IAT_NORMAL ]) FragmentShader += string("\tvec3 sNormal = normalize(") + NormalOutName + ");\n";
             else if(m_MapTypesUsed[Material::MT_NORMAL])
             {
-                FragmentShader += string("\tvec3 N = normalize(") + NormalOutName + ");\n";
-                FragmentShader += "\tvec3 B = normalize(cross(N,sTangent));\n";
-                FragmentShader += "\tmat3 sTransform = mat3(sTangent,B,N);\n";
-                FragmentShader += string("\tvec3 sNormal = sTransform * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
+                FragmentShader += string("\tvec3 sNormal = TBN * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
             }
         }
         if(!SetColor    )
