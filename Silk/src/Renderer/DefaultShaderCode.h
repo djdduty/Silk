@@ -176,10 +176,10 @@ namespace Silk
     
     static string ReliefParallaxMappingFunction =
 string(
-"vec2 ParallaxOffset(in vec3 V,in vec2 T,in float Scale,out float Height)\n"
+"vec2 ParallaxOffset(in vec3 V,in vec3 N,in vec2 T,in float Scale,out float Height)\n"
 "{\n"
 "// determine required number of layers\n"
-"float numLayers = mix(u_MaxParallaxLayers, u_MinParallaxLayers, abs(dot(vec3(0, 0, 1), V)));\n"
+"float numLayers = mix(u_MaxParallaxLayers, u_MinParallaxLayers, abs(dot(V, N)));\n"
 "\n"
 "// height of each layer\n"
 "float layerHeight = 1.0 / numLayers;\n"

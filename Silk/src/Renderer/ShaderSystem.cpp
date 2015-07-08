@@ -367,7 +367,7 @@ namespace Silk
             if(m_MapTypesUsed[Material::MT_PARALLAX])
             {
                 FragmentShader += "\tfloat Ht;\n";
-                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(sPosition - u_CameraPosition),") + TexCoordOutName + ",u_ParallaxScale,Ht);\n";
+                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(u_CameraPosition - sPosition),") + NormalOutName + "," + TexCoordOutName + ",u_ParallaxScale,Ht);\n";
             }
             else FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
         }

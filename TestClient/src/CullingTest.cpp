@@ -25,6 +25,8 @@ namespace TestClient
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
         m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
         
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(normalize(u_CameraPosition - sPosition),1);[/SetColor]"),0);
+        
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
         LoadLights  ();
@@ -187,27 +189,26 @@ namespace TestClient
         
         Mat->SetShader(m_ShaderGenerator->Generate());
         
-        //m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
         m_Materials.push_back(Mat);
         return Mat;
     }
 
     void CullingTest::Run()
     {
-        Mat4 t = Translation(Vec3(0,2,9)) * RotationX(20.0f);
+        Mat4 t = Translation(Vec3(0,4,9)) * RotationX(20.0f);
         m_Camera->SetTransform(t);
         Scalar a = 0.0f;
         while(IsRunning())
         {
             a += 7.5f * GetDeltaTime();
             
-            m_Camera->SetTransform(RotationY(a * 2.1f) * Translation(Vec3(0,3,6)) * RotationX(20.0f));
+            m_Camera->SetTransform(RotationY(a * 2.1f) * Translation(Vec3(0,1,6)) * RotationX(20.0f));
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
             
             //m_Meshes[0]->SetTextureTransform(Rotation(Vec3(0,0,1),(a * 1.2f) + (sin(a * 0.2f) * 10.0f)));
-        
-            m_Materials[0]->SetParallaxScale    (0.1f + (sin(a * 0.2) * 0.025f));
+            
+            //m_Materials[0]->SetParallaxScale    (0.1f + (sin(a * 0.2) * 0.025f));
             
             //Point
             //m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
@@ -216,7 +217,7 @@ namespace TestClient
             m_Lights[0]->SetTransform(Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
             
             //Spot
-            m_Lights[1]->SetTransform(Translation(Vec3(0,6,0.0f)) * Rotation(Vec3(1,0,0),-90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
+            m_Lights[1]->SetTransform(Translation(Vec3(0,3,0.0f)) * Rotation(Vec3(1,0,0),-90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
             m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
             
             //Directional
