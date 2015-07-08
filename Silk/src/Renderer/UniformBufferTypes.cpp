@@ -210,12 +210,19 @@ namespace Silk
         m_iDiffuse   = m_UniformBuffer->DefineUniform("u_Diffuse" );
         m_iEmissive  = m_UniformBuffer->DefineUniform("u_Emissive");
         
+        m_iMinParallaxLayers = m_UniformBuffer->DefineUniform("u_MinParallaxLayers");
+        m_iMaxParallaxLayers = m_UniformBuffer->DefineUniform("u_MaxParallaxLayers");
+        m_iParallaxScale     = m_UniformBuffer->DefineUniform("u_ParallaxScale"    );
+        
         SetMetalness(0.5f);
         SetRoughness(0.1f);
         SetShininess(1.0f);
         SetSpecular(Vec4(1,1,1,1));
         SetDiffuse (Vec4(1,1,1,1));
         SetEmissive(Vec4(1,1,1,1));
+        SetMinParallaxLayers(10);
+        SetMaxParallaxLayers(15);
+        SetParallaxScale(0.1f);
         
         UpdateUniforms();
     }
@@ -233,6 +240,10 @@ namespace Silk
         if(m_SpecularUpdated)  { m_UniformBuffer->SetUniform(m_iSpecular,m_Specular);   m_SpecularUpdated  = false; }
         if(m_DiffuseUpdated )  { m_UniformBuffer->SetUniform(m_iDiffuse ,m_Diffuse );   m_DiffuseUpdated   = false; }
         if(m_EmissiveUpdated)  { m_UniformBuffer->SetUniform(m_iEmissive,m_Emissive);   m_EmissiveUpdated  = false; }
+        
+        if(m_MinParallaxLayersUpdated) { m_UniformBuffer->SetUniform(m_iMinParallaxLayers,m_MinParallaxLayers); m_MinParallaxLayersUpdated = false; }
+        if(m_MaxParallaxLayersUpdated) { m_UniformBuffer->SetUniform(m_iMaxParallaxLayers,m_MaxParallaxLayers); m_MaxParallaxLayersUpdated = false; }
+        if(m_ParallaxScaleUpdated    ) { m_UniformBuffer->SetUniform(m_iParallaxScale    ,m_ParallaxScale    ); m_ParallaxScaleUpdated     = false; }
         //m_UniformBuffer->UpdateBuffer();
     }
 };

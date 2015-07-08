@@ -97,7 +97,7 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,u_Shininess);\n"                                                               +
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (0.2f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n" +
+    "\t\t\t\tvec4 FinalColor = (0.5f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n" +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"                +
     "\t\t\t\tFinalColor *= u_Lights[l].Power * Att;\n"                                                                                +
@@ -121,7 +121,7 @@ namespace Silk
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\tfloat Soften = smoothstep(u_Lights[l].Cutoff,u_Lights[l].Soften,cosLightAngle);\n"                                       +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (0.2f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
+    "\t\t\t\tvec4 FinalColor = (0.5f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"                +
     "\t\t\t\tFinalColor *= u_Lights[l].Power * Soften * Att;\n"                                                                       +
@@ -138,7 +138,7 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,u_Shininess);\n"                                                               +
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (0.2f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
+    "\t\t\t\tvec4 FinalColor = (0.5f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                                                                      +
     "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n";
@@ -179,9 +179,7 @@ string(
 "vec2 ParallaxOffset(in vec3 V,in vec2 T,in float Scale,out float Height)\n"
 "{\n"
 "// determine required number of layers\n"
-"const float minLayers = 10;\n"
-"const float maxLayers = 15;\n"
-"float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0, 0, 1), V)));\n"
+"float numLayers = mix(u_MaxParallaxLayers, u_MinParallaxLayers, abs(dot(vec3(0, 0, 1), V)));\n"
 "\n"
 "// height of each layer\n"
 "float layerHeight = 1.0 / numLayers;\n"
@@ -255,8 +253,6 @@ string("float ParallaxSoftShadowMultiplier(in vec3 L,in vec2 T,in float Scale,in
 "{\n"
 "   float shadowMultiplier = 1;\n"
 "\n"
-"   const float minLayers = 15;\n"
-"   const float maxLayers = 30;\n"
 "\n"
 "   // calculate lighting only for surface oriented to the light source\n"
 "   if(dot(vec3(0, 0, 1), L) > 0)\n"
@@ -264,7 +260,7 @@ string("float ParallaxSoftShadowMultiplier(in vec3 L,in vec2 T,in float Scale,in
 "      // calculate initial parameters\n"
 "      float numSamplesUnderSurface	= 0;\n"
 "      shadowMultiplier	= 0;\n"
-"      float numLayers	= mix(maxLayers, minLayers, abs(dot(vec3(0, 0, 1), L)));\n"
+"      float numLayers	= mix(u_MaxParallaxLayers, u_MinParallaxLayers, abs(dot(vec3(0, 0, 1), L)));\n"
 "      float layerHeight	= Height / numLayers;\n"
 "      vec2 texStep	= Scale * L.xy / L.z / numLayers;\n"
 "\n"

@@ -95,18 +95,25 @@ namespace Silk
             ~MaterialUniformSet();
         
             void SetRoughness(f32 Roughness) { m_Roughness = Roughness; m_RoughnessUpdated = true; }
-            f32 GetRoughness() const { return m_Roughness; }
             void SetMetalness(f32 Metalness) { m_Metalness = Metalness; m_MetalnessUpdated = true; }
-            f32 GetMetalness() const { return m_Metalness; }
             void SetShininess(f32 Shininess) { m_Shininess = Shininess; m_ShininessUpdated = true; }
+            f32 GetRoughness() const { return m_Roughness; }
+            f32 GetMetalness() const { return m_Metalness; }
             f32 GetShininess() const { return m_Shininess; }
             
             void SetDiffuse (const Vec4& Color) { m_Diffuse  = Color; m_DiffuseUpdated  = true; }
-            Vec4 GetDiffuse() const { return m_Diffuse; }
             void SetSpecular(const Vec4& Color) { m_Specular = Color; m_SpecularUpdated = true; }
-            Vec4 GetSpecular() const { return m_Specular; }
             void SetEmissive(const Vec4& Color) { m_Emissive = Color; m_EmissiveUpdated = true; }
+            Vec4 GetDiffuse () const { return m_Diffuse ; }
+            Vec4 GetSpecular() const { return m_Specular; }
             Vec4 GetEmissive() const { return m_Emissive; }
+        
+            void SetMinParallaxLayers(f32 Min  ) { m_MinParallaxLayers = Min  ; m_MinParallaxLayersUpdated = true; }
+            void SetMaxParallaxLayers(f32 Max  ) { m_MaxParallaxLayers = Max  ; m_MaxParallaxLayersUpdated = true; }
+            void SetParallaxScale    (f32 Scale) { m_ParallaxScale     = Scale; m_ParallaxScaleUpdated     = true; }
+            f32 GetMinParallaxLayers() const { return m_MinParallaxLayers; }
+            f32 GetMaxParallaxLayers() const { return m_MaxParallaxLayers; }
+            f32 GetParallaxScale    () const { return m_ParallaxScale    ; }
         
             void UpdateUniforms();
             UniformBuffer* GetUniforms() const { return m_UniformBuffer; }
@@ -119,6 +126,9 @@ namespace Silk
             i32 m_iDiffuse;
             i32 m_iSpecular;
             i32 m_iEmissive;
+            i32 m_iMinParallaxLayers;
+            i32 m_iMaxParallaxLayers;
+            i32 m_iParallaxScale;
         
             f32 m_Roughness;
             bool m_RoughnessUpdated;
@@ -132,6 +142,12 @@ namespace Silk
             bool m_SpecularUpdated;
             Vec4 m_Emissive;
             bool m_EmissiveUpdated;
+            f32 m_MinParallaxLayers;
+            bool m_MinParallaxLayersUpdated;
+            f32 m_MaxParallaxLayers;
+            bool m_MaxParallaxLayersUpdated;
+            f32 m_ParallaxScale;
+            bool m_ParallaxScaleUpdated;
         
             Renderer* m_Renderer;
     };

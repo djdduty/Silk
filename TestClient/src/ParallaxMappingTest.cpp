@@ -129,6 +129,9 @@ namespace TestClient
         m_Material->SetSpecular(Vec4(1,1,1,0));
         m_Material->SetShader(m_ShaderGenerator->Generate());
         
+        m_Material->SetMinParallaxLayers(10);
+        m_Material->SetMaxParallaxLayers(15);
+        
         m_LDispMat = m_Renderer->CreateMaterial();
         m_LDispMat->SetShader(m_Material->GetShader());
         
@@ -213,8 +216,6 @@ namespace TestClient
         m_LDispMat->SetMap(Material::MT_DIFFUSE ,m_Diffuse );
         m_LDispMat->SetMap(Material::MT_NORMAL  ,m_Normal  );
         m_LDispMat->SetMap(Material::MT_PARALLAX,m_Parallax);
-    
-        
     }
 
     void ParallaxMappingTest::Run()
@@ -236,6 +237,9 @@ namespace TestClient
             Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
             
             m_Object->SetTransform(r);
+            //m_Object->SetTextureTransform(Rotation(Vec3(0,0,1),(a * 1.2f) + (sin(a * 0.2f) * 10.0f)));
+        
+            m_Material->SetParallaxScale    (0.1f + (sin(a * 0.2) * 0.025f));
             
             //Point
             //m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
@@ -252,7 +256,7 @@ namespace TestClient
             
             for(i32 i = 0;i < m_Lights.size();i++)
             {
-                m_LightDisplays[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
+                //m_LightDisplays[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
             }
             
             m_Renderer->Render(GL_TRIANGLES);

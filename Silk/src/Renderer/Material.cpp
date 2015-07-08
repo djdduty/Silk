@@ -58,7 +58,15 @@ namespace Silk
     void Material::SetEmissive(const Vec4& Color) { m_Uniforms->SetEmissive(Color); }
     Vec4 Material::GetEmissive() const { return m_Uniforms->GetEmissive(); }
     
+    void Material::SetMinParallaxLayers(f32 Min  ) { m_Uniforms->SetMinParallaxLayers(Min); }
+    void Material::SetMaxParallaxLayers(f32 Max  ) { m_Uniforms->SetMaxParallaxLayers(Max); }
+    void Material::SetParallaxScale    (f32 Scale) { m_Uniforms->SetParallaxScale  (Scale); }
+    f32 Material::GetMinParallaxLayers() const { return m_Uniforms->GetMinParallaxLayers(); }
+    f32 Material::GetMaxParallaxLayers() const { return m_Uniforms->GetMaxParallaxLayers(); }
+    f32 Material::GetParallaxScale    () const { return m_Uniforms->GetParallaxScale    (); }
+    
     void Material::UpdateUniforms()
     {
+        m_Uniforms->UpdateUniforms();
     }
 };

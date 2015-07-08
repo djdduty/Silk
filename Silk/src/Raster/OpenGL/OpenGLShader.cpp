@@ -248,7 +248,7 @@ namespace Silk
     {
         if(m_UniformInputs[ShaderGenerator::IUT_MATERIAL_UNIFORMS])
         {
-            //Mat->UpdateUniforms();
+            Mat->UpdateUniforms();
             PassUniforms(Mat->GetUniforms());
         }
         

@@ -367,7 +367,7 @@ namespace Silk
             if(m_MapTypesUsed[Material::MT_PARALLAX])
             {
                 FragmentShader += "\tfloat Ht;\n";
-                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(sPosition - u_CameraPosition),") + TexCoordOutName + ",0.2,Ht);\n";
+                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(sPosition - u_CameraPosition),") + TexCoordOutName + ",u_ParallaxScale,Ht);\n";
             }
             else FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
         }
@@ -438,7 +438,7 @@ namespace Silk
                     
                     if(m_MapTypesUsed[Material::MT_PARALLAX])
                     {
-                        //FragmentShader += "\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,sTexCoord,0.1,Ht - 0.05),4);\n";
+                        //FragmentShader += "\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(-Dir,sTexCoord,0.1,Ht),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_1;
@@ -446,10 +446,20 @@ namespace Silk
                     if(!SpotLight) FragmentShader += DefaultFragmentShaderSpotLight;
                     else FragmentShader += SpotLight->Code;
                     
+                    if(m_MapTypesUsed[Material::MT_PARALLAX])
+                    {
+                        //FragmentShader += "\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(-Dir,sTexCoord,0.1,Ht),4);\n";
+                    }
+                    
                     FragmentShader += DefaultFragmentShaderBase_2;
                     
                     if(!DirectionalLight) FragmentShader += DefaultFragmentShaderDirectionalLight;
                     else FragmentShader += DirectionalLight->Code;
+                    
+                    if(m_MapTypesUsed[Material::MT_PARALLAX])
+                    {
+                        //FragmentShader += "\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(-u_Lights[l].Direction.xyx,sTexCoord,0.1,Ht),4);\n";
+                    }
                     
                     FragmentShader += DefaultFragmentShaderBase_3;
                     break;

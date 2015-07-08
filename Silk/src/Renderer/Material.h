@@ -56,6 +56,13 @@ namespace Silk
             Vec4 GetSpecular() const;
             void SetEmissive(const Vec4& Color);
             Vec4 GetEmissive() const;
+            
+            void SetMinParallaxLayers(f32 Min  );
+            void SetMaxParallaxLayers(f32 Max  );
+            void SetParallaxScale    (f32 Scale);
+            f32 GetMinParallaxLayers() const;
+            f32 GetMaxParallaxLayers() const;
+            f32 GetParallaxScale    () const;
         
             UniformBuffer* GetUniforms();
             void UpdateUniforms();
