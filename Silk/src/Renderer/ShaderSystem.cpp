@@ -352,7 +352,7 @@ namespace Silk
         {
             //To do: Switch statement for each type of parallax function
             FragmentShader += ReliefParallaxMappingFunction;
-            FragmentShader += ParallaxMappingShadowMultiplier;
+            //FragmentShader += ParallaxMappingShadowMultiplier;
         }
         
         /*

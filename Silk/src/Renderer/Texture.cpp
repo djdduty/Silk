@@ -5,17 +5,24 @@
 
 namespace Silk
 {
-    Texture::Texture() : m_Pixels(0), m_MemSize(0)
+    Texture::Texture(Rasterizer* r) : m_Pixels(0), m_MemSize(0), m_RefCount(1), m_Rasterizer(r)
     {
     }
     Texture::~Texture()
     {
-        FreeMemory();
     }
-    void Texture::FreeMemory()
+    i32 Texture::Destroy()
     {
-        if(m_Pixels) delete [] m_Pixels;
-        m_Pixels = 0;
+        m_RefCount--;
+        i32 r = m_RefCount;
+        if(m_RefCount == 0)
+        {
+            if(m_Pixels) delete [] m_Pixels;
+            m_Pixels = 0;
+            m_Rasterizer->Destroy(this);
+            return r;
+        }
+        return r;
     }
 
     void Texture::CreateTexture(i32 Width,i32 Height)

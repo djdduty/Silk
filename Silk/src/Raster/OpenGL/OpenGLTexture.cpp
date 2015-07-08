@@ -3,7 +3,7 @@
 
 namespace Silk
 {
-    OpenGLTexture::OpenGLTexture() : m_TexID(0)
+    OpenGLTexture::OpenGLTexture(Rasterizer* r) : Texture(r), m_TexID(0)
     {
     }
     OpenGLTexture::~OpenGLTexture()

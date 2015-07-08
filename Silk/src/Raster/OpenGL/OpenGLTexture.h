@@ -7,7 +7,7 @@ namespace Silk
     class OpenGLTexture : public Texture
     {
         public:
-            OpenGLTexture();
+            OpenGLTexture(Rasterizer* r);
             ~OpenGLTexture();
         
             virtual void InitializeTexture();

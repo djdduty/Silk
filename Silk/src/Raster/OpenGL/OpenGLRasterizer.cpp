@@ -530,7 +530,7 @@ namespace Silk
     }
     Texture* OpenGLRasterizer::CreateTexture()
     {
-        return new OpenGLTexture();
+        return new OpenGLTexture(this);
     }
 
     void OpenGLRasterizer::Destroy(UniformBuffer* Buffer)
@@ -544,7 +544,11 @@ namespace Silk
     }
     void OpenGLRasterizer::Destroy(Texture* T)
     {
-        T->FreeMemory();
+        if(!T->IsFree())
+        {
+            ERROR("Cannot destroy texture, it is still in use. (T: 0x%lX | Reference count: %d)\n",(intptr_t)T,T->GetRefCount());
+            return;
+        }
         delete (OpenGLTexture*)T;
     }
     void OpenGLRasterizer::Destroy(RasterObject* O)

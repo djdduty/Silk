@@ -1,4 +1,5 @@
 #include <Renderer/Material.h>
+#include <Renderer/Texture.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/UniformBufferTypes.h>
 
@@ -36,6 +37,13 @@ namespace Silk
     Material::~Material()
     {
         delete m_Uniforms;
+    }
+    void Material::SetMap(MAP_TYPE Type,Texture *Map)
+    {
+        if(!Map) return;
+        if(m_Maps[Type]) m_Maps[Type]->Destroy();
+        m_Maps[Type] = Map;
+        Map->AddRef();
     }
     
     UniformBuffer* Material::GetUniforms()

@@ -37,7 +37,7 @@ namespace Silk
                 MT_COUNT       ,
             };
         
-            void SetMap(MAP_TYPE Type,Texture* Map) { m_Maps[Type] = Map; }
+            void SetMap(MAP_TYPE Type,Texture* Map);
             Texture* GetMap(MAP_TYPE Type) const { return m_Maps[Type]; }
         
             void SetShader(Shader* Shdr) { m_Shader = Shdr; }
