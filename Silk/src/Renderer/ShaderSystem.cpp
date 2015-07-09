@@ -26,6 +26,8 @@ namespace Silk
         m_NullMaterialUniforms = new MaterialUniformSet(r);
         m_AllowInstancing = false;
         m_AllowInstancedTextureMatrix = r->GetRasterizer()->SupportsInstanceTextureTransforms();
+        m_LightingMode = LM_FLAT;
+        m_ParallaxFunction = PF_OCCLUSION;
     }
     ShaderGenerator::~ShaderGenerator()
     {
@@ -350,8 +352,12 @@ namespace Silk
          */
         if(m_MapTypesUsed[Material::MT_PARALLAX])
         {
-            //To do: Switch statement for each type of parallax function
-            FragmentShader += ReliefParallaxMappingFunction;
+            switch(m_ParallaxFunction)
+            {
+                case PF_RELIEF   : { FragmentShader += ReliefParallaxMappingFunction; break; }
+                case PF_OCCLUSION: { FragmentShader += OcclusionParallaxFunction    ; break; }
+                default          : { ERROR("Invalid parallax function.\n")          ; break; }
+            }
             //FragmentShader += ParallaxMappingShadowMultiplier;
         }
         
@@ -367,7 +373,7 @@ namespace Silk
             if(m_MapTypesUsed[Material::MT_PARALLAX])
             {
                 FragmentShader += "\tfloat Ht;\n";
-                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(u_CameraPosition - sPosition),") + NormalOutName + "," + TexCoordOutName + ",u_ParallaxScale,Ht);\n";
+                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(u_CameraPosition - sPosition) * TBN,-") + NormalOutName + "," + TexCoordOutName + ",u_ParallaxScale,Ht);\n";
             }
             else FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
         }

@@ -87,7 +87,7 @@ namespace Silk
     "\t\t\t\tfloat Dist   = length(Dir);\n"                                                                                           +
     "\t\t\t\tDir *= (1.0 / Dist);\n\n"                                                                                                +
     "\t\t\t\t//Compute specular power\n"                                                                                              +
-    "\t\t\t\tfloat ndotl = max(dot(sNormal,Dir),0.0);\n\n"                                                                            +
+    "\t\t\t\tfloat ndotl = max(dot(Dir,sNormal),0.0);\n\n"                                                                            +
     "\t\t\t\tfloat SpecularPower = 0.0;\n"                                                                                            +
     "\t\t\t\tif(ndotl > 0.0)\n"                                                                                                       +
     "\t\t\t\t{\n"                                                                                                                     +
@@ -97,7 +97,7 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,u_Shininess);\n"                                                               +
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (0.5f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n" +
+    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color);// + (SpecularPower * u_Lights[l].Color * sSpecular);\n" +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"                +
     "\t\t\t\tFinalColor *= u_Lights[l].Power * Att;\n"                                                                                +
@@ -121,10 +121,10 @@ namespace Silk
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\tfloat Soften = smoothstep(u_Lights[l].Cutoff,u_Lights[l].Soften,cosLightAngle);\n"                                       +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (0.5f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
+    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"                +
-    "\t\t\t\tFinalColor *= u_Lights[l].Power * Soften * Att;\n"                                                                       +
+    "\t\t\t\tFinalColor *= u_Lights[l].Power * Soften * Att * 0.0;\n"                                                                       +
     "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n";
 
     static string DefaultFragmentShaderDirectionalLight =
@@ -138,7 +138,7 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,u_Shininess);\n"                                                               +
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (0.5f * sColor) + (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
+    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                                                                      +
     "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n";
@@ -246,6 +246,58 @@ string(
 "   // return results\n"
 "   Height = currentLayerHeight;\n"
 "   return currentTextureCoords;\n"
+"}\n");
+
+    static string OcclusionParallaxFunction =
+string("vec2 ParallaxOffset(in vec3 V,in vec3 N,in vec2 T,in float Scale,out float Height)\n"
+"{\n"
+"   // determine optimal number of layers\n"
+"   float numLayers = mix(u_MaxParallaxLayers,u_MinParallaxLayers, abs(dot(N,V)));\n"
+"\n"
+"   // height of each layer\n"
+"   float layerHeight = 1.0 / numLayers;\n"
+"   // current depth of the layer\n"
+"   float curLayerHeight = 0;\n"
+"   // shift of texture coordinates for each layer\n"
+"   vec2 dtex = Scale * V.xy / V.z / numLayers;\n"
+"\n"
+"   // current texture coordinates\n"
+"   vec2 currentTextureCoords = T;\n"
+"\n"
+"   // depth from heightmap\n"
+"   float heightFromTexture = texture(u_ParallaxMap, currentTextureCoords).r;\n"
+"\n"
+"   // while point is above the surface\n"
+"   while(heightFromTexture > curLayerHeight)\n"
+"   {\n"
+"      // to the next layer\n"
+"      curLayerHeight += layerHeight;\n"
+"      // shift of texture coordinates\n"
+"      currentTextureCoords -= dtex;\n"
+"      // new depth from heightmap\n"
+"      heightFromTexture = texture(u_ParallaxMap, currentTextureCoords).r;\n"
+"   }\n"
+"\n"
+"   ///////////////////////////////////////////////////////////\n"
+"\n"
+"   // previous texture coordinates\n"
+"   vec2 prevTCoords = currentTextureCoords + dtex;\n"
+"\n"
+"   // heights for linear interpolation\n"
+"   float nextH	= heightFromTexture - curLayerHeight;\n"
+"   float prevH	= texture(u_ParallaxMap, prevTCoords).r - curLayerHeight + layerHeight;\n"
+"\n"
+"   // proportions for linear interpolation\n"
+"   float weight = nextH / (nextH - prevH);\n"
+"\n"
+"   // interpolation of texture coordinates\n"
+"   vec2 finalTexCoords = prevTCoords * weight + currentTextureCoords * (1.0-weight);\n"
+"\n"
+"   // interpolation of depth values\n"
+"   Height = curLayerHeight + prevH * weight + nextH * (1.0 - weight);\n"
+"\n"
+"   // return result\n"
+"   return finalTexCoords;\n"
 "}\n");
 
     static string ParallaxMappingShadowMultiplier =

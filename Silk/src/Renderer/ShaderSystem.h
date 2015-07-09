@@ -91,6 +91,11 @@ namespace Silk
                 LM_PHONG,
                 LM_FLAT,
             };
+            enum PARALLAX_FUNCTION
+            {
+                PF_RELIEF,
+                PF_OCCLUSION,
+            };
         
             struct CodeBlock
             {
@@ -121,6 +126,7 @@ namespace Silk
             void SetUserUniformBuffer    (UniformBuffer* UserUniforms    ) { m_UserUniforms     = UserUniforms    ; }
         
             void SetLightingMode(LIGHTING_MODES Type) { m_LightingMode = Type; }
+            void SetParallaxFunction(PARALLAX_FUNCTION Func) { m_ParallaxFunction = Func; }
             
             Shader* Generate();
         
@@ -152,6 +158,7 @@ namespace Silk
             ModelUniformSet*    m_NullModelUniforms   ;
             MaterialUniformSet* m_NullMaterialUniforms;
             LIGHTING_MODES      m_LightingMode        ;
+            PARALLAX_FUNCTION   m_ParallaxFunction    ;
         
             Renderer* m_Renderer;
             i32 m_ShadersGenerated;

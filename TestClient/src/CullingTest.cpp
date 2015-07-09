@@ -25,7 +25,7 @@ namespace TestClient
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
         m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
         
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(normalize(u_CameraPosition - sPosition),1);[/SetColor]"),0);
+        //m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
         
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
@@ -40,7 +40,7 @@ namespace TestClient
         L->m_Attenuation.Constant    = 0.00f;
         L->m_Attenuation.Linear      = 2.10f;
         L->m_Attenuation.Exponential = 5.90f;
-        
+
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
         L->m_Color = Vec4(1,1,1,1);
         L->m_Power = 0.24;
@@ -50,9 +50,8 @@ namespace TestClient
         L->m_Attenuation.Exponential = 0.01f;
         
         L = AddLight(LT_DIRECTIONAL,Vec3(0,10,0))->GetLight();
-        L->m_Direction = Vec4(Vec3(1,-0.6,0).Normalized(),1);
         L->m_Color = Vec4(0.9,0.8,0.6,1);
-        L->m_Power = 0.2f;
+        L->m_Power = 0.5f;
     }
     void CullingTest::LoadMeshes()
     {
@@ -66,14 +65,15 @@ namespace TestClient
     }
     void CullingTest::LoadMaterial()
     {
-        Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png" ,
-                                                              "CullingTest/GroundNormal.png"  ,
+        Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
+                                                              "CullingTest/GroundNormal.png" ,
                                                               "CullingTest/GroundHeight.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));
         
         Mat->SetMinParallaxLayers(10);
         Mat->SetMaxParallaxLayers(15);
+        Mat->SetParallaxScale(0.001f);
         
         AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png");
     }
@@ -154,7 +154,7 @@ namespace TestClient
     {
         Material* Mat = m_Renderer->CreateMaterial();
         Texture* D = LoadTexture(Diffuse );
-        Texture* N = LoadTexture(Normal  );
+        Texture* N = LoadTexture(Normal  ,true);
         Texture* P = LoadTexture(Parallax);
         
         if(D) { Mat->SetMap(Material::MT_DIFFUSE ,D); D->Destroy(); }
@@ -189,6 +189,9 @@ namespace TestClient
         
         Mat->SetShader(m_ShaderGenerator->Generate());
         
+        Mat->SetSpecular(Vec4(0,0,0,0));
+        Mat->SetShininess(0.0f);
+        
         m_Materials.push_back(Mat);
         return Mat;
     }
@@ -202,10 +205,10 @@ namespace TestClient
         {
             a += 7.5f * GetDeltaTime();
             
-            m_Camera->SetTransform(RotationY(a * 2.1f) * Translation(Vec3(0,1,6)) * RotationX(20.0f));
+            m_Camera->SetTransform(RotationY(a * 0.3f) * Translation(Vec3(0,1,6)) * RotationX(20.0f));
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
-            
+            //m_Meshes[0]->SetTransform(RotationZ(a));
             //m_Meshes[0]->SetTextureTransform(Rotation(Vec3(0,0,1),(a * 1.2f) + (sin(a * 0.2f) * 10.0f)));
             
             //m_Materials[0]->SetParallaxScale    (0.1f + (sin(a * 0.2) * 0.025f));
@@ -217,11 +220,11 @@ namespace TestClient
             m_Lights[0]->SetTransform(Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
             
             //Spot
-            m_Lights[1]->SetTransform(Translation(Vec3(0,3,0.0f)) * Rotation(Vec3(1,0,0),-90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
-            m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
+            //m_Lights[1]->SetTransform(Translation(Vec3(0,3,0.0f)) * Rotation(Vec3(1,0,0),-90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
+            //m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
             
             //Directional
-            //m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),a * 2.0f) * Rotation(Vec3(1,0,0),-90.0f));
+            m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),90 + (a * 0.1f)) * Rotation(Vec3(1,0,0),-90.0f));
             
             for(i32 i = 0;i < m_Lights.size();i++)
             {

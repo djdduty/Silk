@@ -120,6 +120,7 @@ namespace TestClient
         m_ShaderGenerator->SetTextureInput   (Material::MT_NORMAL                   ,true);
         m_ShaderGenerator->SetTextureInput   (Material::MT_PARALLAX                 ,true);
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR            ,true);
+        m_ShaderGenerator->SetParallaxFunction(ShaderGenerator::PF_RELIEF);
         m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_PHONG);
         
         //m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);

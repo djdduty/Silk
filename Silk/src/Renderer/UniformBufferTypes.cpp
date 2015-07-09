@@ -71,8 +71,6 @@ namespace Silk
     {
         m_ModelMatrixUpdated = true;
         m_Model = M;
-        //m_Normal = m_Model.Inverse().Transpose();
-        //m_Normal[0][3] = m_Normal[1][3] = m_Normal[2][3] = 0.0f;
     }
     void ModelUniformSet::SetTextureMatrix(const Mat4 &T)
     {
@@ -98,7 +96,10 @@ namespace Silk
             
             if(m_ModelMatrixUpdated)
             {
-                m_Normal = m_MV.Transpose().Inverse();
+                m_Normal = m_Model;
+                m_Normal.x.Normalize();
+                m_Normal.y.Normalize();
+                m_Normal.z.Normalize();
                 m_Normal[0][3] = m_Normal[1][3] = m_Normal[2][3] = 0.0f;
                 
                 if(m_Object->IsInstanced())
@@ -243,7 +244,7 @@ namespace Silk
         
         if(m_MinParallaxLayersUpdated) { m_UniformBuffer->SetUniform(m_iMinParallaxLayers,m_MinParallaxLayers); m_MinParallaxLayersUpdated = false; }
         if(m_MaxParallaxLayersUpdated) { m_UniformBuffer->SetUniform(m_iMaxParallaxLayers,m_MaxParallaxLayers); m_MaxParallaxLayersUpdated = false; }
-        if(m_ParallaxScaleUpdated    ) { m_UniformBuffer->SetUniform(m_iParallaxScale    ,m_ParallaxScale    ); m_ParallaxScaleUpdated     = false; }
+        if(m_ParallaxScaleUpdated    ) { m_UniformBuffer->SetUniform(m_iParallaxScale    ,-m_ParallaxScale   ); m_ParallaxScaleUpdated     = false; }
         //m_UniformBuffer->UpdateBuffer();
     }
 };
