@@ -25,6 +25,8 @@ namespace TestClient
         m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
         m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
         
+        m_ShaderGenerator->SetParallaxFunction(ShaderGenerator::PF_RELIEF);
+        
         //m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
         
         m_ObjLoader = new ObjLoader();
@@ -71,9 +73,9 @@ namespace TestClient
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));
         
-        Mat->SetMinParallaxLayers(10);
-        Mat->SetMaxParallaxLayers(15);
-        Mat->SetParallaxScale(0.001f);
+        Mat->SetMinParallaxLayers(40);
+        Mat->SetMaxParallaxLayers(60);
+        Mat->SetParallaxScale(0.01f);
         
         AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png");
     }
@@ -200,6 +202,9 @@ namespace TestClient
     {
         Mat4 t = Translation(Vec3(0,4,9)) * RotationX(20.0f);
         m_Camera->SetTransform(t);
+        
+        m_Meshes[0]->SetTextureTransform(Scale(0.25f));
+        
         Scalar a = 0.0f;
         while(IsRunning())
         {
@@ -209,7 +214,6 @@ namespace TestClient
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
             //m_Meshes[0]->SetTransform(RotationZ(a));
-            //m_Meshes[0]->SetTextureTransform(Rotation(Vec3(0,0,1),(a * 1.2f) + (sin(a * 0.2f) * 10.0f)));
             
             //m_Materials[0]->SetParallaxScale    (0.1f + (sin(a * 0.2) * 0.025f));
             
@@ -224,7 +228,7 @@ namespace TestClient
             //m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
             
             //Directional
-            m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),90 + (a * 0.1f)) * Rotation(Vec3(1,0,0),-90.0f));
+            m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),90 + (a)) * Rotation(Vec3(1,0,0),-90.0f));
             
             for(i32 i = 0;i < m_Lights.size();i++)
             {

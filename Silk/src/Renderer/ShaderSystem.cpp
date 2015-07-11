@@ -358,7 +358,7 @@ namespace Silk
                 case PF_OCCLUSION: { FragmentShader += OcclusionParallaxFunction    ; break; }
                 default          : { ERROR("Invalid parallax function.\n")          ; break; }
             }
-            //FragmentShader += ParallaxMappingShadowMultiplier;
+            FragmentShader += ParallaxMappingShadowMultiplier;
         }
         
         /*
@@ -367,8 +367,8 @@ namespace Silk
         FragmentShader += "\n";
         FragmentShader += "void main()\n{\n";
         
-        if(!SetPosition ) FragmentShader += string("\tvec3 sPosition = ") + PositionOutName + ";\n";
-        if(!SetTexC     )
+        if(!SetPosition && m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("\tvec3 sPosition = ") + PositionOutName + ";\n";
+        if(!SetTexC     && m_AttributeOutputsUsed[IAT_TEXCOORD])
         {
             if(m_MapTypesUsed[Material::MT_PARALLAX])
             {
@@ -379,7 +379,7 @@ namespace Silk
         }
         
         if(!SetTangent  && m_AttributeOutputsUsed[IAT_TANGENT]) FragmentShader += string("\tvec3 sTangent  = normalize(") + TangentOutName  + ");\n";
-        if(!SetNormal   )
+        if(!SetNormal   && m_AttributeOutputsUsed[IAT_NORMAL])
         {
             if(!m_MapTypesUsed[Material::MT_NORMAL] && m_AttributeOutputsUsed[IAT_NORMAL ]) FragmentShader += string("\tvec3 sNormal = normalize(") + NormalOutName + ");\n";
             else if(m_MapTypesUsed[Material::MT_NORMAL])
@@ -444,7 +444,7 @@ namespace Silk
                     
                     if(m_MapTypesUsed[Material::MT_PARALLAX])
                     {
-                        //FragmentShader += "\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(-Dir,sTexCoord,0.1,Ht),4);\n";
+                        FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_1;
@@ -454,7 +454,7 @@ namespace Silk
                     
                     if(m_MapTypesUsed[Material::MT_PARALLAX])
                     {
-                        //FragmentShader += "\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(-Dir,sTexCoord,0.1,Ht),4);\n";
+                        FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_2;
@@ -464,7 +464,7 @@ namespace Silk
                     
                     if(m_MapTypesUsed[Material::MT_PARALLAX])
                     {
-                        //FragmentShader += "\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(-u_Lights[l].Direction.xyx,sTexCoord,0.1,Ht),4);\n";
+                        FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(u_Lights[l].Direction.xyz,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_3;

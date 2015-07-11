@@ -118,7 +118,7 @@ namespace TestClient
         m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_COLOR          ,true);
         
         m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[NdotL]float NdotL = dot(o_Normal,vec3(0,1,0));\n\tif(NdotL < 0.0) NdotL = -NdotL;[/NdotL]"),0);
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,o_TexCoord) * NdotL;[/SetColor]"),1);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = texture(u_DiffuseMap,o_TexCoord) * NdotL;[/SetColor]"),1);
         
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShader(m_ShaderGenerator->Generate());
@@ -176,7 +176,7 @@ namespace TestClient
         AngularVelocity[i] += -(AngularVelocity[i] - (AngularVelocity[i] * AngularDamping)) * dt;
         RotationAngle  [i] +=   AngularVelocity[i] * dt;
         
-        m_Objs[i]->SetTransform(Translation(Position[i]) * Rotation(RotationAxis[i],RotationAngle[i]));
+        m_Objs[i]->SetTransform(Rotation(RotationAxis[i],RotationAngle[i]) * Translation(Position[i]));
     }
     void InstancingTest::Run()
     {

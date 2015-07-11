@@ -6,10 +6,10 @@
 
 #include <Test.h>
 
-//#include <InstancingTest.h>
-//#include <LightingTest.h>
-//#include <NormalMappingTest.h>
-//#include <ParallaxMappingTest.h>
+#include <InstancingTest.h>
+#include <LightingTest.h>
+#include <NormalMappingTest.h>
+#include <ParallaxMappingTest.h>
 #include <CullingTest.h>
 using namespace TestClient;
 
@@ -31,11 +31,11 @@ int main(int ArgC,char *ArgV[])
     
     #endif
 
-    //Test* Test = new InstancingTest();
+    Test* Test = new InstancingTest();
     //Test* Test = new LightingTest();
     //Test* Test = new NormalMappingTest();
     //Test* Test = new ParallaxMappingTest();
-    Test* Test = new CullingTest();
+    //Test* Test = new CullingTest();
     
     Test->Init    ();
     Test->Run     ();
