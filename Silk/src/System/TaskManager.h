@@ -64,6 +64,7 @@ namespace Silk
             Time GetLocalTime() const { return m_LocalTime; }
             Scalar GetLastFrameDuration() const { return m_LastFrameDuration; }
             Scalar GetLastFrameIdleDuration() const { return m_LastFrameIdleDuration; }
+            i32 GetID() const { return m_ID; }
         
         protected:
             friend class TaskManager;
@@ -77,7 +78,7 @@ namespace Silk
             Scalar m_LastFrameDuration;
             Scalar m_LastFrameIdleDuration;
             TaskManager* m_Manager;
-            pthread_t m_Thread;
+            Thread* m_Thread;
             ThreadCondition m_Wake;
             ThreadCondition m_Sleep;
             Mutex m_IdlingMutex;

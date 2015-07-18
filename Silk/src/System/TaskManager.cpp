@@ -19,33 +19,6 @@ using namespace std;
 
 namespace Silk
 {
-    void SetThreadAffinity(i32 ThreadID)
-    {
-        #ifdef __APPLE__
-        thread_extended_policy_data_t epolicy;
-        epolicy.timeshare = FALSE;
-        kern_return_t ret;
-        ret = thread_policy_set(mach_thread_self(),THREAD_EXTENDED_POLICY,(thread_policy_t)&epolicy,THREAD_EXTENDED_POLICY_COUNT);
-        if(ret != KERN_SUCCESS) ERROR("thread_policy_set returned %d", ret);
-
-        thread_affinity_policy_data_t apolicy;
-        apolicy.affinity_tag = ThreadID;
-        ret = thread_policy_set(mach_thread_self(),THREAD_AFFINITY_POLICY,(thread_policy_t)&apolicy,THREAD_AFFINITY_POLICY_COUNT);
-        if(ret != KERN_SUCCESS) ERROR("thread_policy_set returned %d", ret);
-        
-        #else
-        ERROR("void SetThreadAffinity(i32 ThreadID) Unsupported...\n");
-        abort();
-        #endif
-    }
-    
-    
-    void* ThreadFunc(void* Ptr)
-    {
-        ((WorkerThread*)Ptr)->Run();
-        return 0;
-    }
-    
     Task::Task(Task* Parent) : m_Type(TT_COUNT), m_Parent(Parent)
     {
         m_DependenciesLeft = 0;
@@ -59,16 +32,17 @@ namespace Silk
     {
         return m_DependenciesLeft == 0;
     }
-    WorkerThread::WorkerThread(TaskManager* Manager) : m_Shutdown(false), m_DidStop(false), m_Manager(Manager)
+    WorkerThread::WorkerThread(TaskManager* Manager) : m_Shutdown(false), m_DidStop(false), m_Manager(Manager), m_Thread(new Thread(this))
     {
     }
     WorkerThread::~WorkerThread()
     {
-        pthread_join(m_Thread,0);
+        m_Thread->Stop();
+        delete m_Thread;
     }
     bool WorkerThread::Start()
     {
-        return pthread_create(&m_Thread,0,ThreadFunc,this) != 0;
+        return m_Thread->Start();
     }
     void WorkerThread::Stop()
     {
@@ -96,7 +70,6 @@ namespace Silk
     }
     void WorkerThread::Run()
     {
-        SetThreadAffinity(m_ID);
         m_LocalTimer.Start();
         while(!m_Shutdown)
         {
@@ -122,7 +95,6 @@ namespace Silk
             m_LastFrameDuration = m_LocalTimer - FrameBegin;
         }
         m_DidStop = true;
-        pthread_exit(0);
     }
     
     TaskContainer::TaskContainer() : m_ThreadDifferenceSampleCount(20), m_DurationSampleCount(20), m_ThreadTimeQuota(1.0f / 60.0f),
