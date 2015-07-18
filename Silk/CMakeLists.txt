@@ -17,7 +17,7 @@ endif()
 
 add_library(Silk ${BUILD_MODE} ${ss_top_SOURCES} ${ss_sys_SOURCES} ${ss_gl_SOURCES} ${ss_rast_SOURCES} ${ss_rend_SOURCES} ${ss_cull_SOURCES} ${ss_util_SOURCES} ${ss_math_SOURCES})
 
-target_link_libraries(Silk Glew ${OPENGL_LIBRARIES})
+target_link_libraries(Silk Glew Pthread ${OPENGL_LIBRARIES})
 
 source_group("Silk" FILES ${ss_top_SOURCES})
 source_group("Silk\\System" FILES ${ss_sys_SOURCES})
