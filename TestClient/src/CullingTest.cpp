@@ -2,6 +2,24 @@
 #include <LodePNG.h>
 #include <ObjLoader.h>
 #include <math.h>
+#include <Utilities/SimplexNoise.h>
+
+#include <System/TaskManager.h>
+
+using namespace TestClient;
+
+class TestTask : public Task
+{
+    public:
+        TestTask() { m_Type = TT_TEST_TASK; }
+        ~TestTask() { }
+    
+        virtual void Run()
+        {
+            f32 n = 0;
+            for(i32 i = 0;i < 100;i++) n += octave_noise_4d(10,1,1,0,0,0,i);
+        }
+};
 
 namespace TestClient
 {
@@ -90,7 +108,7 @@ namespace TestClient
         L->m_Attenuation.Exponential = 5.90f;
         LObj->SetTransform(Translation(Pos));
         
-        m_Renderer->AddRenderObject(LObj);
+        m_Renderer->GetScene()->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
         return LObj;
     }
@@ -111,7 +129,7 @@ namespace TestClient
         {
             Obj = m_Renderer->CreateRenderObject(ROT_MESH,false);
             Obj->SetMesh(M,Mat);
-            m_Renderer->AddRenderObject(Obj);
+            m_Renderer->GetScene()->AddRenderObject(Obj);
             
             Obj->SetTransform(Translation(Pos));
             Obj->SetTextureTransform(Mat4::Identity);
@@ -206,8 +224,31 @@ namespace TestClient
         m_Meshes[0]->SetTextureTransform(Scale(0.25f));
         
         Scalar a = 0.0f;
+        TaskManager* tm = new TaskManager();
+        tm->GetTaskContainer()->SetAverageTaskDurationSampleCount(10);
+        tm->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
+    
         while(IsRunning())
         {
+            for(i32 i = 0;i < 1000;i++) tm->AddTask(new TestTask(),true);
+        
+            tm->BeginFrame();
+            
+            for(i32 i = 0;i < tm->GetCoreCount() - 1;i++)
+            {
+                if(!tm->GetThread(i)->IsIdling()) { printf("Thread[%d] not idling???\n",i); }
+            }
+            
+            for(i32 i = 0;i < TT_COUNT;i++)
+            {
+                Time d = tm->GetAverageTaskDuration((TASK_TYPE)i);
+                printf("%s: %f ms.\n",GetTaskTypeName((TASK_TYPE)i).c_str(),d * 1000.0f);
+            }
+            for(i32 i = 0;i < tm->GetCoreCount();i++)
+            {
+                printf("Thread[%d]: %f ms.\n",i,tm->GetThreadLastFrameDuration(i) * 1000.0f);
+            }
+        
             a += 7.5f * GetDeltaTime();
             
             m_Camera->SetTransform(RotationY(a * 0.3f) * Translation(Vec3(0,1,6)) * RotationX(20.0f));
@@ -236,7 +277,11 @@ namespace TestClient
             }
             
             m_Renderer->Render(GL_TRIANGLES);
+            
+            tm->EndFrame();
         }
+        
+        delete tm;
     }
 
     void CullingTest::Shutdown()

@@ -38,7 +38,7 @@ namespace TestClient
     }
     Test::~Test()
     {
-        m_Renderer->SetActiveCamera(0);
+        m_Renderer->GetScene()->SetActiveCamera(0);
         if(m_Camera         ) delete m_Camera;
         if(m_ShaderGenerator) delete m_ShaderGenerator;
         if(m_Renderer       ) delete m_Renderer       ;
@@ -66,7 +66,8 @@ namespace TestClient
             Scalar Aspect = m_Rasterizer->GetContext()->GetResolution().y / m_Rasterizer->GetContext()->GetResolution().x;
             
             m_Camera = new Camera(Vec2(60.0f,60.0f * Aspect),0.001f,2000.0f);
-            m_Renderer->SetActiveCamera(m_Camera);
+            m_Renderer->GetScene()->SetActiveCamera(m_Camera);
+            m_Renderer->GetScene()->SetCullingAlgorithm(new NullCullingAlgorithm(m_Renderer->GetScene()));
             
             m_ElapsedTime = m_LastElapsedTime = m_Window->GetElapsedTime();
             m_FrameCounter = 0;

@@ -5,6 +5,9 @@
 #include <Renderer/Mesh.h>
 #include <Renderer/Material.h>
 #include <Renderer/UniformBufferTypes.h>
+#include <Renderer/Scene.h>
+
+#include <Renderer/CullingAlgorithms/NullCullingAlgorithm.h>
 
 namespace Silk
 {
@@ -16,28 +19,23 @@ namespace Silk
             virtual ~Renderer();
         
             Rasterizer*    GetRasterizer           () { return m_Raster; }
-        
             Texture*       GetDefaultTexture       ();
             UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }
             UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms->GetUniforms(); }
         
-            void SetActiveCamera(Camera* c) { m_ActiveCamera = c;    }
-            Camera* GetActiveCamera() const { return m_ActiveCamera; }
-        
-            void UpdateUniforms();
-            void Render(i32 PrimType);
-
             RenderObject* CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene = true);
             Material    * CreateMaterial();
             void Destroy(Material    * Mat);
             void Destroy(RenderObject* Obj);
-
-            void AddRenderObject(RenderObject* Object);
-            void RemoveRenderObject(RenderObject* Object) { m_ObjectList->RemoveObject(Object);  }
-            void AddToUpdateList(RenderObject* Object)    { m_UpdatedObjects.push_back(Object); }
+        
+            void UpdateUniforms();
+            void Render(i32 PrimType);
         
             void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
             i32 GetMaxLights() { return m_Prefs.MaxLights; }
+        
+            void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
+            Scene* GetScene() const { return m_Scene; }
 
         protected:
             struct RenderPreferences
@@ -57,13 +55,11 @@ namespace Silk
             Scalar m_DefaultTexturePhase;
             void UpdateDefaultTexture();
         
-            Camera* m_ActiveCamera;
+            Scene* m_Scene;
             
             UniformBuffer* m_EngineUniforms;
             RenderUniformSet* m_RendererUniforms;
 
-            ObjectList* m_ObjectList;     //Contains all objects
-            vector<RenderObject*> m_UpdatedObjects; //clears every frame
             Rasterizer* m_Raster;
     };
 };

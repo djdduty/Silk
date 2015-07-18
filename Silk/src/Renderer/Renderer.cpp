@@ -13,33 +13,27 @@
 
 namespace Silk
 {
-    Renderer::Renderer(Rasterizer* Raster) : 
-        m_ObjectList(new ObjectList()), m_Raster(Raster)
+    Renderer::Renderer(Rasterizer* Raster) : m_Raster(Raster)
     {
         m_DefaultTexture   = m_Raster->CreateTexture();
         m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
         m_DefaultTexture->InitializeTexture();
         m_DefaultTexturePhase = 0.0f;
         
+        m_Scene = new Scene(this);
+        
         m_DoRecompileAllShaders = false;
         m_Prefs.MaxLights = 8;
         m_Stats.FrameID = 0;
-        
-        m_ActiveCamera = 0;
         
         m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS);
         m_RendererUniforms = new RenderUniformSet(this);
         
         UpdateDefaultTexture();
-        
-        m_ActiveCamera = 0;
     }
 
     Renderer::~Renderer() 
     {
-        m_ObjectList->Clear();
-        delete m_ObjectList;
-        
         m_Raster->Destroy(m_DefaultTexture);
         m_Raster->Destroy(m_EngineUniforms);
         
@@ -59,7 +53,9 @@ namespace Silk
         if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 1 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
-        SilkObjectVector Lights = m_ObjectList->GetLightList();
+        CullingResult* CullResult = m_Scene->PerformCulling();
+        
+        SilkObjectVector Lights = CullResult->m_VisibleObjects->GetLightList();
         std::vector<Light*> LightsVector;
         for(i32 i = 0; i < Lights.size(); i++)
         {
@@ -83,17 +79,17 @@ namespace Silk
          * then call Object->GetUniformSet()->SetLights(ObjectLightVector);
          */
         
-        i32 ShaderCount = m_ObjectList->GetShaderCount();
+        i32 ShaderCount = CullResult->m_VisibleObjects->GetShaderCount();
         
         SilkObjectVector MeshesRendered;
         for(i32 i = 0;i < ShaderCount;i++)
         {
-            Shader* Shader = m_ObjectList->GetShader(i);
+            Shader* Shader = CullResult->m_VisibleObjects->GetShader(i);
             if(!Shader) continue;
             
             Shader->Enable();
             
-            SilkObjectVector Meshes = m_ObjectList->GetShaderMeshList(i);
+            SilkObjectVector Meshes = CullResult->m_VisibleObjects->GetShaderMeshList(i);
             for(i32 m = 0;m < Meshes.size();m++)
             {
                 RenderObject* Obj = Meshes[m];
@@ -146,7 +142,6 @@ namespace Silk
             MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
         }
         
-        m_UpdatedObjects.clear();
         
         m_Stats.FrameID++;
     }
@@ -158,8 +153,7 @@ namespace Silk
         if(!Object)
             return nullptr;
 
-        if(AddToScene)
-            AddRenderObject(Object);
+        if(AddToScene) m_Scene->AddRenderObject(Object);
 
         return Object;
     }
@@ -174,16 +168,8 @@ namespace Silk
     }
     void Renderer::Destroy(RenderObject* Obj)
     {
-        RemoveRenderObject(Obj);
+        m_Scene->RemoveRenderObject(Obj);
         delete Obj;
-    }
-    
-    void Renderer::AddRenderObject(RenderObject *Object)
-    {
-        if(!Object) return;
-            
-        Object->m_ListIndex = m_ObjectList->AddObject(Object);
-        Object->m_List = m_ObjectList;
     }
     
     void Renderer::UpdateDefaultTexture()

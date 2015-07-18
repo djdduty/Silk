@@ -84,7 +84,7 @@ namespace Silk
     }
     void ModelUniformSet::UpdateUniforms()
     {
-        Camera* Cam = m_Renderer->GetActiveCamera();
+        Camera* Cam = m_Renderer->GetScene()->GetActiveCamera();
         if(Cam)
         {
             Mat4 m = m_Model;
@@ -178,7 +178,7 @@ namespace Silk
 
     void RenderUniformSet::UpdateUniforms()
     {
-        Camera* Cam = m_Renderer->GetActiveCamera();
+        Camera* Cam = m_Renderer->GetScene()->GetActiveCamera();
         if(!Cam) return;
         Mat4 cTrans = Cam->GetTransform();
         bool DidTrans = Cam->DidTransformUpdate();

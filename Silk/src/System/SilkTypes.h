@@ -42,6 +42,13 @@ typedef f32                 Scalar;
 typedef bool                Flag;
 typedef u32                 UID;
 
+#define _USE_32BIT_TIME
+#ifdef _USE_32BIT_TIME
+typedef f32                 Time;
+#else
+typedef f64                 Time;
+#endif
+
 #ifdef __gnu_linux__
     #define INT32_MAX    __INT32_MAX__
 #endif

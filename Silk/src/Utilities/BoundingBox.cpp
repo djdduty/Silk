@@ -1,4 +1,5 @@
 #include <Utilities/BoundingBox.h>
+#include <cmath>
 
 namespace Silk
 {

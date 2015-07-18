@@ -32,7 +32,7 @@ namespace TestClient
         L->m_Attenuation.Linear      = 0.10f; //?
         LObj->SetTransform(Translation(Vec3(0,1,-5)));
         
-        m_Renderer->AddRenderObject(LObj);
+        m_Renderer->GetScene()->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
         
         LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
@@ -47,7 +47,7 @@ namespace TestClient
         L->m_Attenuation.Exponential = 0.01f; //?
         LObj->SetTransform(Translation(Vec3(0,8,0)));
         
-        m_Renderer->AddRenderObject(LObj);
+        m_Renderer->GetScene()->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
         
         
@@ -58,7 +58,7 @@ namespace TestClient
         L->m_Color = Vec4(1,1,1,1);
         L->m_Power = 0.1;
         
-        m_Renderer->AddRenderObject(LObj);
+        m_Renderer->GetScene()->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
     }
     void LightingTest::LoadMesh()
@@ -72,7 +72,7 @@ namespace TestClient
         
         m_Object = m_Renderer->CreateRenderObject(ROT_MESH,false);
         m_Object->SetMesh(m_Mesh,m_Material);
-        m_Renderer->AddRenderObject(m_Object);
+        m_Renderer->GetScene()->AddRenderObject(m_Object);
         
         m_Object->SetTransform(Translation(Vec3(0,0,0)));
         m_Object->SetTextureTransform(Mat4::Identity);
@@ -87,7 +87,7 @@ namespace TestClient
         {
             RenderObject* d = m_Renderer->CreateRenderObject(ROT_MESH,false);
             d->SetMesh(m_LDispMesh,m_LDispMat);
-            m_Renderer->AddRenderObject(d);
+            m_Renderer->GetScene()->AddRenderObject(d);
             m_LightDisplays.push_back(d);
         }
         

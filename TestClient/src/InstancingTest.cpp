@@ -23,7 +23,7 @@ namespace TestClient
             m_Objs[i] = m_Renderer->CreateRenderObject(ROT_MESH,false);
             m_Objs[i]->SetMesh(m_Mesh,m_Material);
             RespawnParticle(i);
-            m_Renderer->AddRenderObject(m_Objs[i]);
+            m_Renderer->GetScene()->AddRenderObject(m_Objs[i]);
         }
     }
     void InstancingTest::LoadMesh()

@@ -120,10 +120,18 @@ namespace Silk {
 
     void RenderObject::MarkAsUpdated()
     {
-        if(m_Renderer) m_Renderer->AddToUpdateList(this);
+        if(m_Renderer) m_Renderer->GetScene()->AddToUpdateList(this);
         m_DidUpdate = true;
     }
 
+    ObjectList::ObjectList(const ObjectList& l)
+    {
+        m_MeshObjects   = SilkObjectVector(l.m_MeshObjects  );
+        m_LightObjects  = SilkObjectVector(l.m_LightObjects );
+        m_CameraObjects = SilkObjectVector(l.m_CameraObjects);
+        m_ShaderObjects = vector<vector<RenderObject*> >(l.m_ShaderObjects);
+        m_ShadersUsed   = vector<Shader*>(l.m_ShadersUsed);
+    }
     i32 ObjectList::AddObject(RenderObject* Obj)
     {
         if(Obj->m_List && Obj->m_List != this) Obj->m_List->RemoveObject(Obj);
@@ -235,5 +243,11 @@ namespace Silk {
 
         Obj->m_List = 0;
         Obj->m_ListIndex = 0;
+    }
+    void ObjectList::Clear()
+    {
+        m_MeshObjects.clear();
+        m_LightObjects.clear();
+        m_CameraObjects.clear();
     }
 }

@@ -11,6 +11,7 @@
 #include <NormalMappingTest.h>
 #include <ParallaxMappingTest.h>
 #include <CullingTest.h>
+
 using namespace TestClient;
 
 int main(int ArgC,char *ArgV[])
@@ -30,12 +31,12 @@ int main(int ArgC,char *ArgV[])
     getcwd(cwd,256);
     
     #endif
-
-    Test* Test = new InstancingTest();
+    
+    //Test* Test = new InstancingTest();
     //Test* Test = new LightingTest();
     //Test* Test = new NormalMappingTest();
     //Test* Test = new ParallaxMappingTest();
-    //Test* Test = new CullingTest();
+    Test* Test = new CullingTest();
     
     Test->Init    ();
     Test->Run     ();

@@ -58,6 +58,7 @@ namespace Silk
             RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObject* Object);
             ~RenderObject();
         
+            friend class Scene;
             friend class Renderer;
             friend class ObjectList;
             friend class RasterObject;
@@ -93,18 +94,14 @@ namespace Silk
     {
         public:
             ObjectList() : m_MeshObjects(SilkObjectVector()), m_LightObjects(SilkObjectVector()), m_CameraObjects(SilkObjectVector())
-            {};
-            ~ObjectList() {}
+            { }
+            ObjectList(const ObjectList& l);
+            ~ObjectList() { }
 
             i32  AddObject(RenderObject* Obj);
             void RemoveObject(RenderObject* Obj);
 
-            void Clear()
-            { 
-                m_MeshObjects.clear();
-                m_LightObjects.clear();
-                m_CameraObjects.clear();
-            }
+            void Clear();
 
             SilkObjectVector& GetMeshList()   { return m_MeshObjects;   }
             SilkObjectVector& GetCameraList() { return m_CameraObjects; }
