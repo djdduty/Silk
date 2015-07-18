@@ -14,17 +14,19 @@ set(BUILD_STATIC TRUE CACHE BOOL "TRUE to build static libraries, FALSE to build
 set(BUILD_GAME TRUE CACHE BOOL "TRUE to build the game, FALSE to not build it")
 set(BUILD_TEST TRUE CACHE BOOL "TRUE to build the test game, FALSE to not build it")
 
-set(GLFWDIR "" CACHE PATH "Path to glfw dir")
-set(GLEWDIR "" CACHE PATH "Path to glew dir")
+set(GLFWDIR    "" CACHE PATH "Path to glfw dir"   )
+set(GLEWDIR    "" CACHE PATH "Path to glew dir"   )
+set(PTHREADDIR "" CACHE PATH "Path to pthread dir")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-extras/")
 
-set(GLFWDIR "${PROJECT_SOURCE_DIR}/dependencies/glfw")
-set(GLEWDIR "${PROJECT_SOURCE_DIR}/dependencies/glew")
+set(GLFWDIR    "${PROJECT_SOURCE_DIR}/dependencies/glfw"   )
+set(GLEWDIR    "${PROJECT_SOURCE_DIR}/dependencies/glew"   )
+set(PTHREADDIR "${PROJECT_SOURCE_DIR}/dependencies/pthread")
 
 find_package(OpenGL REQUIRED)
 
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/Silk/src/ ${GLFWDIR}/include ${OPENGL_INCLUDE_DIR} ${GLEWDIR}/include )
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/Silk/src/ ${GLFWDIR}/include ${OPENGL_INCLUDE_DIR} ${GLEWDIR}/include $(PTHREADDIR)/include)
 
 ADD_SUBDIRECTORY(dependencies)
 find_package(X11)
