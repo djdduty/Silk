@@ -1,6 +1,7 @@
 #include <System/Threading.h>
 
-
+#include <pthread.h>
+#include <semaphore.h>
 #ifdef __APPLE__
 #include <mach/thread_policy.h>
 #include <mach/thread_act.h>
