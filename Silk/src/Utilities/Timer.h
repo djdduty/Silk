@@ -17,7 +17,7 @@ namespace Silk
             operator Time() const;
         
         protected:
-            std::chrono::time_point<std::chrono::steady_clock> m_StartTime;
+			std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTime;
             bool m_Started;
     };
 };

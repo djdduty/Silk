@@ -86,8 +86,8 @@ namespace TestClient
     void CullingTest::LoadMaterial()
     {
         Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
-                                                              "CullingTest/GroundNormal.png" ,
-                                                              "CullingTest/GroundHeight.png");
+                                                              "CullingTest/GroundNormal.png");// ,
+                                                              //"CullingTest/GroundHeight.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));
         
@@ -204,7 +204,7 @@ namespace TestClient
         
         m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE ,D != 0);
         m_ShaderGenerator->SetTextureInput(Material::MT_NORMAL  ,N != 0);
-        m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
+        //m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
         m_ShaderGenerator->SetLightingMode(LightingMode);
         
         Mat->SetShader(m_ShaderGenerator->Generate());
@@ -230,24 +230,7 @@ namespace TestClient
     
         while(IsRunning())
         {
-            for(i32 i = 0;i < 1000;i++) tm->AddTask(new TestTask(),true);
-        
             tm->BeginFrame();
-            
-            for(i32 i = 0;i < tm->GetCoreCount() - 1;i++)
-            {
-                if(!tm->GetThread(i)->IsIdling()) { printf("Thread[%d] not idling???\n",i); }
-            }
-            
-            for(i32 i = 0;i < TT_COUNT;i++)
-            {
-                Time d = tm->GetAverageTaskDuration((TASK_TYPE)i);
-                printf("%s: %f ms.\n",GetTaskTypeName((TASK_TYPE)i).c_str(),d * 1000.0f);
-            }
-            for(i32 i = 0;i < tm->GetCoreCount();i++)
-            {
-                printf("Thread[%d]: %f ms.\n",i,tm->GetThreadLastFrameDuration(i) * 1000.0f);
-            }
         
             a += 7.5f * GetDeltaTime();
             

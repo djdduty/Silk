@@ -24,7 +24,7 @@ set(GLEWDIR    "${PROJECT_SOURCE_DIR}/dependencies/glew"   )
 
 find_package(OpenGL REQUIRED)
 
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/Silk/src/ ${GLFWDIR}/include ${OPENGL_INCLUDE_DIR} ${GLEWDIR}/include ${PROJECT_SOURCE_DIR}/dependencies/pthread/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/Silk/src/ ${GLFWDIR}/include ${OPENGL_INCLUDE_DIR} ${GLEWDIR}/include)
 
 ADD_SUBDIRECTORY(dependencies)
 find_package(X11)

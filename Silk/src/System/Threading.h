@@ -94,14 +94,10 @@ namespace Silk
     
 };
 
-#else
-#include <pthread.h>
-#include <semaphore.h>
-#include <mach/task.h>
-#include <mach/semaphore.h>
-#include <machine/param.h>
-
-#include <atomic>
+#elif _WIN32
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 using namespace std;
 
 namespace Silk
@@ -120,7 +116,7 @@ namespace Silk
             bool Stop ();
         
         protected:
-            pthread_t m_Thread;
+            thread* m_Thread;
             WorkerThread* m_Worker;
     };
     
@@ -136,7 +132,8 @@ namespace Silk
         
         protected:
             friend class ThreadCondition;
-            pthread_mutex_t m_Mtx;
+			friend class Semaphore;
+			 mutex m_Mtx;
     };
     
     class Semaphore
@@ -150,7 +147,8 @@ namespace Silk
             void Wait();
         
         protected:
-            semaphore_t m_Sem;
+			Mutex m_Mtx;
+			condition_variable m_Condition;
             i32 m_Value;
     };
     
@@ -180,7 +178,7 @@ namespace Silk
         
         protected:
             bool m_Predicate;
-            pthread_cond_t m_Cond;
+			condition_variable m_Cond;
             Mutex m_Mutex;
     };
     

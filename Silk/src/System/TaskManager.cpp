@@ -37,7 +37,6 @@ namespace Silk
     }
     WorkerThread::~WorkerThread()
     {
-        m_Thread->Stop();
         delete m_Thread;
     }
     bool WorkerThread::Start()
