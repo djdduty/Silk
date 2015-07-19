@@ -127,6 +127,7 @@ namespace Silk
         
             void SetLightingMode(LIGHTING_MODES Type) { m_LightingMode = Type; }
             void SetParallaxFunction(PARALLAX_FUNCTION Func) { m_ParallaxFunction = Func; }
+			void SetParallaxSoftShadowing(bool Flag) { m_UseParallaxShadows = Flag; }
             
             Shader* Generate();
         
@@ -159,6 +160,7 @@ namespace Silk
             MaterialUniformSet* m_NullMaterialUniforms;
             LIGHTING_MODES      m_LightingMode        ;
             PARALLAX_FUNCTION   m_ParallaxFunction    ;
+			bool				m_UseParallaxShadows  ;
         
             Renderer* m_Renderer;
             i32 m_ShadersGenerated;

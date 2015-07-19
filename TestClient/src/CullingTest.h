@@ -1,6 +1,10 @@
 #pragma once
 #include <Test.h>
 
+#define GROUND_TEXTURE_SCALE 1.0
+#define MIN_PARALLAX_LAYERS 10
+#define MAX_PARALLAX_LAYERS 15
+
 namespace TestClient
 {
     class ObjLoader;

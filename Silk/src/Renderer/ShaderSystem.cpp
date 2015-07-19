@@ -28,6 +28,7 @@ namespace Silk
         m_AllowInstancedTextureMatrix = r->GetRasterizer()->SupportsInstanceTextureTransforms();
         m_LightingMode = LM_FLAT;
         m_ParallaxFunction = PF_OCCLUSION;
+		m_UseParallaxShadows = false;
     }
     ShaderGenerator::~ShaderGenerator()
     {
@@ -358,7 +359,7 @@ namespace Silk
                 case PF_OCCLUSION: { FragmentShader += OcclusionParallaxFunction    ; break; }
                 default          : { ERROR("Invalid parallax function.\n")          ; break; }
             }
-            FragmentShader += ParallaxMappingShadowMultiplier;
+			if(m_UseParallaxShadows) FragmentShader += ParallaxMappingShadowMultiplier;
         }
         
         /*
@@ -442,7 +443,7 @@ namespace Silk
                     if(!PointLight) FragmentShader += DefaultFragmentShaderPointLight;
                     else FragmentShader += PointLight->Code;
                     
-                    if(m_MapTypesUsed[Material::MT_PARALLAX])
+					if(m_MapTypesUsed[Material::MT_PARALLAX] && m_UseParallaxShadows)
                     {
                         FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
@@ -452,7 +453,7 @@ namespace Silk
                     if(!SpotLight) FragmentShader += DefaultFragmentShaderSpotLight;
                     else FragmentShader += SpotLight->Code;
                     
-                    if(m_MapTypesUsed[Material::MT_PARALLAX])
+                    if(m_MapTypesUsed[Material::MT_PARALLAX] && m_UseParallaxShadows)
                     {
                         FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
@@ -462,7 +463,7 @@ namespace Silk
                     if(!DirectionalLight) FragmentShader += DefaultFragmentShaderDirectionalLight;
                     else FragmentShader += DirectionalLight->Code;
                     
-                    if(m_MapTypesUsed[Material::MT_PARALLAX])
+                    if(m_MapTypesUsed[Material::MT_PARALLAX] && m_UseParallaxShadows)
                     {
                         FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(u_Lights[l].Direction.xyz,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }

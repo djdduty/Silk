@@ -7,20 +7,6 @@
 #include <System/TaskManager.h>
 
 using namespace TestClient;
-
-class TestTask : public Task
-{
-    public:
-        TestTask() { m_Type = TT_TEST_TASK; }
-        ~TestTask() { }
-    
-        virtual void Run()
-        {
-            f32 n = 0;
-            for(i32 i = 0;i < 100;i++) n += octave_noise_4d(10,1,1,0,0,0,i);
-        }
-};
-
 namespace TestClient
 {
     CullingTest::CullingTest()
@@ -86,13 +72,13 @@ namespace TestClient
     void CullingTest::LoadMaterial()
     {
         Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
-                                                              "CullingTest/GroundNormal.png");// ,
-                                                              //"CullingTest/GroundHeight.png");
+                                                              "CullingTest/GroundNormal.png" ,
+                                                              "CullingTest/GroundHeight.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));
         
-        Mat->SetMinParallaxLayers(40);
-        Mat->SetMaxParallaxLayers(60);
+        Mat->SetMinParallaxLayers(MIN_PARALLAX_LAYERS);
+        Mat->SetMaxParallaxLayers(MAX_PARALLAX_LAYERS);
         Mat->SetParallaxScale(0.01f);
         
         AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png");
@@ -204,7 +190,7 @@ namespace TestClient
         
         m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE ,D != 0);
         m_ShaderGenerator->SetTextureInput(Material::MT_NORMAL  ,N != 0);
-        //m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
+        m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
         m_ShaderGenerator->SetLightingMode(LightingMode);
         
         Mat->SetShader(m_ShaderGenerator->Generate());
@@ -220,8 +206,8 @@ namespace TestClient
     {
         Mat4 t = Translation(Vec3(0,4,9)) * RotationX(20.0f);
         m_Camera->SetTransform(t);
-        
-        m_Meshes[0]->SetTextureTransform(Scale(0.25f));
+         
+		m_Meshes[0]->SetTextureTransform(Scale(GROUND_TEXTURE_SCALE));
         
         Scalar a = 0.0f;
         TaskManager* tm = new TaskManager();
