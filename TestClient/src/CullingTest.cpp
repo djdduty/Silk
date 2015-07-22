@@ -64,6 +64,7 @@ namespace TestClient
         AddMesh("CullingTest/Scene.object",m_Materials[0],Vec3(0,0,0));
         i32 mid = AddMesh("CullingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
+        AddMesh("CullingTest/CullObject.object",m_Materials[0],Vec3(0,2,0));
         
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
