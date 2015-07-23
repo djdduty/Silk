@@ -15,6 +15,19 @@ namespace Silk
     class Renderer
     {
         public:
+			struct RenderPreferences
+            {
+                i32 MaxLights;
+				i32 AverageSampleDuration;
+            };
+
+            struct RenderStats
+            {
+                i64 FrameID;
+				i32 VisibleObjects;
+				Scalar AvgVisibleObjects;
+            };
+
             Renderer(Rasterizer* Raster);
             virtual ~Renderer();
         
@@ -31,21 +44,24 @@ namespace Silk
             void UpdateUniforms();
             void Render(i32 PrimType);
         
-            void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
-            i32 GetMaxLights() { return m_Prefs.MaxLights; }
-        
             void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
             Scene* GetScene() const { return m_Scene; }
 
+			/*
+			 * Render preferences
+			 */
+
+            //Max lights per object
+			void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
+            i32 GetMaxLights() { return m_Prefs.MaxLights; }
+			
+			//Sample duration (ms) for averages of render statistics
+			void SetAverageSampleDuration(Time Duration) { m_Prefs.AverageSampleDuration = Duration; }
+			Time GetAverageSampleDuration() const { return m_Prefs.AverageSampleDuration; }
+
+			const RenderStats& GetRenderStatistics() const { return m_Stats; }
+        
         protected:
-            struct RenderPreferences
-            {
-                i32 MaxLights;
-            };
-            struct RenderStats
-            {
-                i64 FrameID;
-            };
             RenderPreferences m_Prefs;
             RenderStats m_Stats;
             bool m_DoRecompileAllShaders;
