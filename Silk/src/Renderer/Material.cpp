@@ -29,7 +29,7 @@ namespace Silk
         return MaterialMapNames[Type];
     }
     
-    Material::Material(Renderer* r) : m_Renderer(r)
+    Material::Material(Renderer* r) : m_Renderer(r), m_HasUpdated(true)
     {
         for(i32 i = 0;i < MT_COUNT;i++) m_Maps[i] = 0;
         m_Uniforms = new MaterialUniformSet(m_Renderer);
@@ -44,6 +44,7 @@ namespace Silk
         if(m_Maps[Type]) m_Maps[Type]->Destroy();
         m_Maps[Type] = Map;
         Map->AddRef();
+        m_HasUpdated = true;
     }
     
     UniformBuffer* Material::GetUniforms()
@@ -52,29 +53,31 @@ namespace Silk
     }
     
     
-    void Material::SetRoughness(f32 Roughness) { m_Uniforms->SetRoughness(Roughness); }
+    void Material::SetRoughness(f32 Roughness) { m_Uniforms->SetRoughness(Roughness); m_HasUpdated = true; }
     f32 Material::GetRoughness() const { return m_Uniforms->GetRoughness(); }
-    void Material::SetMetalness(f32 Metalness) { m_Uniforms->SetMetalness(Metalness); }
+    void Material::SetMetalness(f32 Metalness) { m_Uniforms->SetMetalness(Metalness); m_HasUpdated = true; }
     f32 Material::GetMetalness() const { return m_Uniforms->GetMetalness(); }
-    void Material::SetShininess(f32 Shininess) { m_Uniforms->SetShininess(Shininess); }
+    void Material::SetShininess(f32 Shininess) { m_Uniforms->SetShininess(Shininess); m_HasUpdated = true; }
     f32 Material::GetShininess() const { return m_Uniforms->GetShininess(); }
     
-    void Material::SetDiffuse (const Vec4& Color) { m_Uniforms->SetDiffuse(Color); }
+    void Material::SetDiffuse (const Vec4& Color) { m_Uniforms->SetDiffuse(Color); m_HasUpdated = true; }
     Vec4 Material::GetDiffuse() const { return m_Uniforms->GetDiffuse(); }
-    void Material::SetSpecular(const Vec4& Color) { m_Uniforms->SetSpecular(Color); }
+    void Material::SetSpecular(const Vec4& Color) { m_Uniforms->SetSpecular(Color); m_HasUpdated = true; }
     Vec4 Material::GetSpecular() const { return m_Uniforms->GetSpecular(); }
-    void Material::SetEmissive(const Vec4& Color) { m_Uniforms->SetEmissive(Color); }
+    void Material::SetEmissive(const Vec4& Color) { m_Uniforms->SetEmissive(Color); m_HasUpdated = true; }
     Vec4 Material::GetEmissive() const { return m_Uniforms->GetEmissive(); }
     
-    void Material::SetMinParallaxLayers(f32 Min  ) { m_Uniforms->SetMinParallaxLayers(Min); }
-    void Material::SetMaxParallaxLayers(f32 Max  ) { m_Uniforms->SetMaxParallaxLayers(Max); }
-    void Material::SetParallaxScale    (f32 Scale) { m_Uniforms->SetParallaxScale  (Scale); }
+    void Material::SetMinParallaxLayers(f32 Min  ) { m_Uniforms->SetMinParallaxLayers(Min); m_HasUpdated = true; }
+    void Material::SetMaxParallaxLayers(f32 Max  ) { m_Uniforms->SetMaxParallaxLayers(Max); m_HasUpdated = true; }
+    void Material::SetParallaxScale    (f32 Scale) { m_Uniforms->SetParallaxScale  (Scale); m_HasUpdated = true; }
     f32 Material::GetMinParallaxLayers() const { return m_Uniforms->GetMinParallaxLayers(); }
     f32 Material::GetMaxParallaxLayers() const { return m_Uniforms->GetMaxParallaxLayers(); }
     f32 Material::GetParallaxScale    () const { return m_Uniforms->GetParallaxScale    (); }
     
     void Material::UpdateUniforms()
     {
+        if(!m_HasUpdated) return;
+        m_HasUpdated = false;
         m_Uniforms->UpdateUniforms();
     }
 };

@@ -115,7 +115,8 @@ namespace Silk
                     }
                     
                     //Pass material uniforms
-                    Shader->UseMaterial(Obj->GetMaterial());
+                    Material* Mat = Obj->GetMaterial();
+                    if(Mat->HasUpdated()) Shader->UseMaterial(Obj->GetMaterial());
                     
                     //Pass object uniforms
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))

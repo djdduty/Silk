@@ -40,7 +40,7 @@ namespace Silk
             void SetMap(MAP_TYPE Type,Texture* Map);
             Texture* GetMap(MAP_TYPE Type) const { return m_Maps[Type]; }
         
-            void SetShader(Shader* Shdr) { m_Shader = Shdr; }
+            void SetShader(Shader* Shdr) { m_Shader = Shdr; m_HasUpdated = true; }
             Shader* GetShader() const { return m_Shader; }
         
             void SetRoughness(f32 Roughness);
@@ -65,6 +65,7 @@ namespace Silk
             f32 GetParallaxScale    () const;
         
             UniformBuffer* GetUniforms();
+            bool HasUpdated() const { return m_HasUpdated; }
             void UpdateUniforms();
         
         protected:
@@ -76,6 +77,7 @@ namespace Silk
             Texture* m_Maps[MT_COUNT];
             Shader* m_Shader;
             Renderer* m_Renderer;
+            bool m_HasUpdated;
     };
     string GetShaderMapName(Material::MAP_TYPE Type);
 };
