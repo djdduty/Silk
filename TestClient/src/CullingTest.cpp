@@ -31,8 +31,6 @@ namespace TestClient
         
         m_ShaderGenerator->SetParallaxFunction(ShaderGenerator::PF_RELIEF);
         
-        //m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(sNormal,1);[/SetColor]"),0);
-        
         m_ObjLoader = new ObjLoader();
         LoadMaterial();
         LoadLights  ();
@@ -64,7 +62,12 @@ namespace TestClient
         AddMesh("CullingTest/Scene.object",m_Materials[0],Vec3(0,0,0));
         i32 mid = AddMesh("CullingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
-        AddMesh("CullingTest/CullObject.object",m_Materials[0],Vec3(0,2,0));
+
+		mid = AddMesh("CullingTest/CullObject.object",m_Materials[0],Vec3(0,2,0),NUM_OF_CULL_OBJECTS);
+		for(i32 i = 0;i < NUM_OF_CULL_OBJECTS;i++)
+		{
+			m_Meshes[mid + i]->SetTransform(Translation(Vec3(Random(-100,100),Random(1,10),Random(-100,100))));
+		}
         
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -125,7 +128,7 @@ namespace TestClient
         if(Count > 1) return First;
         return m_Meshes.size() - 1;
     }
-    Texture* CullingTest::LoadTexture(const char *Path,bool FlipXZ)
+    Texture* CullingTest::LoadTexture(const char *Path)
     {
         if(!Path) return 0;
         vector<u8> Pixels;
@@ -145,11 +148,11 @@ namespace TestClient
                 
                 Vec4 C;
                 C.x = f32(Pixels[Idx + 0]) * Inv255;
-                C.y = f32(Pixels[Idx + 1]) * Inv255;
+                C.y = f32(Pixels[Idx + 1]) * Inv255; 
                 C.z = f32(Pixels[Idx + 2]) * Inv255;
                 C.w = f32(Pixels[Idx + 3]) * Inv255;
                 
-                if(FlipXZ) swap(C.x,C.z);
+				swap(C.x,C.z);
                 
                 Tex->SetPixel(Vec2(x,(h-1) - y),C);
             }
@@ -161,7 +164,7 @@ namespace TestClient
     {
         Material* Mat = m_Renderer->CreateMaterial();
         Texture* D = LoadTexture(Diffuse );
-        Texture* N = LoadTexture(Normal  ,true);
+        Texture* N = LoadTexture(Normal  );
         Texture* P = LoadTexture(Parallax);
         
         if(D) { Mat->SetMap(Material::MT_DIFFUSE ,D); D->Destroy(); }
@@ -193,7 +196,7 @@ namespace TestClient
         m_ShaderGenerator->SetTextureInput(Material::MT_NORMAL  ,N != 0);
         m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
         m_ShaderGenerator->SetLightingMode(LightingMode);
-        
+
         Mat->SetShader(m_ShaderGenerator->Generate());
         
         Mat->SetSpecular(Vec4(0,0,0,0));

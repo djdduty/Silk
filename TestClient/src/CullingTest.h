@@ -3,7 +3,8 @@
 
 #define GROUND_TEXTURE_SCALE 1.0
 #define MIN_PARALLAX_LAYERS 10
-#define MAX_PARALLAX_LAYERS 15
+#define MAX_PARALLAX_LAYERS 20
+#define NUM_OF_CULL_OBJECTS 1000
 
 namespace TestClient
 {
@@ -21,7 +22,7 @@ namespace TestClient
         
             RenderObject* AddLight(LightType Type,const Vec3& Pos);
             i32 AddMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count = 1);
-            Texture * LoadTexture(const char* Path,bool FlipXZ = false);
+            Texture * LoadTexture(const char* Path);
             Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse,const char* Normal = 0,const char* Parallax = 0);
         
             virtual void Run();
