@@ -1,9 +1,12 @@
 #include <Utilities/SampleBuffer.h>
+#include <math.h>
 
 namespace Silk
 {
     void SampleBuffer::AddSample(Scalar Sample)
     {
+        if(isnan(Sample) || isinf(Sample)) return;
+        
         m_Samples.push_back(Sample);
         m_SamplesTotal += Sample;
         if(m_Samples.size() > m_SampleCount)
@@ -19,5 +22,16 @@ namespace Silk
             }
         }
         else if(m_Max < Sample) m_Max = Sample;
+    }
+    Scalar SampleBuffer::GetMin() const
+    {
+        if(m_Samples.size() == 0) return 0.0f;
+        
+        Scalar Min = m_Samples[0];
+        for(i32 i = 1;i < m_Samples.size();i++)
+        {
+            if(m_Samples[i] < Min) Min = m_Samples[i];
+        }
+        return Min;
     }
 };

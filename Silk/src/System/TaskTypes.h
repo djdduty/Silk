@@ -6,7 +6,7 @@ namespace Silk
     enum TASK_TYPE
     {
         TT_THREAD_IDLE_TIME,
-        TT_TEST_TASK,
+        TT_BRUTE_FORCE_CULL_TASK,
         TT_COUNT,
     };
 

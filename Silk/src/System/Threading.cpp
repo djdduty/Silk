@@ -118,10 +118,7 @@ namespace Silk
     {
         m_Mutex.Lock();
         m_Predicate = true;
-        while(m_Predicate)
-        {
-            pthread_cond_wait(&m_Cond,&m_Mutex.m_Mtx);
-        }
+        while(m_Predicate) pthread_cond_wait(&m_Cond,&m_Mutex.m_Mtx);
         m_Predicate = true;
         m_Mutex.Unlock();
     }

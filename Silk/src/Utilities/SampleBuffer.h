@@ -14,7 +14,10 @@ namespace Silk
             void SetSampleCount(i32 Count) { m_SampleCount = Count; }
             void Clear() { m_Samples.clear(); m_SamplesTotal = 0.0f; m_Max = FLT_MIN; }
             void AddSample(Scalar Sample);
+            
             Scalar GetAverage() const { return m_SamplesTotal / Scalar(m_Samples.size()); }
+            Scalar GetMin() const;
+            Scalar GetMax() const { return m_Max; }
             i32 GetSampleCount() const { return (i32)m_Samples.size(); }
             Scalar GetSample(i32 Idx) const { return m_Samples[Idx]; }
         

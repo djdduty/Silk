@@ -134,7 +134,7 @@ namespace Silk {
     }
     i32 ObjectList::AddObject(RenderObject* Obj)
     {
-        if(Obj->m_List && Obj->m_List != this) Obj->m_List->RemoveObject(Obj);
+        if(m_IsIndexed) if(Obj->m_List && Obj->m_List != this) Obj->m_List->RemoveObject(Obj);
         
         switch(Obj->m_Type) {
             case ROT_MESH: {
@@ -155,7 +155,7 @@ namespace Silk {
                 }
                 
                 m_ShaderObjects[ShaderIdx].push_back(Obj);
-                Obj->m_ShaderListIndex = m_ShaderObjects[ShaderIdx].size() - 1;
+                if(m_IsIndexed) Obj->m_ShaderListIndex = m_ShaderObjects[ShaderIdx].size() - 1;
                 
                 return m_MeshObjects.size()-1;
                 break;
@@ -182,21 +182,51 @@ namespace Silk {
         switch(Obj->m_Type)
         {
             case ROT_MESH  :
-            { 
-                if(Obj && Obj->m_List == this) m_MeshObjects.erase(m_MeshObjects.begin()+Obj->m_ListIndex);
-                for(i32 i = Obj->m_ListIndex;i < m_MeshObjects.size();i++) m_MeshObjects[i]->m_ListIndex = i;
+            {
+                if(m_IsIndexed)
+                {
+                    if(Obj && Obj->m_List == this) m_MeshObjects.erase(m_MeshObjects.begin()+Obj->m_ListIndex);
+                    for(i32 i = Obj->m_ListIndex;i < m_MeshObjects.size();i++) m_MeshObjects[i]->m_ListIndex = i;
+                }
+                else
+                {
+                    for(i32 i = 0;i < m_MeshObjects.size();i++)
+                    {
+                        if(m_MeshObjects[i] == Obj) m_MeshObjects.erase(m_MeshObjects.begin() + i);
+                    }
+                }
                 break;
             }
             case ROT_LIGHT :
             { 
-                if(Obj && Obj->m_List == this) m_LightObjects.erase(m_LightObjects.begin()+Obj->m_ListIndex);
-                for(i32 i = Obj->m_ListIndex;i < m_LightObjects.size();i++) m_LightObjects[i]->m_ListIndex = i;
+                if(m_IsIndexed)
+                {
+                    if(Obj && Obj->m_List == this) m_LightObjects.erase(m_LightObjects.begin()+Obj->m_ListIndex);
+                    for(i32 i = Obj->m_ListIndex;i < m_LightObjects.size();i++) m_LightObjects[i]->m_ListIndex = i;
+                }
+                else
+                {
+                    for(i32 i = 0;i < m_LightObjects.size();i++)
+                    {
+                        if(m_LightObjects[i] == Obj) m_LightObjects.erase(m_LightObjects.begin() + i);
+                    }
+                }
                 break;
             }
             case ROT_CAMERA:
             { 
-                if(Obj && Obj->m_List == this) m_CameraObjects.erase(m_CameraObjects.begin()+Obj->m_ListIndex);
-                for(i32 i = Obj->m_ListIndex;i < m_CameraObjects.size();i++) m_CameraObjects[i]->m_ListIndex = i;
+                if(m_IsIndexed)
+                {
+                    if(Obj && Obj->m_List == this) m_CameraObjects.erase(m_CameraObjects.begin()+Obj->m_ListIndex);
+                    for(i32 i = Obj->m_ListIndex;i < m_CameraObjects.size();i++) m_CameraObjects[i]->m_ListIndex = i;
+                }
+                else
+                {
+                    for(i32 i = 0;i < m_CameraObjects.size();i++)
+                    {
+                        if(m_CameraObjects[i] == Obj) m_CameraObjects.erase(m_CameraObjects.begin() + i);
+                    }
+                }
                 break;
             }
             default:
@@ -220,29 +250,49 @@ namespace Silk {
                     }
                     else
                     {
-                        m_ShaderObjects[i].erase(m_ShaderObjects[i].begin() + Obj->m_ShaderListIndex);
-                        for(i32 o = 0;o < m_ShaderObjects[i].size();o++) m_ShaderObjects[i][o]->m_ShaderListIndex = o;
+                        if(m_IsIndexed)
+                        {
+                            m_ShaderObjects[i].erase(m_ShaderObjects[i].begin() + Obj->m_ShaderListIndex);
+                            for(i32 o = 0;o < m_ShaderObjects[i].size();o++) m_ShaderObjects[i][o]->m_ShaderListIndex = o;
+                        }
+                        else
+                        {
+                            for(i32 sidx = 0;sidx < m_ShaderObjects[i].size();i++)
+                            {
+                                if(m_ShaderObjects[i][sidx] == Obj)
+                                {
+                                    m_ShaderObjects[i].erase(m_ShaderObjects[i].begin() + sidx);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
             
-            /* Remove it from instance list if necessary */
-            if(Obj->m_Object->IsInstanced())
+            if(m_IsIndexed) //Only use unindexed lists for temporary storage (eg. culled object lists)
             {
-                Obj->m_Object->RemoveInstance(Obj->m_InstanceIndex);
-                
-                for(i32 i = Obj->m_InstanceIndex;i < Obj->m_Mesh->m_Instances.size() - 1;i++)
+                /* Remove it from instance list if necessary */
+                if(Obj->m_Object->IsInstanced())
                 {
-                    Obj->m_Mesh->m_Instances[i] = Obj->m_Mesh->m_Instances[i + 1];
-                    RenderObject* Instance = Obj->m_Mesh->m_Instances[i];
-                    Instance->m_InstanceIndex--;
+                    Obj->m_Object->RemoveInstance(Obj->m_InstanceIndex);
+                    
+                    for(i32 i = Obj->m_InstanceIndex;i < Obj->m_Mesh->m_Instances.size() - 1;i++)
+                    {
+                        Obj->m_Mesh->m_Instances[i] = Obj->m_Mesh->m_Instances[i + 1];
+                        RenderObject* Instance = Obj->m_Mesh->m_Instances[i];
+                        Instance->m_InstanceIndex--;
+                    }
+                    Obj->m_Mesh->m_Instances.pop_back();
                 }
-                Obj->m_Mesh->m_Instances.pop_back();
             }
         }
 
-        Obj->m_List = 0;
-        Obj->m_ListIndex = 0;
+        if(m_IsIndexed)
+        {
+            Obj->m_List = 0;
+            Obj->m_ListIndex = 0;
+        }
     }
     void ObjectList::Clear()
     {

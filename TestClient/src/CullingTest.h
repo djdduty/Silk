@@ -4,7 +4,7 @@
 #define GROUND_TEXTURE_SCALE 1.0
 #define MIN_PARALLAX_LAYERS 10
 #define MAX_PARALLAX_LAYERS 20
-#define NUM_OF_CULL_OBJECTS 1000
+#define NUM_OF_CULL_OBJECTS 10000
 
 namespace TestClient
 {

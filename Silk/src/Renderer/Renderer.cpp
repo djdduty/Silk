@@ -24,7 +24,10 @@ namespace Silk
         
         m_DoRecompileAllShaders = false;
         m_Prefs.MaxLights = 8;
+        m_Prefs.AverageSampleDuration = 5.0f;
         m_Stats.FrameID = 0;
+        m_Stats.VisibleObjects = 0;
+        m_Stats.FrameRate = 0.0f;
         
         m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS);
         m_RendererUniforms = new RenderUniformSet(this);
@@ -50,12 +53,17 @@ namespace Silk
     }
     void Renderer::Render(i32 PrimType)
     {
+        Scalar dt = m_FrameTimer;
+        if(dt <= 0) dt = 1.0f / 60.0f;
+        m_FrameTimer.Stop();
+        m_FrameTimer.Start();
+        
         if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 1 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
         CullingResult* CullResult = m_Scene->PerformCulling();
         
-        SilkObjectVector Lights = CullResult->m_VisibleObjects->GetLightList();
+        SilkObjectVector Lights = m_Scene->GetObjectList()->GetLightList();
         std::vector<Light*> LightsVector;
         for(i32 i = 0; i < Lights.size(); i++)
         {
@@ -82,6 +90,7 @@ namespace Silk
         i32 ShaderCount = CullResult->m_VisibleObjects->GetShaderCount();
         
         SilkObjectVector MeshesRendered;
+        i32 ActualObjectCount = 0;
         for(i32 i = 0;i < ShaderCount;i++)
         {
             Shader* Shader = CullResult->m_VisibleObjects->GetShader(i);
@@ -131,6 +140,8 @@ namespace Silk
                     else Count = Obj->m_Mesh->GetVertexCount();
                         
                     Obj->m_Object->Render(PrimType,0,Count);
+                    if(Obj->IsInstanced()) ActualObjectCount += Obj->m_InstanceList->size();
+                    else ActualObjectCount++;
                     MeshesRendered.push_back(Obj);
                 }
             }
@@ -145,9 +156,29 @@ namespace Silk
         
         
         m_Stats.FrameID++;
+        
+        i32 sCount = m_Prefs.AverageSampleDuration / dt;
+        
+        m_Stats.DrawCalls = MeshesRendered.size();
+        m_Stats.AverageDrawCalls.SetSampleCount(sCount);
+        m_Stats.AverageDrawCalls.AddSample(m_Stats.DrawCalls);
+        
+        m_Stats.VisibleObjects = ActualObjectCount;
+        m_Stats.AverageVisibleObjects.SetSampleCount(sCount);
+        m_Stats.AverageVisibleObjects.AddSample(m_Stats.VisibleObjects);
+        
+        m_Stats.FrameRate = 1.0f / dt;
+        m_Stats.AverageFramerate.SetSampleCount(sCount);
+        m_Stats.AverageFramerate.AddSample(m_Stats.FrameRate);
+        
+        m_Stats.MultithreadedCullingEfficiency = CullResult->m_Efficiency;
+        m_Stats.AverageMultithreadedCullingEfficiency.SetSampleCount(sCount);
+        m_Stats.AverageMultithreadedCullingEfficiency.AddSample(m_Stats.MultithreadedCullingEfficiency);
+        
+        delete CullResult;
     }
 
-    RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene)
+    RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot,bool AddToScene)
     {
         RenderObject* Object = new RenderObject(Rot, this, m_Raster->CreateObject());
         

@@ -93,11 +93,14 @@ namespace Silk
     class ObjectList
     {
         public:
-            ObjectList() : m_MeshObjects(SilkObjectVector()), m_LightObjects(SilkObjectVector()), m_CameraObjects(SilkObjectVector())
+            ObjectList() : m_IsIndexed(true), m_MeshObjects(SilkObjectVector()), m_LightObjects(SilkObjectVector()), m_CameraObjects(SilkObjectVector())
             { }
             ObjectList(const ObjectList& l);
             ~ObjectList() { }
 
+            void SetIndexed(bool Flag) { m_IsIndexed = Flag; }
+            bool IsIndexed() const { return m_IsIndexed; }
+        
             i32  AddObject(RenderObject* Obj);
             void RemoveObject(RenderObject* Obj);
 
@@ -113,6 +116,8 @@ namespace Silk
 
         protected:
             friend class Renderer;
+            bool m_IsIndexed;
+        
             SilkObjectVector m_MeshObjects;
             SilkObjectVector m_LightObjects;
             SilkObjectVector m_CameraObjects;

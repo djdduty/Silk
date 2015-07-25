@@ -3,46 +3,17 @@
 
 namespace TestClient
 {
-    Ray UnProject(const Vec3& win,const Mat4& v,const Mat4& p,const Vec4& viewport)
-	{
-        Vec4 ndc;
-		ndc.x = (((win.x - viewport.x) / viewport.z) * 2.0f) - 1.0f;
-		ndc.y = (((win.y - viewport.y) / viewport.w) * 2.0f) - 1.0f;
-        ndc.y *= -1.0f;
-        ndc.z =  win.z;
-        ndc.w =  1.0f;
-        Mat4 vo = v;
-        vo[0][3] = v[1][3] = v[2][3] = 0.0f;
-        Mat4 m = (vo * p).Inverse();
-        Vec4 rVal = ndc;
-        
-        Scalar W = rVal.x * m.x.w +
-                   rVal.y * m.y.w +
-                   rVal.z * m.z.w +
-                   rVal.w * m.w.w;
-        Scalar invW = 1.0f / W;
-        
-        Vec4    Result((rVal.x * m.x.x + rVal.y * m.y.x + rVal.z * m.z.x + m.w.x) * invW,
-                       (rVal.x * m.x.y + rVal.y * m.y.y + rVal.z * m.z.y + m.w.y) * invW,
-                       (rVal.x * m.x.z + rVal.y * m.y.z + rVal.z * m.z.z + m.w.z) * invW,
-                       (rVal.x * m.x.w + rVal.y * m.y.w + rVal.z * m.z.w + m.w.w) * invW);
-        
-        Ray r;
-        r.Point = Vec3(v[0][3],v[1][3],v[2][3]);
-        r.Dir   = (Result.xyz()).Normalized();
-        return r;
-	}
-    
     Test::Test()
     {
     }
     Test::~Test()
     {
         m_Renderer->GetScene()->SetActiveCamera(0);
-        if(m_Camera         ) delete m_Camera;
+        if(m_Camera         ) delete m_Camera         ;
         if(m_ShaderGenerator) delete m_ShaderGenerator;
         if(m_Renderer       ) delete m_Renderer       ;
         if(m_Window         ) delete m_Window         ;
+        if(m_TaskManager    ) delete m_TaskManager    ;
     }
     void Test::Init()
     {
@@ -62,15 +33,15 @@ namespace TestClient
             m_Rasterizer->SetRenderer(m_Renderer);
         
             m_ShaderGenerator = new ShaderGenerator(m_Renderer);
+            m_TaskManager = new TaskManager();
             
             Scalar Aspect = m_Rasterizer->GetContext()->GetResolution().y / m_Rasterizer->GetContext()->GetResolution().x;
             
             m_Camera = new Camera(Vec2(60.0f,60.0f * Aspect),0.001f,2000.0f);
             m_Renderer->GetScene()->SetActiveCamera(m_Camera);
-            m_Renderer->GetScene()->SetCullingAlgorithm(new NullCullingAlgorithm(m_Renderer->GetScene()));
+            m_Renderer->GetScene()->SetCullingAlgorithm(new BruteForceCullingAlgorithm(m_Renderer->GetScene(),m_TaskManager));
             
             m_ElapsedTime = m_LastElapsedTime = m_Window->GetElapsedTime();
-            m_FrameCounter = 0;
             
             m_DeltaTime = 1.0f / 60.0f;
             m_FramePrintTime = 0.0f;
@@ -90,18 +61,25 @@ namespace TestClient
             m_Renderer        = 0;
             m_ShaderGenerator = 0;
             delete m_Window;
+            delete m_TaskManager;
             m_Window          = 0;
         }
         Initialize();
     }
     bool Test::IsRunning()
     {
-        /* End previous frame */
-        m_Window->SwapBuffers();
+        if(m_Renderer->GetRenderStatistics().FrameID > 0)
+        {
+            /* End previous frame */
+            m_Window->SwapBuffers();
+        }
         
         /* Start new frame */
         if(!m_Window->GetCloseRequested() && !m_DoShutdown)
         {
+            m_TaskManager->EndFrame  ();
+            m_TaskManager->BeginFrame();
+            
             m_Window->PollEvents();
             m_Rasterizer->ClearActiveFramebuffer();
             
@@ -123,14 +101,20 @@ namespace TestClient
             m_ElapsedTime     = m_Window->GetElapsedTime();
             m_DeltaTime       = m_ElapsedTime - m_LastElapsedTime;
             
-            m_FrameCounter++;
             m_FramePrintTime += m_DeltaTime;
             if(m_FramePrintTime > m_FramePrintInterval)
             {
-                printf("Average FPS: %0.2f\n",f32(m_FrameCounter) / m_FramePrintInterval);
+                const Renderer::RenderStats& Stats = m_Renderer->GetRenderStatistics();
+                printf("Average FPS: %0.2f\n"           ,Stats.AverageFramerate.GetAverage());
+                printf("Draw calls: %d (Avg: %0.2f)\n",Stats.DrawCalls,Stats.AverageDrawCalls.GetAverage());
+                printf("Object Count: %d (Avg: %0.2f)\n",Stats.VisibleObjects,Stats.AverageVisibleObjects.GetAverage());
+                
+                if(Stats.MultithreadedCullingEfficiency != 0)
+                {
+                    printf("Cull efficiency: %0.3f (Avg: %0.3f)\n",Stats.MultithreadedCullingEfficiency,Stats.AverageMultithreadedCullingEfficiency.GetAverage());
+                }
                 
                 m_FramePrintTime  = 0.0f;
-                m_FrameCounter = 0;
             }
             return true;
         }

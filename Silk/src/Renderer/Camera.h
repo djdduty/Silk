@@ -1,6 +1,7 @@
 #pragma once
 #include <System/SilkTypes.h>
 #include <Math/Math.h>
+#include <Math/Frustum.h>
 #include <algorithm>
 
 namespace Silk
@@ -25,11 +26,12 @@ namespace Silk
 
             const Mat4& GetTransform () { return m_Transform ; }
             const Mat4& GetProjection();
+            const Frustum* GetFrustum() const { return &m_Frustum; }
         
             bool IsPerspective() const { return  m_IsPerspective; }
             bool IsOrthogonal () const { return !m_IsPerspective; }
         
-            void SetTransform (Mat4 Transform) { m_Transform  = Transform ; m_TrnsChanged = true; m_InversedTransform = m_Transform.Inverse(); }
+            void SetTransform (Mat4 Transform) { m_Transform  = Transform ; m_TrnsChanged = true; m_Frustum.Set(this); m_InversedTransform = m_Transform.Inverse(); }
             const Mat4& GetInverseTransform() const { return m_InversedTransform; }
         
             //Plane depth of -1 means use the ones already stored
@@ -79,6 +81,8 @@ namespace Silk
             bool   m_fPlnChanged;
             Scalar m_FocalPoint ;
             bool   m_FcPtChanged;
+        
+            Frustum m_Frustum;
     };
 };
 

@@ -22,6 +22,8 @@ namespace Silk
             virtual CullingResult* PerformCulling() = 0;
             virtual const char* GetAlgorithmName() const = 0;
         
+            Scene* GetScene() const { return m_Scene; }
+        
         protected:
             Scene* m_Scene;
     };
@@ -38,6 +40,10 @@ namespace Silk
             f32 m_RealDuration;
             /* Average task duration (milliseconds) */
             f32 m_AverageTaskDuration;
+            /* Total duration of each task */
+            f32 m_TotalTaskDuration;
+            /* Efficiency (How many times faster culling is in parallel than in serial, 0 = no measure available) */
+            f32 m_Efficiency;
     };
 };
 

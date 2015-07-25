@@ -8,6 +8,10 @@
 #include <Renderer/Scene.h>
 
 #include <Renderer/CullingAlgorithms/NullCullingAlgorithm.h>
+#include <Renderer/CullingAlgorithms/BruteForceCullingAlgorithm.h>
+
+#include <Utilities/SampleBuffer.h>
+#include <Utilities/Timer.h>
 
 namespace Silk
 {
@@ -24,8 +28,18 @@ namespace Silk
             struct RenderStats
             {
                 i64 FrameID;
+                
+                i32 DrawCalls;
+                SampleBuffer AverageDrawCalls;
+                
 				i32 VisibleObjects;
-				Scalar AvgVisibleObjects;
+                SampleBuffer AverageVisibleObjects;
+                
+                f32 FrameRate;
+                SampleBuffer AverageFramerate;
+                
+                f32 MultithreadedCullingEfficiency;
+                SampleBuffer AverageMultithreadedCullingEfficiency;
             };
 
             Renderer(Rasterizer* Raster);
@@ -55,7 +69,7 @@ namespace Silk
 			void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
             i32 GetMaxLights() { return m_Prefs.MaxLights; }
 			
-			//Sample duration (ms) for averages of render statistics
+			//Sample duration (seconds) for averages of render statistics
 			void SetAverageSampleDuration(Time Duration) { m_Prefs.AverageSampleDuration = Duration; }
 			Time GetAverageSampleDuration() const { return m_Prefs.AverageSampleDuration; }
 
@@ -64,6 +78,7 @@ namespace Silk
         protected:
             RenderPreferences m_Prefs;
             RenderStats m_Stats;
+            Timer m_FrameTimer;
             bool m_DoRecompileAllShaders;
         
             bool m_DefaultTextureNeedsUpdate;

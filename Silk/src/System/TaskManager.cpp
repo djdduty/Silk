@@ -32,7 +32,7 @@ namespace Silk
     {
         return m_DependenciesLeft == 0;
     }
-    WorkerThread::WorkerThread(TaskManager* Manager) : m_Shutdown(false), m_DidStop(false), m_Manager(Manager), m_Thread(new Thread(this))
+    WorkerThread::WorkerThread(TaskManager* Manager) : m_Shutdown(false), m_DidStop(false), m_IsIdling(false), m_ShouldWake(false), m_Manager(Manager), m_Thread(new Thread(this))
     {
     }
     WorkerThread::~WorkerThread()
@@ -59,9 +59,13 @@ namespace Silk
         m_IdlingMutex.Lock();
         m_IsIdling = false;
         m_IdlingMutex.Unlock();
+        
+        m_ShouldWake = false;
     }
-    bool WorkerThread::IsIdling()
+    bool WorkerThread::IsIdling(bool DoLock)
     {
+        if(!DoLock) return m_IsIdling;
+        
         m_IdlingMutex.Lock();
         bool r = m_IsIdling;
         m_IdlingMutex.Unlock();
@@ -94,6 +98,12 @@ namespace Silk
             m_LastFrameDuration = m_LocalTimer - FrameBegin;
         }
         m_DidStop = true;
+    }
+    void WorkerThread::WaitForWake()
+    {
+        while(m_ShouldWake)
+        {
+        }
     }
     
     TaskContainer::TaskContainer() : m_ThreadDifferenceSampleCount(20), m_DurationSampleCount(20), m_ThreadTimeQuota(1.0f / 60.0f),
@@ -358,17 +368,19 @@ namespace Silk
     {
         for(i32 i = 0;i < m_Threads.size();i++)
         {
-            if(m_Threads[i]->IsIdling()) { m_Threads[i]->m_Wake.Signal(); }
+            if(m_Threads[i]->IsIdling())
+            {
+                m_Threads[i]->m_ShouldWake = true;
+                m_Threads[i]->m_Wake.Signal();
+                m_Threads[i]->WaitForWake();
+            }
         }
     }
     void TaskManager::WaitForThreads() const
     {
         for(i32 i = 0;i < m_Threads.size();i++)
         {
-            if(!m_Threads[i]->IsIdling())
-            {
-                m_Threads[i]->m_Sleep.WaitSignal();
-            }
+            if(!m_Threads[i]->IsIdling()) m_Threads[i]->m_Sleep.WaitSignal();
         }
     }
     bool TaskManager::HasWork(i32 ThreadID) const

@@ -1,6 +1,4 @@
-#ifndef SILK_MATH_H
-#define SILK_MATH_H
-
+#pragma once
 #include <System/SilkTypes.h>
 
 #define PI_OVER_180 0.01745329251
@@ -333,10 +331,16 @@ namespace Silk
             i32 x,y,z,w;
     };
     
+    typedef struct _Ray
+    {
+        Vec3 Point;
+        Vec3 Dir;
+    } Ray;
+
+    Ray UnProject(const Vec3& win,const Mat4& v,const Mat4& p,const Vec4& viewport);
+    
     void SeedRandom(i32 Seed);
     Scalar Random(Scalar Min,Scalar Max);
     Vec3 ColorFunc(Scalar Factor);
     bool IsPower2(i32 x);
 }
-
-#endif

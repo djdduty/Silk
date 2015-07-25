@@ -1198,6 +1198,36 @@ namespace Silk
         return *this;
     }
     
+    Ray UnProject(const Vec3& win,const Mat4& v,const Mat4& p,const Vec4& viewport)
+	{
+        Vec4 ndc;
+		ndc.x = (((win.x - viewport.x) / viewport.z) * 2.0f) - 1.0f;
+		ndc.y = (((win.y - viewport.y) / viewport.w) * 2.0f) - 1.0f;
+        ndc.y *= -1.0f;
+        ndc.z =  win.z;
+        ndc.w =  1.0f;
+        Mat4 vo = v;
+        vo[0][3] = v[1][3] = v[2][3] = 0.0f;
+        Mat4 m = (vo * p).Inverse();
+        Vec4 rVal = ndc;
+        
+        Scalar W = rVal.x * m.x.w +
+                   rVal.y * m.y.w +
+                   rVal.z * m.z.w +
+                   rVal.w * m.w.w;
+        Scalar invW = 1.0f / W;
+        
+        Vec4    Result((rVal.x * m.x.x + rVal.y * m.y.x + rVal.z * m.z.x + m.w.x) * invW,
+                       (rVal.x * m.x.y + rVal.y * m.y.y + rVal.z * m.z.y + m.w.y) * invW,
+                       (rVal.x * m.x.z + rVal.y * m.y.z + rVal.z * m.z.z + m.w.z) * invW,
+                       (rVal.x * m.x.w + rVal.y * m.y.w + rVal.z * m.z.w + m.w.w) * invW);
+        
+        Ray r;
+        r.Point = Vec3(v[0][3],v[1][3],v[2][3]);
+        r.Dir   = (Result.xyz()).Normalized();
+        return r;
+	}
+    
     static std::minstd_rand0 gen;
     void SeedRandom(i32 Seed) { if(Seed == -1) { gen.seed((i32)time(0)); } else gen.seed(Seed); }
     Scalar Random(Scalar Min,Scalar Max) { uniform_real_distribution<> dist(Min,Max); return dist(gen);  }

@@ -63,7 +63,7 @@ namespace TestClient
         i32 mid = AddMesh("CullingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
 
-		mid = AddMesh("CullingTest/CullObject.object",m_Materials[0],Vec3(0,2,0),NUM_OF_CULL_OBJECTS);
+		mid = AddMesh("CullingTest/CullObject.object",m_Materials[1],Vec3(0,2,0),NUM_OF_CULL_OBJECTS);
 		for(i32 i = 0;i < NUM_OF_CULL_OBJECTS;i++)
 		{
 			m_Meshes[mid + i]->SetTransform(Translation(Vec3(Random(-100,100),Random(1,10),Random(-100,100))));
@@ -75,6 +75,7 @@ namespace TestClient
     }
     void CullingTest::LoadMaterial()
     {
+        //For ground
         Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
                                                               "CullingTest/GroundNormal.png" ,
                                                               "CullingTest/GroundHeight.png");
@@ -85,6 +86,7 @@ namespace TestClient
         Mat->SetMaxParallaxLayers(MAX_PARALLAX_LAYERS);
         Mat->SetParallaxScale(0.01f);
         
+        //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png");
     }
     RenderObject* CullingTest::AddLight(LightType Type,const Vec3& Pos)
@@ -175,21 +177,39 @@ namespace TestClient
         {
             m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL  ,true);
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
+            m_ShaderGenerator->SetAllowInstancing(false);
+            
+            if(Normal || Parallax)
+            {
+                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TANGENT ,true);
+                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TEXCOORD,true);
+                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_NORMAL  ,true);
+                
+                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,true);
+                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
+                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
+            }
         }
+        else
+        {
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL  ,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,false);
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TANGENT ,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,false);
+            m_ShaderGenerator->SetAllowInstancing(true);
+        }
+        
         if(Diffuse)
         {
             m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,true);
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
         }
-        if(Normal || Parallax)
+        else
         {
-            m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TANGENT ,true);
-            m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TEXCOORD,true);
-            m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_NORMAL  ,true);
-            
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,true);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,false);
         }
         
         m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE ,D != 0);
@@ -214,14 +234,11 @@ namespace TestClient
 		m_Meshes[0]->SetTextureTransform(Scale(GROUND_TEXTURE_SCALE));
         
         Scalar a = 0.0f;
-        TaskManager* tm = new TaskManager();
-        tm->GetTaskContainer()->SetAverageTaskDurationSampleCount(10);
-        tm->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
-    
+        m_TaskManager->GetTaskContainer()->SetAverageTaskDurationSampleCount(10);
+        m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
+        
         while(IsRunning())
         {
-            tm->BeginFrame();
-        
             a += 7.5f * GetDeltaTime();
             
             m_Camera->SetTransform(RotationY(a * 0.3f) * Translation(Vec3(0,1,6)) * RotationX(20.0f));
@@ -250,11 +267,7 @@ namespace TestClient
             }
             
             m_Renderer->Render(GL_TRIANGLES);
-            
-            tm->EndFrame();
         }
-        
-        delete tm;
     }
 
     void CullingTest::Shutdown()

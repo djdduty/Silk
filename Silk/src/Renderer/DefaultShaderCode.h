@@ -36,7 +36,7 @@ namespace Silk
     string("\t\t") + NormalOutName + " = (u_Normal * vec4(" + NormalAttribName + ",1.0)).xyz;\n";
     
     static string DefaultTangentInstancedFunc =
-    string("\t\t") + TangentOutName + " = " + InstanceNormalTransformAttribName + " * vec4(" + TangentAttribName + ",1.0)).xyz;\n";
+    string("\t\t") + TangentOutName + " = (" + InstanceNormalTransformAttribName + " * vec4(" + TangentAttribName + ",1.0)).xyz;\n";
     
     static string DefaultTangentNonInstancedFunc =
     string("\t\t") + TangentOutName + " = (u_Normal * vec4(" + TangentAttribName + ",1.0)).xyz;\n";

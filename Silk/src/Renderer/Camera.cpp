@@ -10,6 +10,7 @@ namespace Silk
             m_ProjChanged = true;
             if(m_IsPerspective) m_Projection = PerspectiveMultiFov(m_FieldOfView.x,m_FieldOfView.y,m_NearPlane,m_FarPlane);
             else m_Projection = Orthogonal(m_OrthoDims.x,m_OrthoDims.x + m_OrthoDims.z,m_OrthoDims.y,m_OrthoDims.y + m_OrthoDims.w,m_NearPlane,m_FarPlane);
+            m_Frustum.Set(this);
         }
         return m_Projection;
     }

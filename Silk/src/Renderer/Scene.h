@@ -36,6 +36,8 @@ namespace Silk
 
         protected:
             friend class CullingAlgorithm;
+            friend class Renderer;
+            
             Renderer* m_Renderer;
             Camera* m_ActiveCamera;
             CullingAlgorithm* m_CullingAlgorithm;

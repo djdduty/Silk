@@ -8,7 +8,7 @@ namespace Silk
         static string TaskNames[TT_COUNT] =
         {
             "Idle",
-            "Test Task",
+            "Culling (Brute Force)",
         };
         return TaskNames[Type];
     }

@@ -57,9 +57,11 @@ namespace Silk
             void Stop();
         
             void Idle();
-            bool IsIdling ();
+            bool IsIdling (bool DoLock = true);
             bool IsStopped() const { return m_DidStop ; }
             void Run();
+        
+            void WaitForWake();
         
             Time GetLocalTime() const { return m_LocalTime; }
             Scalar GetLastFrameDuration() const { return m_LastFrameDuration; }
@@ -71,6 +73,7 @@ namespace Silk
             bool m_Shutdown;
             bool m_DidStop;
             bool m_IsIdling;
+            bool m_ShouldWake;
 
             i32 m_ID;
             Timer m_LocalTimer;
@@ -82,6 +85,7 @@ namespace Silk
             ThreadCondition m_Wake;
             ThreadCondition m_Sleep;
             Mutex m_IdlingMutex;
+        
     };
     
     class TaskContainer
