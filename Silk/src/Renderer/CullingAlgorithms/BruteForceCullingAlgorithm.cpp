@@ -68,11 +68,19 @@ namespace Silk
                 
                 Result->m_TotalTaskDuration += Tasks[i]->m_Duration;
             }
-            
-            Result->m_AverageTaskDuration = Result->m_TotalTaskDuration / Scalar(m_TaskManager->GetCoreCount());
-            Result->m_RealDuration = tmr;
-            Result->m_Efficiency = Result->m_TotalTaskDuration / Result->m_RealDuration;
-        }
+			if(Result->m_TotalTaskDuration != 0.0f)
+			{
+				Result->m_AverageTaskDuration = Result->m_TotalTaskDuration / Scalar(m_TaskManager->GetCoreCount());
+				Result->m_RealDuration = tmr;
+				Result->m_Efficiency = Result->m_TotalTaskDuration / Result->m_RealDuration;
+			}
+			else
+			{
+				Result->m_AverageTaskDuration = 0.0f;
+				Result->m_RealDuration = tmr;
+				Result->m_Efficiency = 0.0f;
+			}
+		}
         else
         {
             for(i32 i = 0;i < l->GetMeshList().size();i++)

@@ -8,7 +8,7 @@ namespace Silk
     class SampleBuffer
     {
         public:
-            SampleBuffer() : m_SampleCount(10.0f)  { }
+			SampleBuffer() : m_SampleCount(10.0f), m_SamplesTotal(0.0f), m_Max(FLT_MIN) { }
             ~SampleBuffer() { }
         
             void SetSampleCount(i32 Count) { m_SampleCount = Count; }

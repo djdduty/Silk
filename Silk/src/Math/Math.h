@@ -1,6 +1,11 @@
 #pragma once
 #include <System/SilkTypes.h>
 
+#ifdef _WIN32
+#define isnan _isnan
+#define isinf !_finite
+#endif
+
 #define PI_OVER_180 0.01745329251
 #define PI_UNDER_180 57.2957795131
 #define PI 3.14159265

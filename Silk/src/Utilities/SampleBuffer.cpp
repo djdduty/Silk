@@ -1,5 +1,5 @@
 #include <Utilities/SampleBuffer.h>
-#include <math.h>
+#include <Math/Math.h>
 
 namespace Silk
 {
