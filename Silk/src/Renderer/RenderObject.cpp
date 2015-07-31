@@ -4,8 +4,9 @@
 
 namespace Silk {
     RenderObject::RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObject* Object) : 
-        m_Mesh(0), m_Material(0), m_Renderer(Renderer), m_Type(Type), m_Enabled(true), m_List(0), m_ListIndex(0), m_Object(Object),
-        m_Light(0)
+        m_Object(Object), m_Type(Type), m_Enabled(true), m_IsCulled(false), m_Renderer(Renderer), m_Material(0), m_Mesh(0), m_Light(0),
+        m_Uniforms(0), m_ShaderListIndex(-1), m_MeshListIndex(-1), m_ListIndex(0), m_List(0), m_InstanceList(0), m_InstanceIndex(-1),
+        m_CulledInstanceIndex(-1)
     {
         m_Uniforms = new ModelUniformSet(m_Renderer,this);
     }
@@ -126,11 +127,12 @@ namespace Silk {
 
     ObjectList::ObjectList(const ObjectList& l)
     {
-        m_MeshObjects   = SilkObjectVector(l.m_MeshObjects  );
-        m_LightObjects  = SilkObjectVector(l.m_LightObjects );
-        m_CameraObjects = SilkObjectVector(l.m_CameraObjects);
-        m_ShaderObjects = vector<vector<RenderObject*> >(l.m_ShaderObjects);
-        m_ShadersUsed   = vector<Shader*>(l.m_ShadersUsed);
+        m_MeshObjects     = SilkObjectVector(l.m_MeshObjects  );
+        m_LightObjects    = SilkObjectVector(l.m_LightObjects );
+        m_CameraObjects   = SilkObjectVector(l.m_CameraObjects);
+        m_ObjectsByShader = vector<vector<RenderObject*> >(l.m_ObjectsByShader);
+        m_ObjectsByMesh   = vector<vector<RenderObject*> >(l.m_ObjectsByMesh  );
+        m_ShadersUsed     = vector<Shader*>(l.m_ShadersUsed);
     }
     i32 ObjectList::AddObject(RenderObject* Obj)
     {
@@ -150,24 +152,38 @@ namespace Silk {
                 if(ShaderIdx == -1)
                 {
                     m_ShadersUsed.push_back(s);
-                    m_ShaderObjects.push_back(vector<RenderObject*>());
-                    ShaderIdx = m_ShaderObjects.size() - 1;
+                    m_ObjectsByShader.push_back(vector<RenderObject*>());
+                    ShaderIdx = m_ObjectsByShader.size() - 1;
                 }
                 
-                m_ShaderObjects[ShaderIdx].push_back(Obj);
-                if(m_IsIndexed) Obj->m_ShaderListIndex = m_ShaderObjects[ShaderIdx].size() - 1;
+                m_ObjectsByShader[ShaderIdx].push_back(Obj);
+                if(m_IsIndexed)
+                {
+                    Obj->m_ShaderListIndex = m_ObjectsByShader[ShaderIdx].size() - 1;
                 
-                return m_MeshObjects.size()-1;
+                    Mesh* m = Obj->GetMesh();
+                    if(m->m_MeshListID == -1)
+                    {
+                        m_Meshes.push_back(m);
+                        m->m_MeshListID = m_Meshes.size() - 1;
+                        
+                        m_ObjectsByMesh.push_back(vector<RenderObject*>());
+                        m_ObjectsByMesh[m->m_MeshListID].push_back(Obj);
+                        Obj->m_MeshListIndex = m_ObjectsByMesh[m->m_MeshListID].size() - 1;
+                    }
+                }
+                
+                return m_MeshObjects.size() - 1;
                 break;
             }
             case ROT_LIGHT: {
                 m_LightObjects.push_back(Obj);
-                return m_LightObjects.size()-1;
+                return m_LightObjects.size() - 1;
                 break;
             }
             case ROT_CAMERA: {
                 m_CameraObjects.push_back(Obj);
-                return m_CameraObjects.size()-1;
+                return m_CameraObjects.size() - 1;
                 break;
             }
             default: {
@@ -187,6 +203,31 @@ namespace Silk {
                 {
                     if(Obj && Obj->m_List == this) m_MeshObjects.erase(m_MeshObjects.begin()+Obj->m_ListIndex);
                     for(i32 i = Obj->m_ListIndex;i < m_MeshObjects.size();i++) m_MeshObjects[i]->m_ListIndex = i;
+                    
+                    Mesh* m = Obj->GetMesh();
+                    if(m_ObjectsByMesh[m->m_MeshListID].size() == 1)
+                    {
+                        //Remove mesh from list and remove newly empty object list from m_ObjectsByMesh
+                        m_ObjectsByMesh.erase(m_ObjectsByMesh.begin() + m->m_MeshListID);
+                        m_Meshes       .erase(m_Meshes       .begin() + m->m_MeshListID);
+                        
+                        //Renew mesh list indices
+                        for(i32 i = m->m_MeshListID;i < m_Meshes.size();i++)
+                        {
+                            m_Meshes[i]->m_MeshListID = i;
+                        }
+                    }
+                    else
+                    {
+                        //Remove object from m_ObjectsByMesh
+                        m_ObjectsByMesh[m->m_MeshListID].erase(m_ObjectsByMesh[m->m_MeshListID].begin() + Obj->m_MeshListIndex);
+                        
+                        //Renew mesh list indices
+                        for(i32 i = Obj->m_MeshListIndex;i < m_ObjectsByMesh[m->m_MeshListID].size();i++)
+                        {
+                            m_ObjectsByMesh[m->m_MeshListID][i]->m_MeshListIndex = i;
+                        }
+                    }
                 }
                 else
                 {
@@ -243,25 +284,25 @@ namespace Silk {
             {
                 if(m_ShadersUsed[i] == s)
                 {
-                    if(m_ShaderObjects[i].size() == 1)
+                    if(m_ObjectsByShader[i].size() == 1)
                     {
-                        m_ShaderObjects.erase(m_ShaderObjects.begin() + i);
-                        m_ShadersUsed  .erase(m_ShadersUsed  .begin() + i);
+                        m_ObjectsByShader.erase(m_ObjectsByShader.begin() + i);
+                        m_ShadersUsed    .erase(m_ShadersUsed    .begin() + i);
                     }
                     else
                     {
                         if(m_IsIndexed)
                         {
-                            m_ShaderObjects[i].erase(m_ShaderObjects[i].begin() + Obj->m_ShaderListIndex);
-                            for(i32 o = 0;o < m_ShaderObjects[i].size();o++) m_ShaderObjects[i][o]->m_ShaderListIndex = o;
+                            m_ObjectsByShader[i].erase(m_ObjectsByShader[i].begin() + Obj->m_ShaderListIndex);
+                            for(i32 o = 0;o < m_ObjectsByShader[i].size();o++) m_ObjectsByShader[i][o]->m_ShaderListIndex = o;
                         }
                         else
                         {
-                            for(i32 sidx = 0;sidx < m_ShaderObjects[i].size();i++)
+                            for(i32 sidx = 0;sidx < m_ObjectsByShader[i].size();i++)
                             {
-                                if(m_ShaderObjects[i][sidx] == Obj)
+                                if(m_ObjectsByShader[i][sidx] == Obj)
                                 {
-                                    m_ShaderObjects[i].erase(m_ShaderObjects[i].begin() + sidx);
+                                    m_ObjectsByShader[i].erase(m_ObjectsByShader[i].begin() + sidx);
                                     break;
                                 }
                             }

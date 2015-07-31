@@ -26,6 +26,8 @@ namespace Silk
             void SetCullingAlgorithm(CullingAlgorithm* Algo) { m_CullingAlgorithm = Algo; }
             CullingAlgorithm* GetCullingAlgorithm() const { return m_CullingAlgorithm; }
         
+            Renderer* GetRenderer() const { return m_Renderer; }
+        
             CullingResult* PerformCulling();
 
             void AddRenderObject(RenderObject* Object);

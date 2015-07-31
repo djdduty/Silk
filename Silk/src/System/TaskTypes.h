@@ -7,6 +7,7 @@ namespace Silk
     {
         TT_THREAD_IDLE_TIME,
         TT_BRUTE_FORCE_CULL_TASK,
+        TT_SYNC_INSTANCE_TRANSFORMS,
         TT_COUNT,
     };
 

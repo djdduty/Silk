@@ -29,11 +29,11 @@ namespace TestClient
         
             m_Window->PollEvents();
 
-            m_Renderer = new Renderer(m_Rasterizer);
+            m_TaskManager = new TaskManager();
+            m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
         
             m_ShaderGenerator = new ShaderGenerator(m_Renderer);
-            m_TaskManager = new TaskManager();
             
             Scalar Aspect = m_Rasterizer->GetContext()->GetResolution().y / m_Rasterizer->GetContext()->GetResolution().x;
             

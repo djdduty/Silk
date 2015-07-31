@@ -24,11 +24,12 @@ namespace Silk
             if(m_Parent->GetScene()->GetActiveCamera()->GetFrustum()->ContainsPoint(Vec3(t.x.w,t.y.w,t.z.w))) IsVisible = true;
             
             if(IsVisible) m_VisibleObjects.push_back(Obj);
+            else m_Parent->SetObjectVisibility(Obj,false); //Only call from thread when setting as false
         }
     }
     
     BruteForceCullingAlgorithm::BruteForceCullingAlgorithm(Scene* s,TaskManager* t) :
-        CullingAlgorithm(s), m_TaskManager(t), m_MinObjCountForMultithreading(1000)
+        CullingAlgorithm(s), m_TaskManager(t)
     {
     }
     BruteForceCullingAlgorithm::~BruteForceCullingAlgorithm()
@@ -47,7 +48,7 @@ namespace Silk
         Result->m_VisibleObjects->SetIndexed(false);
         
         ObjectList *l = m_Scene->GetObjectList();
-        if(l->GetMeshList().size() > m_MinObjCountForMultithreading)
+        if(l->GetMeshList().size() > m_Scene->GetRenderer()->GetMinObjectCountForMultithreadedCulling())
         {
             vector<BruteForceCullingTask*> Tasks;
             i32 ObjsPerTask = l->GetMeshList().size() / m_TaskManager->GetCoreCount();
@@ -64,10 +65,15 @@ namespace Silk
             Result->m_TotalTaskDuration = 0.0f;
             for(i32 i = 0;i < m_TaskManager->GetCoreCount();i++)
             {
-                for(i32 o = 0;o < Tasks[i]->m_VisibleObjects.size();o++) Result->m_VisibleObjects->AddObject(Tasks[i]->m_VisibleObjects[o]);
+                for(i32 o = 0;o < Tasks[i]->m_VisibleObjects.size();o++)
+                {
+                    Result->m_VisibleObjects->AddObject(Tasks[i]->m_VisibleObjects[o]);
+                    SetObjectVisibility(Tasks[i]->m_VisibleObjects[o],true);
+                }
                 
                 Result->m_TotalTaskDuration += Tasks[i]->m_Duration;
             }
+            
 			if(Result->m_TotalTaskDuration != 0.0f)
 			{
 				Result->m_AverageTaskDuration = Result->m_TotalTaskDuration / Scalar(m_TaskManager->GetCoreCount());
@@ -92,6 +98,7 @@ namespace Silk
                 
                 if(ClipPlanes->ContainsPoint(Vec3(t.x.w,t.y.w,t.z.w))) IsVisible = true;
             
+                SetObjectVisibility(Obj,IsVisible);
                 if(IsVisible) Result->m_VisibleObjects->AddObject(Obj);
             }
             

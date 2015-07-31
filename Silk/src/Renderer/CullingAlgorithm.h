@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <System/SilkTypes.h>
+#include <System/Threading.h>
 
 using namespace std;
 namespace Silk
@@ -22,10 +23,14 @@ namespace Silk
             virtual CullingResult* PerformCulling() = 0;
             virtual const char* GetAlgorithmName() const = 0;
         
+            void SetObjectVisibility(RenderObject* Obj,bool Visibility);
+        
             Scene* GetScene() const { return m_Scene; }
         
         protected:
             Scene* m_Scene;
+            vector<RenderObject*> m_VisibleObjects;
+            Mutex m_SetVisibilityMutex;
     };
     
     class CullingResult

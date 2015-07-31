@@ -20,7 +20,7 @@ namespace Silk
             i32 Destroy(RenderObject* Caller);
         
             virtual void SetMesh(Mesh* m) = 0;
-            virtual void Render(i32 PrimitiveType,i32 Start,i32 Count) = 0;
+            virtual void Render(RenderObject* Obj,i32 PrimitiveType,i32 Start,i32 Count) = 0;
         
             virtual bool IsInstanced() = 0;
             virtual i32 AddInstance () = 0;
@@ -31,7 +31,7 @@ namespace Silk
             virtual void UpdateInstanceData() = 0;
         
         protected:
-            RasterObject(Rasterizer* r) : m_Rasterizer(r), m_RefCount(1) { }
+            RasterObject(Rasterizer* r) : m_RefCount(1), m_Rasterizer(r) { }
             virtual ~RasterObject() { }
         
             i32 m_RefCount;
@@ -212,6 +212,7 @@ namespace Silk
             virtual ~Rasterizer();
         
             void SetRenderer(Renderer* r) { m_Renderer = r; }
+            Renderer* GetRenderer() const { return m_Renderer; }
         
             bool SetContext(RasterContext* Ctx);
             virtual bool ValidateContext(RasterContext* Ctx);

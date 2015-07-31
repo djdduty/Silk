@@ -101,9 +101,7 @@ namespace Silk
     }
     void WorkerThread::WaitForWake()
     {
-        while(m_ShouldWake)
-        {
-        }
+        while(m_ShouldWake) { m_Wake.Signal(); }
     }
     
     TaskContainer::TaskContainer() : m_ThreadDifferenceSampleCount(20), m_DurationSampleCount(20), m_ThreadTimeQuota(1.0f / 60.0f),
@@ -380,7 +378,7 @@ namespace Silk
     {
         for(i32 i = 0;i < m_Threads.size();i++)
         {
-            if(!m_Threads[i]->IsIdling()) m_Threads[i]->m_Sleep.WaitSignal();
+            if(!m_Threads[i]->IsIdling()) m_Threads[i]->m_Sleep.WaitSignal(false,&m_Threads[i]->m_IsIdling);
         }
     }
     bool TaskManager::HasWork(i32 ThreadID) const

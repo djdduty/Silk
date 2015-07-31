@@ -1,5 +1,4 @@
-#ifndef SILK_RENDERER_H
-#define SILK_RENDERER_H
+#pragma once
 #include <Renderer/RenderObject.h>
 #include <Renderer/Camera.h>
 #include <Renderer/Mesh.h>
@@ -9,6 +8,8 @@
 
 #include <Renderer/CullingAlgorithms/NullCullingAlgorithm.h>
 #include <Renderer/CullingAlgorithms/BruteForceCullingAlgorithm.h>
+
+#include <System/TaskManager.h>
 
 #include <Utilities/SampleBuffer.h>
 #include <Utilities/Timer.h>
@@ -23,6 +24,8 @@ namespace Silk
             {
                 i32 MaxLights;
 				i32 AverageSampleDuration;
+                i32 MinObjectCountForMultithreadedCulling;
+                i32 MinObjectCountForMultithreadedTransformSync;
             };
 
             struct RenderStats
@@ -42,11 +45,13 @@ namespace Silk
                 SampleBuffer AverageMultithreadedCullingEfficiency;
             };
 
-            Renderer(Rasterizer* Raster);
+            Renderer(Rasterizer* Raster,TaskManager* TaskMgr);
             virtual ~Renderer();
         
-            Rasterizer*    GetRasterizer           () { return m_Raster; }
-            Texture*       GetDefaultTexture       ();
+            Rasterizer   * GetRasterizer           () { return m_Raster     ; }
+            TaskManager  * GetTaskManager          () { return m_TaskManager; }
+        
+            Texture      * GetDefaultTexture       ();
             UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }
             UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms->GetUniforms(); }
         
@@ -72,6 +77,14 @@ namespace Silk
 			//Sample duration (seconds) for averages of render statistics
 			void SetAverageSampleDuration(Time Duration) { m_Prefs.AverageSampleDuration = Duration; }
 			Time GetAverageSampleDuration() const { return m_Prefs.AverageSampleDuration; }
+        
+            //Object count required before tasking is enabled for culling
+            void SetMinObjectCountForMultithreadedCulling(i32 Count) { m_Prefs.MinObjectCountForMultithreadedCulling = Count; }
+            i32 GetMinObjectCountForMultithreadedCulling() const { return m_Prefs.MinObjectCountForMultithreadedCulling; }
+        
+            //Object count required before tasking is enabled for instance transform syncing
+            void SetMinObjectCountForMultithreadedTransformSync(i32 Count) { m_Prefs.MinObjectCountForMultithreadedTransformSync = Count; }
+            i32 GetMinObjectCountForMultithreadedTransformSync() const { return m_Prefs.MinObjectCountForMultithreadedTransformSync; }
 
 			const RenderStats& GetRenderStatistics() const { return m_Stats; }
         
@@ -86,6 +99,7 @@ namespace Silk
             Scalar m_DefaultTexturePhase;
             void UpdateDefaultTexture();
         
+            TaskManager* m_TaskManager;
             Scene* m_Scene;
             
             UniformBuffer* m_EngineUniforms;
@@ -94,4 +108,3 @@ namespace Silk
             Rasterizer* m_Raster;
     };
 };
-#endif

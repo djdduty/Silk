@@ -3,7 +3,7 @@
 
 namespace Silk
 {
-    Mesh::Mesh() : m_IndexBufferID(-1), m_RefCount(1)
+    Mesh::Mesh() : m_IndexBufferID(-1), m_MeshListID(-1), m_RefCount(1)
     {
     }
     Mesh::~Mesh()

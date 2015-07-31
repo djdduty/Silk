@@ -50,13 +50,17 @@ namespace Silk
             void* MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access);
             void UnmapBuffer(GLuint AttributeIndex);
 
-            virtual void Render(i32 PrimitiveType,i32 Start,i32 Count);
+            virtual void Render(RenderObject* Obj,i32 PrimitiveType,i32 Start,i32 Count);
         
         protected:
             i32 GetAttributeBufferIndex(i32 AttribIndex) const;
             void SetIndexBufferAttributeIndex(GLuint AttributeIndex);
+        
+            Mesh* m_Mesh;
+        
             GLuint m_VAO;
             i32 m_IBIndex;
+        
             vector<struct AttributeBuffer> m_Attributes;
             bool m_IsInstanced          ;
             bool m_InstanceCountChanged ;
@@ -128,6 +132,8 @@ namespace Silk
         protected:
             GLuint m_ColorFormat;
             GLuint m_ClearBuffers;
+            
+            bool m_SupportsInstanceTTrans;
     };
 };
 

@@ -42,7 +42,12 @@ namespace Silk
             const Mat4&   GetNormalTransform () { return m_Uniforms->GetNormalMatrix (); }
             const Mat4&   GetTextureTransform() { return m_Uniforms->GetTextureMatrix(); }
         
+            bool IsVisible() const { return !m_IsCulled; }
+        
             bool IsInstanced();
+            i32 GetInstanceIndex() const { return m_InstanceIndex; }
+            i32 GetCulledInstanceIndex() const { return m_CulledInstanceIndex; }
+            RasterObject* GetObject() const { return m_Object; }
 
             void SetMesh     (Mesh    * M, Material* Mat);
             void SetLight    (Light   * L               );
@@ -63,25 +68,29 @@ namespace Silk
             friend class ObjectList;
             friend class RasterObject;
             friend class ModelUniformSet;
+            friend class CullingAlgorithm;
 
             RasterObject* m_Object;
 
             RENDER_OBJECT_TYPE     m_Type           ;
             bool                   m_Enabled        ;
+            bool                   m_IsCulled       ;
             Renderer*              m_Renderer       ;
             Material*              m_Material       ;
             Mesh*                  m_Mesh           ;
             Light*                 m_Light          ;
-            //TODO Camera, Light
+            //TODO Camera
         
             ModelUniformSet*       m_Uniforms       ;
 
             //List references
             i32                    m_ShaderListIndex;
+            i32                    m_MeshListIndex  ;
             i32                    m_ListIndex      ;
             ObjectList*            m_List           ;
-            i32                    m_InstanceIndex  ;
             vector<RenderObject*>* m_InstanceList   ;
+            i32                    m_InstanceIndex  ;
+            i32                    m_CulledInstanceIndex;
 
         private:
             bool m_DidUpdate;
@@ -106,13 +115,14 @@ namespace Silk
 
             void Clear();
 
-            SilkObjectVector& GetMeshList()   { return m_MeshObjects;   }
+            vector<Mesh*>* GetSceneMeshes()   { return &m_Meshes      ; }
+            SilkObjectVector& GetMeshList()   { return m_MeshObjects  ; }
             SilkObjectVector& GetCameraList() { return m_CameraObjects; }
-            SilkObjectVector& GetLightList()  { return m_LightObjects;  }
+            SilkObjectVector& GetLightList()  { return m_LightObjects ; }
         
             i32 GetShaderCount() const { return m_ShadersUsed.size(); }
             Shader* GetShader(i32 Index) const { return m_ShadersUsed[Index]; }
-            SilkObjectVector& GetShaderMeshList(i32 Index) { return m_ShaderObjects[Index]; }
+            SilkObjectVector& GetShaderMeshList(i32 Index) { return m_ObjectsByShader[Index]; }
 
         protected:
             friend class Renderer;
@@ -123,7 +133,9 @@ namespace Silk
             SilkObjectVector m_CameraObjects;
             
             vector<Shader*> m_ShadersUsed;
-            vector<vector<RenderObject*> >m_ShaderObjects;
+            vector<vector<RenderObject*> >m_ObjectsByShader;
+            vector<vector<RenderObject*> >m_ObjectsByMesh;
+            vector<Mesh*> m_Meshes;
     };
 }
 

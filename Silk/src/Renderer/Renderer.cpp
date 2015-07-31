@@ -13,7 +13,7 @@
 
 namespace Silk
 {
-    Renderer::Renderer(Rasterizer* Raster) : m_Raster(Raster)
+    Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_Raster(Raster), m_TaskManager(TaskMgr)
     {
         m_DefaultTexture   = m_Raster->CreateTexture();
         m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
@@ -25,6 +25,9 @@ namespace Silk
         m_DoRecompileAllShaders = false;
         m_Prefs.MaxLights = 8;
         m_Prefs.AverageSampleDuration = 5.0f;
+        m_Prefs.MinObjectCountForMultithreadedCulling = 1000;
+        m_Prefs.MinObjectCountForMultithreadedTransformSync = 1000;
+        
         m_Stats.FrameID = 0;
         m_Stats.VisibleObjects = 0;
         m_Stats.FrameRate = 0.0f;
@@ -102,26 +105,11 @@ namespace Silk
             for(i32 m = 0;m < Meshes.size();m++)
             {
                 RenderObject* Obj = Meshes[m];
+                if(Obj->IsInstanced() && Obj->m_InstanceIndex != 0) continue;
+            
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
                 {
                     Obj->GetUniformSet()->SetLights(LightsVector);
-                    if(Obj->m_Object->IsInstanced())
-                    {
-                        //Update obj instance data on the CPU side
-                        if(Obj->m_DidUpdate)
-                        {
-                            Obj->m_DidUpdate = false;
-                            Obj->m_Object->SetInstanceTransform       (Obj->m_InstanceIndex,Obj->GetTransform       ());
-                            Obj->m_Object->SetInstanceNormalTransform (Obj->m_InstanceIndex,Obj->GetNormalTransform ());
-                            Obj->m_Object->SetInstanceTextureTransform(Obj->m_InstanceIndex,Obj->GetTextureTransform());
-                        }
-                        
-                        //Don't render all instanced render objects, just the Mesh owner
-                        if(Obj != Obj->m_Mesh->m_Obj) continue;
-                        
-                        //Update all instance data for mesh on the GPU side
-                        Obj->m_Object->UpdateInstanceData();
-                    }
                     
                     //Pass material uniforms
                     Material* Mat = Obj->GetMaterial();
@@ -130,8 +118,19 @@ namespace Silk
                     //Pass object uniforms
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
                     {
-                        Obj->UpdateUniforms();
-                        Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+                        if(Obj->IsInstanced())
+                        {
+                            Mat4 tmp = Obj->GetTransform();
+                            Obj->SetTransform(Mat4::Identity);
+                            Obj->UpdateUniforms();
+                            Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+                            Obj->SetTransform(tmp);
+                        }
+                        else
+                        {
+                            Obj->UpdateUniforms();
+                            Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+                        }
                     }
                     
                     //To do: Batching
@@ -139,8 +138,9 @@ namespace Silk
                     if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
                     else Count = Obj->m_Mesh->GetVertexCount();
                         
-                    Obj->m_Object->Render(PrimType,0,Count);
-                    if(Obj->IsInstanced()) ActualObjectCount += Obj->m_InstanceList->size();
+                    Obj->m_Object->Render(Obj,PrimType,0,Count);
+                    
+                    if(Obj->IsInstanced()) ActualObjectCount += Obj->GetMesh()->m_VisibleInstanceCount;
                     else ActualObjectCount++;
                     MeshesRendered.push_back(Obj);
                 }

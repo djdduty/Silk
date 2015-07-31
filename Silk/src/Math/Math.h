@@ -4,6 +4,8 @@
 #ifdef _WIN32
 #define isnan _isnan
 #define isinf !_finite
+#elif __APPLE__
+#include <cmath>
 #endif
 
 #define PI_OVER_180 0.01745329251

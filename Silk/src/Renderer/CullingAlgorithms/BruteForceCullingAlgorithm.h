@@ -30,14 +30,11 @@ namespace Silk
             void SetTaskManager(TaskManager* T);
             TaskManager* GetTaskManager() const { return m_TaskManager; }
         
-            void SetMinObjectCountForMultithreading(i32 Limit) { m_MinObjCountForMultithreading = Limit; }
-        
             virtual CullingResult* PerformCulling();
             virtual const char* GetAlgorithmName() const { return "Brute Force Culling Algorithm"; }
         
         protected:
             TaskManager* m_TaskManager;
-            i32 m_MinObjCountForMultithreading;
     };
 };
 

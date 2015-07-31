@@ -1,15 +1,17 @@
-#include <Raster/OpenGL/OpenGLRasterizer.h>
-#include <Raster/OpenGL/OpenGLUniform.h>
-#include <Renderer/Mesh.h>
 #include <Raster/OpenGL/OpenGLShader.h>
+#include <Raster/OpenGL/OpenGLUniform.h>
 #include <Raster/OpenGL/OpenGLTexture.h>
+#include <Raster/OpenGL/OpenGLRasterizer.h>
+
+#include <Renderer/Mesh.h>
+#include <Renderer/SyncInstanceTransformsTask.h>
 
 namespace Silk
 {
     OpenGLObject::OpenGLObject(Rasterizer* r) : RasterObject(r), m_VAO(0), m_IBIndex(-1), m_IsInstanced(false),
-                m_MiniTransformSet(0), m_MaxiTransformSet(0), m_MiniNTransformSet(0), m_MaxiNTransformSet(0),
-                m_MiniTTransformSet(0), m_MaxiTTransformSet(0), m_InstanceTransformsID(-1),
-                m_InstanceNormalTransformsID(-1), m_InstanceTextureTransformsID(-1)
+                m_MiniTransformSet(INT_MAX), m_MaxiTransformSet(INT_MIN), m_MiniNTransformSet(INT_MAX),
+                m_MaxiNTransformSet(INT_MIN), m_MiniTTransformSet(INT_MAX), m_MaxiTTransformSet(INT_MIN),
+                m_InstanceTransformsID(-1), m_InstanceNormalTransformsID(-1), m_InstanceTextureTransformsID(-1)
     {
     }
     OpenGLObject::~OpenGLObject()
@@ -58,6 +60,8 @@ namespace Silk
             }
         }
         glBindVertexArray(0);
+        
+        m_Mesh = m;
     }
     void OpenGLObject::AddAttribute(GLuint AttribIndex,GLint ComponentCount,GLint Size,GLenum Type,GLboolean Normalized,GLsizei Stride,GLvoid* Pointer)
     {
@@ -206,9 +210,6 @@ namespace Silk
     {
         if(m_InstanceCountChanged)
         {
-            m_MiniTransformSet = m_MiniNTransformSet = m_MiniTTransformSet =
-            m_MaxiTransformSet = m_MaxiNTransformSet = m_MaxiTTransformSet = -1;
-            
             glBindVertexArray(m_VAO);
             
             i32 Sz = sizeof(Mat4) * m_InstanceTransforms.size();
@@ -236,28 +237,65 @@ namespace Silk
             if(m_Rasterizer->SupportsInstanceTextureTransforms()) SupplyBufferData(InstanceTextureTransformAttribIndex,GL_ARRAY_BUFFER,16,Sz,&m_InstanceTextureTransforms[0].x.x,GL_DYNAMIC_DRAW);
         
             glBindVertexArray(0);
+            
+            m_InstanceCountChanged = false;
         }
-        else if(m_MiniTransformSet != -1)
+        else
         {
-            glBindVertexArray(m_VAO);
-            
-            glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTransformsID].BufferID);
-            glBufferSubData(GL_ARRAY_BUFFER,m_MiniTransformSet  * sizeof(Mat4),(m_MaxiTransformSet  - m_MiniTransformSet ) * sizeof(Mat4),&m_InstanceTransforms      [m_MiniTransformSet].x.x);
-            
-            glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceNormalTransformsID].BufferID);
-            glBufferSubData(GL_ARRAY_BUFFER,m_MiniNTransformSet * sizeof(Mat4),(m_MaxiNTransformSet - m_MiniNTransformSet) * sizeof(Mat4),&m_InstanceNormalTransforms[m_MiniTransformSet].x.x);
-            
-            if(m_Rasterizer->SupportsInstanceTextureTransforms())
+            if(m_InstanceTransforms.size() > m_Rasterizer->GetRenderer()->GetMinObjectCountForMultithreadedTransformSync())
             {
-                glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTextureTransformsID].BufferID);
-                glBufferSubData(GL_ARRAY_BUFFER,m_MiniTTransformSet * sizeof(Mat4),(m_MaxiTTransformSet - m_MiniTTransformSet) * sizeof(Mat4),&m_InstanceTextureTransforms[m_MiniTransformSet].x.x);
+                //Wait for all threads to be available
+                m_Rasterizer->GetRenderer()->GetTaskManager()->WaitForThreads();
+                
+                i32 NumObjsToUpdate = m_InstanceTransforms.size();
+                i32 ThreadCount = m_Rasterizer->GetRenderer()->GetTaskManager()->GetCoreCount();
+                i32 ObjsPerTask = floor(Scalar(NumObjsToUpdate) / Scalar(ThreadCount));
+                i32 Remainder   = NumObjsToUpdate - (ObjsPerTask * ThreadCount);
+                
+                //Add all tasks to task manager
+                for(i32 i = 0;i < ThreadCount;i++)
+                {
+                    i32 Count = ObjsPerTask;
+                    if(i == ThreadCount - 1) Count += Remainder;
+                    
+                    SyncInstanceTransformsTask* Task = new SyncInstanceTransformsTask(m_Mesh,ObjsPerTask * i,Count);
+                    m_Rasterizer->GetRenderer()->GetTaskManager()->AddTask(Task,true);
+                }
+                
+                //Execute all the tasks
+                m_Rasterizer->GetRenderer()->GetTaskManager()->WakeThreads();
+                m_Rasterizer->GetRenderer()->GetTaskManager()->WorkUntilDone();
+                
+                //Wait for tasks to be completed
+                m_Rasterizer->GetRenderer()->GetTaskManager()->WaitForThreads();
+            }
+            else
+            {
+                SyncInstanceTransformsTask* Task = new SyncInstanceTransformsTask(m_Mesh,0,m_InstanceTransforms.size());
+                Task->Run();
+                delete Task;
             }
             
-            m_MiniTransformSet = m_MiniNTransformSet = m_MiniTTransformSet =
-            m_MaxiTransformSet = m_MaxiNTransformSet = m_MaxiTTransformSet = -1;
-            
+            if(m_MiniTransformSet != INT_MAX)
+            {
+                glBindVertexArray(m_VAO);
+                
+                glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTransformsID].BufferID);
+                glBufferSubData(GL_ARRAY_BUFFER,m_MiniTransformSet  * sizeof(Mat4),(m_MaxiTransformSet  - m_MiniTransformSet ) * sizeof(Mat4),&m_InstanceTransforms      [m_MiniTransformSet].x.x);
+                
+                glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceNormalTransformsID].BufferID);
+                glBufferSubData(GL_ARRAY_BUFFER,m_MiniNTransformSet * sizeof(Mat4),(m_MaxiNTransformSet - m_MiniNTransformSet) * sizeof(Mat4),&m_InstanceNormalTransforms[m_MiniTransformSet].x.x);
+                
+                if(m_Rasterizer->SupportsInstanceTextureTransforms())
+                {
+                    glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTextureTransformsID].BufferID);
+                    glBufferSubData(GL_ARRAY_BUFFER,m_MiniTTransformSet * sizeof(Mat4),(m_MaxiTTransformSet - m_MiniTTransformSet) * sizeof(Mat4),&m_InstanceTextureTransforms[m_MiniTransformSet].x.x);
+                }
+            }
             glBindVertexArray(0);
         }
+        m_MiniTransformSet = m_MiniNTransformSet = m_MiniTTransformSet = INT_MAX;
+        m_MaxiTransformSet = m_MaxiNTransformSet = m_MaxiTTransformSet = INT_MIN;
     }
     void OpenGLObject::SetIndexBufferAttributeIndex(GLuint AttributeIndex)
     {
@@ -311,7 +349,7 @@ namespace Silk
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER,0);
     }
-    void OpenGLObject::Render(i32 PrimitiveType,i32 Start,i32 Count)
+    void OpenGLObject::Render(RenderObject* Obj,i32 PrimitiveType,i32 Start,i32 Count)
     {
         if(m_VAO == 0 || m_Attributes.size() == 0) return;
 
@@ -326,10 +364,10 @@ namespace Silk
                                         Count,
                                         m_Attributes[m_IBIndex].Type,
                                         (GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize),
-                                        m_InstanceTransforms.size());
+                                        Obj->GetMesh()->GetVisibleInstanceCount());
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
             }
-            else glDrawArraysInstanced(PrimitiveType,Start,Count,m_InstanceTransforms.size());
+            else glDrawArraysInstanced(PrimitiveType,Start,Count,Obj->GetMesh()->GetVisibleInstanceCount());
         }
         else
         {
@@ -507,13 +545,15 @@ namespace Silk
         
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
+        
+        i32 r = 0;
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS,&r);
+        if(r < 18) m_SupportsInstanceTTrans = false;
+        else m_SupportsInstanceTTrans = true;
     }
     bool OpenGLRasterizer::SupportsInstanceTextureTransforms()
     {
-        i32 r = 0;
-        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS,&r);
-        if(r < 18) return false;
-        return true;
+        return m_SupportsInstanceTTrans;
     }
 
     UniformBuffer* OpenGLRasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)

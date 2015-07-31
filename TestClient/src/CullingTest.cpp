@@ -66,7 +66,7 @@ namespace TestClient
 		mid = AddMesh("CullingTest/CullObject.object",m_Materials[2],Vec3(0,2,0),NUM_OF_CULL_OBJECTS);
 		for(i32 i = 0;i < NUM_OF_CULL_OBJECTS;i++)
 		{
-			m_Meshes[mid + i]->SetTransform(Translation(Vec3(Random(-100,100),Random(1,10),Random(-100,100))));
+			m_Meshes[mid + i]->SetTransform(Translation(Vec3(Random(-SPAWN_CUBE_SIZE,SPAWN_CUBE_SIZE) * 0.5f,Random(0,SPAWN_CUBE_SIZE * 0.5f),Random(-SPAWN_CUBE_SIZE,SPAWN_CUBE_SIZE) * 0.5f)) * Scale(CULL_OBJECT_SCALE));
 		}
         
         glEnable(GL_CULL_FACE);
@@ -77,8 +77,7 @@ namespace TestClient
     {
         //For ground
         Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
-                                                              "CullingTest/GroundNormal.png" ,
-                                                              "CullingTest/GroundHeight.png");
+                                                              "CullingTest/GroundNormal.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));
         
@@ -90,10 +89,10 @@ namespace TestClient
         AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png");
         
         //For cull objects
-        //AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png"); //Use instancing
+        AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png"); //Use instancing
         
-        AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
-                                              "CullingTest/GroundNormal.png" ); //Non-instanced
+        //AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
+        //                                      "CullingTest/GroundNormal.png" ); //Non-instanced
     }
     RenderObject* CullingTest::AddLight(LightType Type,const Vec3& Pos)
     {
