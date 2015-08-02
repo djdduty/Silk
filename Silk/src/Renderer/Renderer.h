@@ -13,6 +13,7 @@
 
 #include <Utilities/SampleBuffer.h>
 #include <Utilities/Timer.h>
+#include <Utilities/ConfigurationManager.h>
 
 namespace Silk
 {
@@ -87,6 +88,7 @@ namespace Silk
             i32 GetMinObjectCountForMultithreadedTransformSync() const { return m_Prefs.MinObjectCountForMultithreadedTransformSync; }
 
 			const RenderStats& GetRenderStatistics() const { return m_Stats; }
+            Configuration* GetConfiguration() const { return m_Configuration; }
         
         protected:
             RenderPreferences m_Prefs;
@@ -101,10 +103,9 @@ namespace Silk
         
             TaskManager* m_TaskManager;
             Scene* m_Scene;
-            
             UniformBuffer* m_EngineUniforms;
             RenderUniformSet* m_RendererUniforms;
-
             Rasterizer* m_Raster;
+            Configuration* m_Configuration;
     };
 };

@@ -36,6 +36,20 @@ namespace Silk
         m_RendererUniforms = new RenderUniformSet(this);
         
         UpdateDefaultTexture();
+        
+        m_Configuration = new Configuration();
+        
+        m_Configuration->SetRootName("ForwardRenderer");
+        {
+            m_Configuration->AddNode("Max Lights")->Initialize(ConfigValue::VT_I32,&m_Prefs.MaxLights);
+            m_Configuration->AddNode("Statistics sample duration")->Initialize(ConfigValue::VT_F32,&m_Prefs.AverageSampleDuration);
+            
+            ConfigNode* Cull = m_Configuration->AddNode("Culling");
+            {
+                Cull->AddNode("Minimum objects for multi-threaded culling")->Initialize(ConfigValue::VT_I32,&m_Prefs.MinObjectCountForMultithreadedCulling);
+                Cull->AddNode("Minimum objects for multi-threaded instance transform sync")->Initialize(ConfigValue::VT_I32,&m_Prefs.MinObjectCountForMultithreadedTransformSync);
+            }
+        }
     }
 
     Renderer::~Renderer() 

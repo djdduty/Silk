@@ -5,7 +5,7 @@
 #define MIN_PARALLAX_LAYERS 10
 #define MAX_PARALLAX_LAYERS 20
 #define NUM_OF_CULL_OBJECTS 10000
-#define CULL_OBJECT_SCALE 0.5
+#define CULL_OBJECT_SCALE 0.75
 #define SPAWN_CUBE_SIZE 200
 
 namespace TestClient
@@ -34,12 +34,11 @@ namespace TestClient
             virtual const char* GetTestName() const { return "Culling Test"; }
         
         protected:
-            ObjLoader   * m_ObjLoader;
-        
-            vector<RenderObject*> m_Meshes       ;
-            vector<Material    *> m_Materials    ;
-            vector<RenderObject*> m_Lights       ;
-            vector<RenderObject*> m_LightMeshes  ;
+            ObjLoader*            m_ObjLoader  ;
+            vector<RenderObject*> m_Meshes     ;
+            vector<Material    *> m_Materials  ;
+            vector<RenderObject*> m_Lights     ;
+            vector<RenderObject*> m_LightMeshes;
     };
 };
 

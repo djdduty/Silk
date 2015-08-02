@@ -31,7 +31,7 @@ namespace Silk
             TaskManager* GetTaskManager() const { return m_TaskManager; }
         
             virtual CullingResult* PerformCulling();
-            virtual const char* GetAlgorithmName() const { return "Brute Force Culling Algorithm"; }
+            virtual const char* GetAlgorithmName() const { return "Brute Force"; }
         
         protected:
             TaskManager* m_TaskManager;

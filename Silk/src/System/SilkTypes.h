@@ -35,7 +35,7 @@ typedef float               f32;
 typedef double              f64;
 
 typedef char                Byte;
-typedef u8                  uByte;
+typedef unsigned char       uByte;
 
 typedef const char*         Literal;
 typedef char*               CString;
