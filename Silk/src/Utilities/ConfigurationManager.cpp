@@ -221,7 +221,7 @@ namespace Silk
         i32 cEndf = (*(i32*)InData);
         if(cEndf != CONFIG_FILE_END)
         {
-            ERROR("Warning: End of deserialize procedure reached before CONFIG_FILE_END.\n");
+            WARNING("End of deserialize procedure reached before CONFIG_FILE_END.\n");
         }
     }
     

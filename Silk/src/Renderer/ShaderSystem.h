@@ -1,5 +1,5 @@
 #pragma once
-#include <Renderer/Renderer.h>
+#include <Renderer/Material.h>
 
 #include <vector>
 using namespace std;
@@ -49,7 +49,12 @@ using namespace std;
 namespace Silk
 {
     class Shader;
+    class Renderer;
     class UniformBuffer;
+    class ModelUniformSet;
+    class RenderUniformSet;
+    class MaterialUniformSet;
+    
     class ShaderGenerator
     {
         public:

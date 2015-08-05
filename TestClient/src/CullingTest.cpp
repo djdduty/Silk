@@ -2,7 +2,7 @@
 #include <LodePNG.h>
 #include <ObjLoader.h>
 #include <math.h>
-#include <Utilities/SimplexNoise.h>
+#include <Utilities/Utilities.h>
 
 #include <System/TaskManager.h>
 
@@ -31,10 +31,13 @@ namespace TestClient
         
         m_ShaderGenerator->SetParallaxFunction(ShaderGenerator::PF_RELIEF);
         
-        m_ObjLoader = new ObjLoader();
         LoadMaterial();
         LoadLights  ();
         LoadMeshes  ();
+        
+        Byte* fDat = Load("Common/Font.fnt");
+        Font Fnt;
+        Fnt.Load(fDat);
     }
     void CullingTest::LoadLights()
     {
@@ -46,16 +49,16 @@ namespace TestClient
         L->m_Attenuation.Exponential = 5.90f;
 
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
-        L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 0.24;
-        L->m_Cutoff = 45.0f;
+        L->m_Color                   = Vec4(1,1,1,1);
+        L->m_Power                   = 0.24;
+        L->m_Cutoff                  = 45.0f;
         L->m_Attenuation.Constant    = 0.00f;
         L->m_Attenuation.Linear      = 0.10f;
         L->m_Attenuation.Exponential = 0.01f;
         
         L = AddLight(LT_DIRECTIONAL,Vec3(0,10,0))->GetLight();
-        L->m_Color = Vec4(0.9,0.8,0.6,1);
-        L->m_Power = 0.5f;
+        L->m_Color                   = Vec4(0.9,0.8,0.6,1);
+        L->m_Power                   = 0.5f;
     }
     void CullingTest::LoadMeshes()
     {
@@ -93,142 +96,6 @@ namespace TestClient
         
         //AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
         //                                      "CullingTest/GroundNormal.png" ); //Non-instanced
-    }
-    RenderObject* CullingTest::AddLight(LightType Type,const Vec3& Pos)
-    {
-        RenderObject* LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
-        Light* L = new Light(Type);
-        
-        LObj->SetLight(L);
-        L->m_Attenuation.Constant    = 0.00f;
-        L->m_Attenuation.Linear      = 2.10f;
-        L->m_Attenuation.Exponential = 5.90f;
-        LObj->SetTransform(Translation(Pos));
-        
-        m_Renderer->GetScene()->AddRenderObject(LObj);
-        m_Lights.push_back(LObj);
-        return LObj;
-    }
-    i32 CullingTest::AddMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count)
-    {
-        m_ObjLoader->Load(const_cast<CString>(Path));
-        m_ObjLoader->ComputeTangents();
-        
-        Mesh* M = new Mesh();
-        M->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
-        M->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
-        M->SetTangentBuffer (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTangents ()));
-        M->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
-        
-        RenderObject* Obj = 0;
-        i32 First = m_Meshes.size();
-        for(i32 i = 0;i < Count;i++)
-        {
-            Obj = m_Renderer->CreateRenderObject(ROT_MESH,false);
-            Obj->SetMesh(M,Mat);
-            m_Renderer->GetScene()->AddRenderObject(Obj);
-            
-            Obj->SetTransform(Translation(Pos));
-            Obj->SetTextureTransform(Mat4::Identity);
-            m_Meshes.push_back(Obj);
-        }
-        if(Count > 1) return First;
-        return m_Meshes.size() - 1;
-    }
-    Texture* CullingTest::LoadTexture(const char *Path)
-    {
-        if(!Path) return 0;
-        vector<u8> Pixels;
-        u32 w,h;
-        static f32 Inv255 = 1.0f / 255.0f;
-        
-        lodepng::decode(Pixels,w,h,Path);
-        if(Pixels.size() == 0) return 0;
-        
-        Texture* Tex = m_Rasterizer->CreateTexture();
-        Tex->CreateTexture(w,h);
-        for(i32 x = 0;x < w;x++)
-        {
-            for(i32 y = 0;y < h;y++)
-            {
-                i32 Idx = (y * (w * 4)) + (x * 4);
-                
-                Vec4 C;
-                C.x = f32(Pixels[Idx + 0]) * Inv255;
-                C.y = f32(Pixels[Idx + 1]) * Inv255; 
-                C.z = f32(Pixels[Idx + 2]) * Inv255;
-                C.w = f32(Pixels[Idx + 3]) * Inv255;
-                
-				swap(C.x,C.z);
-                
-                Tex->SetPixel(Vec2(x,(h-1) - y),C);
-            }
-        }
-        Tex->UpdateTexture();
-        return Tex;
-    }
-    Material* CullingTest::AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse,const char* Normal,const char* Parallax)
-    {
-        Material* Mat = m_Renderer->CreateMaterial();
-        Texture* D = LoadTexture(Diffuse );
-        Texture* N = LoadTexture(Normal  );
-        Texture* P = LoadTexture(Parallax);
-        
-        if(D) { Mat->SetMap(Material::MT_DIFFUSE ,D); D->Destroy(); }
-        if(N) { Mat->SetMap(Material::MT_NORMAL  ,N); N->Destroy(); }
-        if(P) { Mat->SetMap(Material::MT_PARALLAX,P); P->Destroy(); }
-        
-        if(LightingMode != ShaderGenerator::LM_FLAT)
-        {
-            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL  ,true);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
-            m_ShaderGenerator->SetAllowInstancing(false);
-            
-            if(Normal || Parallax)
-            {
-                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TANGENT ,true);
-                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TEXCOORD,true);
-                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_NORMAL  ,true);
-                
-                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,true);
-                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
-                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
-            }
-        }
-        else
-        {
-            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL  ,false);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,false);
-            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TANGENT ,false);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,false);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,false);
-            m_ShaderGenerator->SetAllowInstancing(true);
-        }
-        
-        if(Diffuse)
-        {
-            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,true);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
-        }
-        else
-        {
-            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,false);
-            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,false);
-        }
-        
-        m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE ,D != 0);
-        m_ShaderGenerator->SetTextureInput(Material::MT_NORMAL  ,N != 0);
-        m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
-        m_ShaderGenerator->SetLightingMode(LightingMode);
-
-        Mat->SetShader(m_ShaderGenerator->Generate());
-        
-        Mat->SetSpecular(Vec4(0,0,0,0));
-        Mat->SetShininess(0.0f);
-        
-        m_Materials.push_back(Mat);
-        return Mat;
     }
 
     void CullingTest::Run()
@@ -271,37 +138,11 @@ namespace TestClient
                 m_LightMeshes[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
             }
             
-            m_Renderer->Render(GL_TRIANGLES);
+            m_Renderer->Render(PT_TRIANGLES);
         }
     }
 
     void CullingTest::Shutdown()
     {
-        for(i32 i = 0;i < m_Lights.size();i++)
-        {
-            delete m_Lights[i]->GetLight();
-            m_Renderer->Destroy(m_Lights[i]);
-        }
-        m_Lights.clear();
-        m_LightMeshes.clear();
-        
-        for(i32 i = 0;i < m_Meshes.size();i++)
-        {
-            m_Renderer->Destroy(m_Meshes[i]);
-        }
-        m_Meshes.clear();
-        
-        for(i32 i = 0;i < m_Materials.size();i++)
-        {
-            if(m_Materials[i]->GetMap(Material::MT_DIFFUSE )) m_Materials[i]->GetMap(Material::MT_DIFFUSE )->Destroy();
-            if(m_Materials[i]->GetMap(Material::MT_NORMAL  )) m_Materials[i]->GetMap(Material::MT_NORMAL  )->Destroy();
-            if(m_Materials[i]->GetMap(Material::MT_PARALLAX)) m_Materials[i]->GetMap(Material::MT_PARALLAX)->Destroy();
-            if(m_Materials[i]->GetShader()) m_Renderer->GetRasterizer()->Destroy(m_Materials[i]->GetShader());
-            m_Renderer->Destroy(m_Materials[i]);
-        }
-        m_Materials.clear();
-        
-        delete m_ObjLoader;
-        m_ObjLoader = 0;
     }
 };

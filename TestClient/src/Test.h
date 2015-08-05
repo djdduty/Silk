@@ -1,6 +1,7 @@
 #pragma once
 #include <Silk.h>
 #include <System/TaskManager.h>
+#include <ObjLoader.h>
 #include <Window.h>
 
 namespace TestClient
@@ -12,6 +13,14 @@ namespace TestClient
             virtual ~Test();
         
             void Init();
+        
+            Byte* Load(const char* File,i64 *OutSize = 0);
+            bool  Save(const char* File,Byte* Data,i64 Size);
+        
+            RenderObject* AddLight(LightType Type,const Vec3& Pos);
+            i32 AddMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count = 1);
+            Texture* LoadTexture(const char *Path);
+            Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse = 0,const char* Normal = 0,const char* Parallax = 0);
         
             void SetFPSPrintFrequency(Scalar Hz) { m_FramePrintInterval = 1.0f / Hz; }
             bool IsRunning();
@@ -31,6 +40,7 @@ namespace TestClient
         protected:
             virtual void Initialize() = 0;
             TaskManager* m_TaskManager;
+            UIManager  * m_UIManager;
             Scalar m_ElapsedTime;
             Scalar m_LastElapsedTime;
             Scalar m_DeltaTime;
@@ -38,5 +48,11 @@ namespace TestClient
             Scalar m_FramePrintInterval;
             bool m_DoShutdown;
             Ray m_CursorRay;
+        
+            ObjLoader* m_ObjLoader;
+            vector<RenderObject*> m_Meshes     ;
+            vector<Material    *> m_Materials  ;
+            vector<RenderObject*> m_Lights     ;
+            vector<RenderObject*> m_LightMeshes;
     };
 };

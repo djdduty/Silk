@@ -76,6 +76,7 @@ namespace Silk
             UniformBuffer* m_UniformBuffer;
             i32 m_iProjection     ; //Mat4
             i32 m_iView           ; //Mat4
+            i32 m_iViewport       ; //Vec4
             i32 m_iCameraPosition ; //Vec3
             i32 m_iCameraDirection; //Vec3
             i32 m_iResolution     ; //Vec2

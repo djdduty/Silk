@@ -23,6 +23,18 @@ namespace Silk
     class Shader;
     class Rasterizer;
 
+    enum PRIMITIVE_TYPE
+    {
+        PT_POINTS,
+        PT_SPRITES,
+        PT_LINES,
+        PT_LINE_STRIP,
+        PT_TRIANGLES,
+        PT_TRIANGLE_STRIP,
+        PT_TRIANGLE_FAN,
+        PT_COUNT,
+    };
+    
     enum RENDER_OBJECT_TYPE
     {
         ROT_NONE,

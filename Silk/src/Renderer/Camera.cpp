@@ -25,7 +25,7 @@ namespace Silk
     void Camera::SetOrthographic(const Vec2& Dimensions,Scalar Near,Scalar Far)
     {
         SetZClipPlanes(Near,Far);
-        m_OrthoDims = Vec4(0,0,Dimensions.x,Dimensions.y);
+        m_OrthoDims = Vec4(-Dimensions.x * 0.5f,-Dimensions.y * 0.5f,Dimensions.x,Dimensions.y);
         m_IsPerspective = false;
         m_UpdateProjection = true;
         m_OrDmChanged = true;

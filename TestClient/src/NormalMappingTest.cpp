@@ -229,7 +229,7 @@ namespace TestClient
                 m_LightDisplays[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
             }
             
-            m_Renderer->Render(GL_TRIANGLES);
+            m_Renderer->Render(PT_TRIANGLES);
         }
     }
 

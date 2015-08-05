@@ -15,6 +15,9 @@ namespace Silk
             virtual void InitializeTexture() = 0;
             virtual void UpdateTexture() = 0;
         
+            virtual void EnableRTT() = 0;
+            virtual void DisableRTT() = 0;
+        
             void CreateTexture(i32 Width,i32 Height);
             void SetPixel(const Vec2& Coord,const Vec4& Color);
             Vec4 GetPixel(const Vec2& Coord) const;

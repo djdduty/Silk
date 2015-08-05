@@ -5,6 +5,7 @@
 #include <Renderer/Material.h>
 #include <Renderer/Light.h>
 #include <Renderer/ShaderSystem.h>
+#include <Renderer/RenderObject.h>
 
 #include <vector>
 using namespace std;
@@ -20,7 +21,7 @@ namespace Silk
             i32 Destroy(RenderObject* Caller);
         
             virtual void SetMesh(Mesh* m) = 0;
-            virtual void Render(RenderObject* Obj,i32 PrimitiveType,i32 Start,i32 Count) = 0;
+            virtual void Render(RenderObject* Obj,PRIMITIVE_TYPE PrimitiveType,i32 Start,i32 Count) = 0;
         
             virtual bool IsInstanced() = 0;
             virtual i32 AddInstance () = 0;
@@ -223,6 +224,7 @@ namespace Silk
         
             void SetClearColor(const Vec4& c) { m_ClearColor = c; }
         
+            virtual void EnableFramebuffer() = 0;
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
 

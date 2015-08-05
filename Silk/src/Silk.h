@@ -1,9 +1,7 @@
-#ifndef SILK_H
-#define SILK_H
-
+#pragma once
 #include <System/SilkTypes.h>
+
 #include <Raster/Raster.h>
 #include <Renderer/Renderer.h>
-#include <Renderer/Texture.h>
-
-#endif
+#include <Math/Math.h>
+#include <UI/UI.h>

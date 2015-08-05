@@ -3,7 +3,7 @@
 #include <Raster/OpenGL/OpenGLTexture.h>
 #include <Raster/OpenGL/OpenGLRasterizer.h>
 
-#include <Renderer/Mesh.h>
+#include <Renderer/Renderer.h>
 #include <Renderer/SyncInstanceTransformsTask.h>
 
 namespace Silk
@@ -349,9 +349,20 @@ namespace Silk
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER,0);
     }
-    void OpenGLObject::Render(RenderObject* Obj,i32 PrimitiveType,i32 Start,i32 Count)
+    void OpenGLObject::Render(RenderObject* Obj,PRIMITIVE_TYPE PrimitiveType,i32 Start,i32 Count)
     {
         if(m_VAO == 0 || m_Attributes.size() == 0) return;
+        
+        static GLenum pTypeConvert[PT_COUNT] =
+        {
+            GL_POINTS,
+            GL_POINTS,
+            GL_LINES,
+            GL_LINE_STRIP,
+            GL_TRIANGLES,
+            GL_TRIANGLE_STRIP,
+            GL_TRIANGLE_FAN,
+        };
 
         glBindVertexArray(m_VAO);
         
@@ -360,27 +371,27 @@ namespace Silk
             if(m_IBIndex != -1)
             {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Attributes[m_IBIndex].BufferID);
-                glDrawElementsInstanced(PrimitiveType,
+                glDrawElementsInstanced(pTypeConvert[PrimitiveType],
                                         Count,
                                         m_Attributes[m_IBIndex].Type,
                                         (GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize),
                                         Obj->GetMesh()->GetVisibleInstanceCount());
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
             }
-            else glDrawArraysInstanced(PrimitiveType,Start,Count,Obj->GetMesh()->GetVisibleInstanceCount());
+            else glDrawArraysInstanced(pTypeConvert[PrimitiveType],Start,Count,Obj->GetMesh()->GetVisibleInstanceCount());
         }
         else
         {
             if(m_IBIndex != -1)
             {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Attributes[m_IBIndex].BufferID);
-                glDrawElements(PrimitiveType,
+                glDrawElements(pTypeConvert[PrimitiveType],
                                Count,
                                m_Attributes[m_IBIndex].Type,
                                (GLvoid*)(Start * m_Attributes[m_IBIndex].TypeSize));
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
             }
-            else glDrawArrays(PrimitiveType,Start,Count);
+            else glDrawArrays(pTypeConvert[PrimitiveType],Start,Count);
         }
         
         glBindVertexArray(0);
@@ -554,6 +565,9 @@ namespace Silk
     bool OpenGLRasterizer::SupportsInstanceTextureTransforms()
     {
         return m_SupportsInstanceTTrans;
+    }
+    void OpenGLRasterizer::EnableFramebuffer()
+    {
     }
 
     UniformBuffer* OpenGLRasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)

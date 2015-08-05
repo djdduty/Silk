@@ -2,8 +2,7 @@
 #include <Raster/OpenGL/OpenGLTexture.h>
 #include <Raster/OpenGL/OpenGLRasterizer.h>
 #include <Raster/OpenGL/OpenGLUniform.h>
-#include <Renderer/Mesh.h>
-#include <Renderer/ShaderSystem.h>
+#include <Renderer/Renderer.h>
 
 namespace Silk
 {

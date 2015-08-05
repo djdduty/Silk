@@ -3,28 +3,32 @@
 #include <Renderer/Camera.h>
 #include <Renderer/Mesh.h>
 #include <Renderer/Material.h>
-#include <Renderer/UniformBufferTypes.h>
 #include <Renderer/Scene.h>
-
+#include <Renderer/Texture.h>
+#include <Renderer/ShaderSystem.h>
+#include <Renderer/UniformBufferTypes.h>
 #include <Renderer/CullingAlgorithms/NullCullingAlgorithm.h>
 #include <Renderer/CullingAlgorithms/BruteForceCullingAlgorithm.h>
 
 #include <System/TaskManager.h>
-
-#include <Utilities/SampleBuffer.h>
-#include <Utilities/Timer.h>
-#include <Utilities/ConfigurationManager.h>
+#include <Utilities/Utilities.h>
 
 namespace Silk
 {
+    
     class UniformBuffer;
     class Renderer
     {
         public:
 			struct RenderPreferences
             {
+                /* Per object */
                 i32 MaxLights;
-				i32 AverageSampleDuration;
+                
+                /* Seconds */
+				f32 AverageSampleDuration;
+                
+                /* Self explanatory */
                 i32 MinObjectCountForMultithreadedCulling;
                 i32 MinObjectCountForMultithreadedTransformSync;
             };
@@ -35,6 +39,12 @@ namespace Silk
                 
                 i32 DrawCalls;
                 SampleBuffer AverageDrawCalls;
+                
+                i32 VertexCount;
+                SampleBuffer AverageVertexCount;
+                
+                i32 TriangleCount;
+                SampleBuffer AverageTriangleCount;
                 
 				i32 VisibleObjects;
                 SampleBuffer AverageVisibleObjects;
@@ -62,7 +72,8 @@ namespace Silk
             void Destroy(RenderObject* Obj);
         
             void UpdateUniforms();
-            void Render(i32 PrimType);
+            void Render(PRIMITIVE_TYPE PrimType);
+            void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
         
             void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
             Scene* GetScene() const { return m_Scene; }
@@ -70,6 +81,7 @@ namespace Silk
 			/*
 			 * Render preferences
 			 */
+        
 
             //Max lights per object
 			void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
@@ -86,6 +98,10 @@ namespace Silk
             //Object count required before tasking is enabled for instance transform syncing
             void SetMinObjectCountForMultithreadedTransformSync(i32 Count) { m_Prefs.MinObjectCountForMultithreadedTransformSync = Count; }
             i32 GetMinObjectCountForMultithreadedTransformSync() const { return m_Prefs.MinObjectCountForMultithreadedTransformSync; }
+
+            /*
+             * Renderer information
+             */
 
 			const RenderStats& GetRenderStatistics() const { return m_Stats; }
             Configuration* GetConfiguration() const { return m_Configuration; }

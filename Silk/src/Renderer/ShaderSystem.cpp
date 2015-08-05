@@ -1,4 +1,4 @@
-#include <Renderer/ShaderSystem.h>
+#include <Renderer/Renderer.h>
 #include <Utilities/Utilities.h>
 #include <Raster/Raster.h>
 
@@ -74,13 +74,12 @@ namespace Silk
         string GeometryShader = GenerateGeometryShader();
         string FragmentShader = GenerateFragmentShader();
         
-        printf("Shader generated:\nVertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
-        
         Shader* S = m_Renderer->GetRasterizer()->CreateShader();
         if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
         {
             m_Renderer->GetRasterizer()->Destroy(S);
             S = 0;
+            printf("Vertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
         }
         else
         {

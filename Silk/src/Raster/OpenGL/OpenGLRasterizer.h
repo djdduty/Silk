@@ -50,7 +50,7 @@ namespace Silk
             void* MapBuffer(GLuint AttributeIndex,BUFFER_MAP_ACCESS Access);
             void UnmapBuffer(GLuint AttributeIndex);
 
-            virtual void Render(RenderObject* Obj,i32 PrimitiveType,i32 Start,i32 Count);
+            virtual void Render(RenderObject* Obj,PRIMITIVE_TYPE PrimitiveType,i32 Start,i32 Count);
         
         protected:
             i32 GetAttributeBufferIndex(i32 AttribIndex) const;
@@ -114,6 +114,7 @@ namespace Silk
             void SetClearBuffers(GLuint Bitfield) { m_ClearBuffers = Bitfield; }
         
             /* Rasterizer functionality */
+            virtual void EnableFramebuffer();
             virtual void ClearActiveFramebuffer()               { glClearColor(m_ClearColor.x,m_ClearColor.y,m_ClearColor.z,m_ClearColor.w);
                                                                   glClear(m_ClearBuffers); }
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h)   { glViewport(x,y,w,h);     }

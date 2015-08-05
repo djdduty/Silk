@@ -1,5 +1,6 @@
 #include <Test.h>
 #include <Window.h>
+#include <LodePNG.h>
 
 namespace TestClient
 {
@@ -8,9 +9,37 @@ namespace TestClient
     }
     Test::~Test()
     {
+        for(i32 i = 0;i < m_Lights.size();i++)
+        {
+            delete m_Lights[i]->GetLight();
+            m_Renderer->Destroy(m_Lights[i]);
+        }
+        m_Lights.clear();
+        m_LightMeshes.clear();
+        
+        for(i32 i = 0;i < m_Meshes.size();i++)
+        {
+            m_Renderer->Destroy(m_Meshes[i]);
+        }
+        m_Meshes.clear();
+        
+        for(i32 i = 0;i < m_Materials.size();i++)
+        {
+            if(m_Materials[i]->GetMap(Material::MT_DIFFUSE )) m_Materials[i]->GetMap(Material::MT_DIFFUSE )->Destroy();
+            if(m_Materials[i]->GetMap(Material::MT_NORMAL  )) m_Materials[i]->GetMap(Material::MT_NORMAL  )->Destroy();
+            if(m_Materials[i]->GetMap(Material::MT_PARALLAX)) m_Materials[i]->GetMap(Material::MT_PARALLAX)->Destroy();
+            if(m_Materials[i]->GetShader()) m_Renderer->GetRasterizer()->Destroy(m_Materials[i]->GetShader());
+            m_Renderer->Destroy(m_Materials[i]);
+        }
+        m_Materials.clear();
+        
+        delete m_ObjLoader;
+        m_ObjLoader = 0;
+        
         m_Renderer->GetScene()->SetActiveCamera(0);
         if(m_Camera         ) delete m_Camera         ;
         if(m_ShaderGenerator) delete m_ShaderGenerator;
+        if(m_UIManager      ) delete m_UIManager      ;
         if(m_Renderer       ) delete m_Renderer       ;
         if(m_Window         ) delete m_Window         ;
         if(m_TaskManager    ) delete m_TaskManager    ;
@@ -53,6 +82,10 @@ namespace TestClient
             m_Rasterizer->ClearActiveFramebuffer();
             
             m_DoShutdown = false;
+            
+            m_ObjLoader = new ObjLoader();
+            
+            m_UIManager = new UIManager(m_Renderer);
         }
         else
         {
@@ -65,6 +98,183 @@ namespace TestClient
             m_Window          = 0;
         }
         Initialize();
+    }
+    Byte* Test::Load(const char* File,i64 *OutSize)
+    {
+        FILE* fp = fopen(File,"rb");
+        if(!fp) { ERROR("Unable to open file <%s>.\n",File); return 0; }
+        
+        fseek(fp,0,SEEK_END);
+        i64 Sz = ftell(fp);
+        rewind(fp);
+        
+        if(OutSize) (*OutSize) = Sz + 1;
+        
+        Byte* Data = new Byte[Sz + 1];
+        if(fread(Data,Sz,1,fp) != 1)
+        {
+            ERROR("Unable to load %lld bytes from file <%s>.\n",Sz,File);
+            fclose(fp);
+            delete [] Data;
+            return 0;
+        }
+        Data[Sz] = 0;
+        
+        fclose(fp);
+        
+        return Data;
+    }
+    bool  Test::Save(const char* File,Byte* Data,i64 Size)
+    {
+        FILE* fp = fopen(File,"wb");
+        if(!fp) { ERROR("Unable to open file <%s>.\n",File); return false; }
+        
+        if(fwrite(Data,Size,1,fp) != 1)
+        {
+            ERROR("Unable to write %lld bytes to file <%s>.\n",Size,File);
+            fclose(fp);
+            return false;
+        }
+        
+        fclose(fp);
+        
+        return true;
+    }
+    RenderObject* Test::AddLight(LightType Type,const Vec3& Pos)
+    {
+        RenderObject* LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
+        Light* L = new Light(Type);
+        
+        LObj->SetLight(L);
+        L->m_Attenuation.Constant    = 0.00f;
+        L->m_Attenuation.Linear      = 2.10f;
+        L->m_Attenuation.Exponential = 5.90f;
+        LObj->SetTransform(Translation(Pos));
+        
+        m_Renderer->GetScene()->AddRenderObject(LObj);
+        m_Lights.push_back(LObj);
+        return LObj;
+    }
+    i32 Test::AddMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count)
+    {
+        m_ObjLoader->Load(const_cast<CString>(Path));
+        m_ObjLoader->ComputeTangents();
+        
+        Mesh* M = new Mesh();
+        M->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
+        M->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
+        M->SetTangentBuffer (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTangents ()));
+        M->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
+        
+        RenderObject* Obj = 0;
+        i32 First = m_Meshes.size();
+        for(i32 i = 0;i < Count;i++)
+        {
+            Obj = m_Renderer->CreateRenderObject(ROT_MESH,false);
+            Obj->SetMesh(M,Mat);
+            m_Renderer->GetScene()->AddRenderObject(Obj);
+            
+            Obj->SetTransform(Translation(Pos));
+            Obj->SetTextureTransform(Mat4::Identity);
+            m_Meshes.push_back(Obj);
+        }
+        if(Count > 1) return First;
+        return m_Meshes.size() - 1;
+    }
+    Texture* Test::LoadTexture(const char *Path)
+    {
+        if(!Path) return 0;
+        vector<u8> Pixels;
+        u32 w,h;
+        static f32 Inv255 = 1.0f / 255.0f;
+        
+        lodepng::decode(Pixels,w,h,Path);
+        if(Pixels.size() == 0) return 0;
+        
+        Texture* Tex = m_Rasterizer->CreateTexture();
+        Tex->CreateTexture(w,h);
+        for(i32 x = 0;x < w;x++)
+        {
+            for(i32 y = 0;y < h;y++)
+            {
+                i32 Idx = (y * (w * 4)) + (x * 4);
+                
+                Vec4 C;
+                C.x = f32(Pixels[Idx + 0]) * Inv255;
+                C.y = f32(Pixels[Idx + 1]) * Inv255; 
+                C.z = f32(Pixels[Idx + 2]) * Inv255;
+                C.w = f32(Pixels[Idx + 3]) * Inv255;
+                
+				swap(C.x,C.z);
+                
+                Tex->SetPixel(Vec2(x,(h-1) - y),C);
+            }
+        }
+        Tex->UpdateTexture();
+        return Tex;
+    }
+    Material* Test::AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse,const char* Normal,const char* Parallax)
+    {
+        Material* Mat = m_Renderer->CreateMaterial();
+        Texture* D = LoadTexture(Diffuse );
+        Texture* N = LoadTexture(Normal  );
+        Texture* P = LoadTexture(Parallax);
+        
+        if(D) { Mat->SetMap(Material::MT_DIFFUSE ,D); D->Destroy(); }
+        if(N) { Mat->SetMap(Material::MT_NORMAL  ,N); N->Destroy(); }
+        if(P) { Mat->SetMap(Material::MT_PARALLAX,P); P->Destroy(); }
+        
+        if(LightingMode != ShaderGenerator::LM_FLAT)
+        {
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL  ,true);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
+            m_ShaderGenerator->SetAllowInstancing(false);
+            
+            if(Normal || Parallax)
+            {
+                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TANGENT ,true);
+                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_TEXCOORD,true);
+                m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_NORMAL  ,true);
+                
+                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,true);
+                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
+                m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
+            }
+        }
+        else
+        {
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL  ,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,false);
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TANGENT ,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,false);
+            m_ShaderGenerator->SetAllowInstancing(true);
+        }
+        
+        if(Diffuse)
+        {
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,true);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
+        }
+        else
+        {
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,false);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,false);
+        }
+        
+        m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE ,D != 0);
+        m_ShaderGenerator->SetTextureInput(Material::MT_NORMAL  ,N != 0);
+        m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
+        m_ShaderGenerator->SetLightingMode(LightingMode);
+
+        Mat->SetShader(m_ShaderGenerator->Generate());
+        
+        Mat->SetSpecular(Vec4(0,0,0,0));
+        Mat->SetShininess(0.0f);
+        
+        m_Materials.push_back(Mat);
+        return Mat;
     }
     bool Test::IsRunning()
     {
@@ -105,14 +315,41 @@ namespace TestClient
             if(m_FramePrintTime > m_FramePrintInterval)
             {
                 const Renderer::RenderStats& Stats = m_Renderer->GetRenderStatistics();
-                printf("Average FPS: %0.2f\n"           ,Stats.AverageFramerate.GetAverage());
-                printf("Draw calls: %d (Avg: %0.2f)\n",Stats.DrawCalls,Stats.AverageDrawCalls.GetAverage());
-                printf("Object Count: %d (Avg: %0.2f)\n",Stats.VisibleObjects,Stats.AverageVisibleObjects.GetAverage());
+                f32 vc    = Stats.VertexCount   ;
+                f32 tc    = Stats.TriangleCount ;
+                f32 dc    = Stats.DrawCalls     ;
+                f32 fr    = Stats.FrameRate     ;
+                f32 vo    = Stats.VisibleObjects;
+                f32 ceff  = (Stats.MultithreadedCullingEfficiency - 1.0f) * 100.0f;
                 
-                if(Stats.MultithreadedCullingEfficiency != 0)
-                {
-                    printf("Cull efficiency: %0.3f (Avg: %0.3f)\n",Stats.MultithreadedCullingEfficiency,Stats.AverageMultithreadedCullingEfficiency.GetAverage());
-                }
+                f32 avc   = Stats.AverageVertexCount   .GetAverage();
+                f32 atc   = Stats.AverageTriangleCount .GetAverage();
+                f32 adc   = Stats.AverageDrawCalls     .GetAverage();
+                f32 afr   = Stats.AverageFramerate     .GetAverage();
+                f32 avo   = Stats.AverageVisibleObjects.GetAverage();
+                f32 aceff = (Stats.AverageMultithreadedCullingEfficiency.GetAverage() - 1.0f) * 100.0f;
+                if(ceff  < 0.0f) ceff = 0.0f;
+                if(aceff < 0.0f) aceff = 0.0f;
+                
+                /* * * * * * * * * * * * * *\
+                 *     /.-'       `-.\     *
+                 *    //             \\    *
+                 *   /j_______________j\   *
+                 *  /o.-==-. .-. .-==-.o\  *
+                 *  ||      )) ((      ||  *
+                 *   \\____//   \\____//   *
+                 *    `-==-'     `-==-'    *
+                \* * * * * * * * * * * * * */
+                printf("+--------------Render Statistics--------------+\n");
+                printf("| Frame ID    : %11lld f  ""               |\n",Stats.FrameID);
+                printf("| Run time    : %11.3f s  ""               |\n",m_ElapsedTime);
+                printf("| Frame Rate  : %11.3f Hz "  "(Avg: %7.2f) |\n",fr   * 1.0000f,afr   * 1.0000f);
+                printf("| Draw calls  : %11.3f k  "  "(Avg: %7.2f) |\n",dc   * 0.0001f,adc   * 0.0001f);
+                printf("| Vertices    : %11.3f k  "  "(Avg: %7.2f) |\n",vc   * 0.0001f,avc   * 0.0001f);
+                printf("| Triangles   : %11.3f k  "  "(Avg: %7.2f) |\n",tc   * 0.0001f,atc   * 0.0001f);
+                printf("| Object Count: %11.3f k  "  "(Avg: %7.2f) |\n",vo   * 0.0001f,avo   * 0.0001f);
+                printf("| Cull Effic. : %11.3f \%%  ""(Avg: %7.2f) |\n",ceff * 1.0000f,aceff * 1.0000f);
+                printf("+---------------------------------------------+\n");
                 
                 m_FramePrintTime  = 0.0f;
             }

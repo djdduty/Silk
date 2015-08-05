@@ -257,7 +257,7 @@ namespace Silk
                 m_MaxThreadQuotaExcessPercent = PercentExcess;
                 Scalar ThreadFreq = 1.0f / Duration;
                 Scalar TargetFreq = 1.0f / m_ThreadTimeQuota;
-                ERROR("Warning: Heavy load. Thread[%d] frequency (%0.2f Hz) below target frequency (%0.2f Hz) by %0.2f Hz.\n",ThreadID,ThreadFreq,TargetFreq,TargetFreq - ThreadFreq);
+                WARNING("Heavy load. Thread[%d] frequency (%0.2f Hz) below target frequency (%0.2f Hz) by %0.2f Hz.\n",ThreadID,ThreadFreq,TargetFreq,TargetFreq - ThreadFreq);
             }
         }
         

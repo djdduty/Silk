@@ -1,3 +1,4 @@
+#include <Renderer/Renderer.h>
 #include <Renderer/UniformBufferTypes.h>
 #include <Raster/Raster.h>
 
@@ -151,6 +152,7 @@ namespace Silk
         m_UniformBuffer = r->GetRasterizer()->CreateUniformBuffer(ShaderGenerator::IUT_RENDERER_UNIFORMS);
         m_iProjection      = m_UniformBuffer->DefineUniform("u_Projection"     );
         m_iView            = m_UniformBuffer->DefineUniform("u_View"           );
+        m_iViewport        = m_UniformBuffer->DefineUniform("u_Viewport"       );
         m_iCameraPosition  = m_UniformBuffer->DefineUniform("u_CameraPosition" );
         m_iCameraDirection = m_UniformBuffer->DefineUniform("u_CameraDirection");
         m_iResolution      = m_UniformBuffer->DefineUniform("u_Resolution"     );
@@ -160,16 +162,18 @@ namespace Silk
         m_iFarPlane        = m_UniformBuffer->DefineUniform("u_FarPlane"       );
         m_iFocalPoint      = m_UniformBuffer->DefineUniform("u_FocalPoint"     );
         
-        m_UniformBuffer->SetUniform(m_iCameraPosition ,Vec3()               );
-        m_UniformBuffer->SetUniform(m_iCameraDirection,Vec3()               );
+        Vec2 Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         m_UniformBuffer->SetUniform(m_iView           ,Mat4::Identity       );
         m_UniformBuffer->SetUniform(m_iProjection     ,Mat4::Identity       );
+        m_UniformBuffer->SetUniform(m_iViewport       ,Vec4()               );
+        m_UniformBuffer->SetUniform(m_iCameraPosition ,Vec3()               );
+        m_UniformBuffer->SetUniform(m_iCameraDirection,Vec3()               );
+        m_UniformBuffer->SetUniform(m_iResolution     ,Resolution           );
         m_UniformBuffer->SetUniform(m_iExposire       ,0.0f                 );
         m_UniformBuffer->SetUniform(m_iFieldOfView    ,Vec2(0,0)            );
         m_UniformBuffer->SetUniform(m_iNearPlane      ,0.0f                 );
         m_UniformBuffer->SetUniform(m_iFarPlane       ,0.0f                 );
         m_UniformBuffer->SetUniform(m_iFocalPoint     ,0.0f                 );
-        m_UniformBuffer->SetUniform(m_iResolution,m_Renderer->GetRasterizer()->GetContext()->GetResolution());
     }
     RenderUniformSet::~RenderUniformSet()
     {
@@ -189,6 +193,7 @@ namespace Silk
         if(DidTrans)                    m_UniformBuffer->SetUniform(m_iCameraDirection,cFwd                 );
         if(DidTrans)                    m_UniformBuffer->SetUniform(m_iView           ,cTrans               );
         if(Cam->DidProjectionUpdate ()) m_UniformBuffer->SetUniform(m_iProjection     ,Cam->GetProjection ());
+        if(Cam->DidViewportUpdate   ()) m_UniformBuffer->SetUniform(m_iViewport       ,Cam->GetViewport   ());
         if(Cam->DidExposureUpdate   ()) m_UniformBuffer->SetUniform(m_iExposire       ,Cam->GetExposure   ());
         if(Cam->DidFieldOfViewUpdate()) m_UniformBuffer->SetUniform(m_iFieldOfView    ,Cam->GetFieldOfView());
         if(Cam->DidNearPlaneUpdate  ()) m_UniformBuffer->SetUniform(m_iNearPlane      ,Cam->GetNearPlane  ());

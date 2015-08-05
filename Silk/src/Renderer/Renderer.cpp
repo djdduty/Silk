@@ -31,6 +31,8 @@ namespace Silk
         m_Stats.FrameID = 0;
         m_Stats.VisibleObjects = 0;
         m_Stats.FrameRate = 0.0f;
+        m_Stats.DrawCalls = 0;
+        m_Stats.VertexCount = m_Stats.TriangleCount = 0;
         
         m_EngineUniforms   = m_Raster->CreateUniformBuffer(ShaderGenerator::IUT_ENGINE_UNIFORMS);
         m_RendererUniforms = new RenderUniformSet(this);
@@ -39,7 +41,7 @@ namespace Silk
         
         m_Configuration = new Configuration();
         
-        m_Configuration->SetRootName("ForwardRenderer");
+        m_Configuration->SetRootName("Forward Renderer");
         {
             m_Configuration->AddNode("Max Lights")->Initialize(ConfigValue::VT_I32,&m_Prefs.MaxLights);
             m_Configuration->AddNode("Statistics sample duration")->Initialize(ConfigValue::VT_F32,&m_Prefs.AverageSampleDuration);
@@ -68,7 +70,7 @@ namespace Silk
     {
         m_RendererUniforms->UpdateUniforms();
     }
-    void Renderer::Render(i32 PrimType)
+    void Renderer::Render(PRIMITIVE_TYPE PrimType)
     {
         Scalar dt = m_FrameTimer;
         if(dt <= 0) dt = 1.0f / 60.0f;
@@ -78,9 +80,48 @@ namespace Silk
         if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 1 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
+        /*
+         * Reset frame statistics
+         */
+        m_Stats.DrawCalls = m_Stats.VisibleObjects = m_Stats.VertexCount = m_Stats.TriangleCount = 0;
+        
+        /* Culling */
         CullingResult* CullResult = m_Scene->PerformCulling();
         
+        /* artificial light selection (no light culling yet) */
         SilkObjectVector Lights = m_Scene->GetObjectList()->GetLightList();
+        for(i32 i = 0;i < Lights.size();i++) CullResult->m_VisibleObjects->AddObject(Lights[i]);
+        
+        /* Render */
+        RenderObjects(CullResult->m_VisibleObjects,PrimType);
+        
+        /* Compute new averages */
+        m_Stats.FrameID++;
+        
+        i32 sCount = m_Prefs.AverageSampleDuration / dt;
+        m_Stats.FrameRate = 1.0f / dt;
+        m_Stats.MultithreadedCullingEfficiency = CullResult->m_Efficiency;
+        
+        m_Stats.AverageDrawCalls                     .SetSampleCount(sCount);
+        m_Stats.AverageVertexCount                   .SetSampleCount(sCount);
+        m_Stats.AverageTriangleCount                 .SetSampleCount(sCount);
+        m_Stats.AverageVisibleObjects                .SetSampleCount(sCount);
+        m_Stats.AverageFramerate                     .SetSampleCount(sCount);
+        m_Stats.AverageMultithreadedCullingEfficiency.SetSampleCount(sCount);
+        
+        m_Stats.AverageDrawCalls                     .AddSample(m_Stats.DrawCalls                     );
+        m_Stats.AverageVertexCount                   .AddSample(m_Stats.VertexCount                   );
+        m_Stats.AverageTriangleCount                 .AddSample(m_Stats.TriangleCount                 );
+        m_Stats.AverageVisibleObjects                .AddSample(m_Stats.VisibleObjects                );
+        m_Stats.AverageFramerate                     .AddSample(m_Stats.FrameRate                     );
+        m_Stats.AverageMultithreadedCullingEfficiency.AddSample(m_Stats.MultithreadedCullingEfficiency);
+        
+        
+        delete CullResult;
+    }
+    void Renderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType)
+    {
+        SilkObjectVector Lights = List->GetLightList();
         std::vector<Light*> LightsVector;
         for(i32 i = 0; i < Lights.size(); i++)
         {
@@ -97,25 +138,28 @@ namespace Silk
                                                       T.z.z,
                                                       1.0f);
         }
-
+        
         /*
          * To do:
          * Determine which lights affect which objects using a scene octree
          * then call Object->GetUniformSet()->SetLights(ObjectLightVector);
          */
         
-        i32 ShaderCount = CullResult->m_VisibleObjects->GetShaderCount();
+        i32 ShaderCount = List->GetShaderCount();
         
         SilkObjectVector MeshesRendered;
         i32 ActualObjectCount = 0;
+        i32 VertexCount       = 0;
+        i32 TriangleCount     = 0;
+        
         for(i32 i = 0;i < ShaderCount;i++)
         {
-            Shader* Shader = CullResult->m_VisibleObjects->GetShader(i);
+            Shader* Shader = List->GetShader(i);
             if(!Shader) continue;
             
             Shader->Enable();
             
-            SilkObjectVector Meshes = CullResult->m_VisibleObjects->GetShaderMeshList(i);
+            SilkObjectVector Meshes = List->GetShaderMeshList(i);
             for(i32 m = 0;m < Meshes.size();m++)
             {
                 RenderObject* Obj = Meshes[m];
@@ -153,9 +197,25 @@ namespace Silk
                     else Count = Obj->m_Mesh->GetVertexCount();
                         
                     Obj->m_Object->Render(Obj,PrimType,0,Count);
+                    i32 vc = Obj->m_Mesh->GetVertexCount();
+                    i32 tc = 0;
+                    if(PrimType == PT_TRIANGLES     ) tc = vc / 3;
+                    if(PrimType == PT_TRIANGLE_STRIP
+                    || PrimType == PT_TRIANGLE_FAN  ) tc = vc - 2;
                     
-                    if(Obj->IsInstanced()) ActualObjectCount += Obj->GetMesh()->m_VisibleInstanceCount;
-                    else ActualObjectCount++;
+                    if(Obj->IsInstanced())
+                    {
+                        i32 InstanceCount = Obj->GetMesh()->m_VisibleInstanceCount;
+                        ActualObjectCount +=      InstanceCount;
+                        VertexCount       += vc * InstanceCount;
+                        TriangleCount     += tc * InstanceCount;
+                    }
+                    else
+                    {
+                        ActualObjectCount++;
+                        VertexCount   += vc;
+                        TriangleCount += tc;
+                    }
                     MeshesRendered.push_back(Obj);
                 }
             }
@@ -168,28 +228,10 @@ namespace Silk
             MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
         }
         
-        
-        m_Stats.FrameID++;
-        
-        i32 sCount = m_Prefs.AverageSampleDuration / dt;
-        
-        m_Stats.DrawCalls = MeshesRendered.size();
-        m_Stats.AverageDrawCalls.SetSampleCount(sCount);
-        m_Stats.AverageDrawCalls.AddSample(m_Stats.DrawCalls);
-        
-        m_Stats.VisibleObjects = ActualObjectCount;
-        m_Stats.AverageVisibleObjects.SetSampleCount(sCount);
-        m_Stats.AverageVisibleObjects.AddSample(m_Stats.VisibleObjects);
-        
-        m_Stats.FrameRate = 1.0f / dt;
-        m_Stats.AverageFramerate.SetSampleCount(sCount);
-        m_Stats.AverageFramerate.AddSample(m_Stats.FrameRate);
-        
-        m_Stats.MultithreadedCullingEfficiency = CullResult->m_Efficiency;
-        m_Stats.AverageMultithreadedCullingEfficiency.SetSampleCount(sCount);
-        m_Stats.AverageMultithreadedCullingEfficiency.AddSample(m_Stats.MultithreadedCullingEfficiency);
-        
-        delete CullResult;
+        m_Stats.DrawCalls      += MeshesRendered.size();
+        m_Stats.VisibleObjects += ActualObjectCount;
+        m_Stats.VertexCount    += VertexCount;
+        m_Stats.TriangleCount  += TriangleCount;
     }
 
     RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot,bool AddToScene)

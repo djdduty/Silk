@@ -84,7 +84,7 @@ namespace Silk
     { \
         if(m_Type != Enum) \
         { \
-            ERROR("Warning: Attempting to get config value with incorrect type (%s != %s). Expect unexpected results.\n",vtStrings[Enum],vtStrings[m_Type]); \
+            WARNING("Attempting to get config value with incorrect type (%s != %s). Expect unexpected results.\n",vtStrings[Enum],vtStrings[m_Type]); \
         } \
         return *(Type*)m_TargetValue; \
     } 

@@ -11,6 +11,10 @@
 #define SILK_VERSION_MAJOR 0
 #define SILK_VERSION_MINOR 1
 
+#define _USE_32BIT_TIME_
+#define _USE_32BIT_INDICES_
+#define _USE_64BIT_UIDS_
+
 #define MakeCString(s) new char[s]
 #define FreeCString(s) delete [] s
 
@@ -41,10 +45,8 @@ typedef const char*         Literal;
 typedef char*               CString;
 typedef f32                 Scalar;
 typedef bool                Flag;
-typedef u32                 UID;
 
-#define _USE_32BIT_TIME
-#ifdef _USE_32BIT_TIME
+#ifdef _USE_32BIT_TIME_
 typedef f32                 Time;
 #else
 typedef f64                 Time;
@@ -54,7 +56,6 @@ typedef f64                 Time;
     #define INT32_MAX    __INT32_MAX__
 #endif
 
-#define _USE_32BIT_INDICES_
 #ifdef _USE_32BIT_INDICES_
     typedef i32         Index;
     #define INDEX_NULL  INT32_MAX
@@ -63,6 +64,11 @@ typedef f64                 Time;
     #define INDEX_NULL  INT16_MAX
 #endif
 
+#ifdef _USE_64BIT_UIDS_
+    typedef u64          UID;
+#else
+    typedef u32          UID;
+#endif
 
 #define LOG(...) printf(__VA_ARGS__)
 #define ERROR(...) fprintf(stderr,__VA_ARGS__)
