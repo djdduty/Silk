@@ -61,12 +61,13 @@ namespace Silk
         
             void SetUIManager(UIManager* Mgr) { m_UIManager = Mgr; }
             
-            Rasterizer   * GetRasterizer           () { return m_Raster     ; }
-            TaskManager  * GetTaskManager          () { return m_TaskManager; }
-            UIManager    * GetUIManager            () { return m_UIManager  ; }
-            Texture      * GetDefaultTexture       ();
-            UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }
-            UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms->GetUniforms(); }
+            Rasterizer     * GetRasterizer           () { return m_Raster         ; }
+            TaskManager    * GetTaskManager          () { return m_TaskManager    ; }
+            ShaderGenerator* GetShaderGenerator      () { return m_ShaderGenerator; }
+            UIManager      * GetUIManager            () { return m_UIManager      ; }
+            Texture        * GetDefaultTexture       ();
+            UniformBuffer  * GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }
+            UniformBuffer  * GetRendererUniformBuffer() { return m_RendererUniforms->GetUniforms(); }
         
             RenderObject* CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene = true);
             Material    * CreateMaterial();
@@ -109,6 +110,7 @@ namespace Silk
             Configuration* GetConfiguration() const { return m_Configuration; }
         
         protected:
+            friend class UIManager;
             RenderPreferences m_Prefs;
             RenderStats m_Stats;
             Timer m_FrameTimer;
@@ -121,6 +123,7 @@ namespace Silk
         
             TaskManager     * m_TaskManager     ;
             UIManager       * m_UIManager       ;
+            ShaderGenerator * m_ShaderGenerator ;
             Scene           * m_Scene           ;
             UniformBuffer   * m_EngineUniforms  ;
             RenderUniformSet* m_RendererUniforms;

@@ -46,7 +46,7 @@ namespace Silk
             void SetVertexBuffer  (i32 Count,void* Vertices ,bool IsStatic = true,i32 Stride = 0);
             void SetNormalBuffer  (i32 Count,void* Normals  ,bool IsStatic = true,i32 Stride = 0);
             void SetTangentBuffer (i32 Count,void* Tangents ,bool IsStatic = true,i32 Stride = 0);
-            void SetColorBuffer   (i32 Count,void* Normals  ,bool IsStatic = true,i32 Stride = 0);
+            void SetColorBuffer   (i32 Count,void* Colors   ,bool IsStatic = true,i32 Stride = 0);
             void SetTexCoordBuffer(i32 Count,void* TexCoords,bool IsStatic = true,i32 Stride = 0);
         
             i32 GetVertexCount() const;

@@ -1,5 +1,5 @@
 #include <UI/UI.h>
-#include <Renderer/Mesh.h>
+#include <Renderer/Renderer.h>
 
 namespace Silk
 {
@@ -22,11 +22,22 @@ namespace Silk
     }
     
     
-    UIElement::UIElement(UIManager* Mgr) : m_ID(Mgr->NewUID()), m_CID(0), m_Parent(0), m_Mesh(0), m_Manager(Mgr)
+    UIElement::UIElement(UIManager* Mgr) : m_RefCount(1), m_ID(0), m_CID(0), m_Parent(0), m_Render(0), m_Manager(Mgr)
     {
     }
     UIElement::~UIElement()
     {
+    }
+    
+    i32 UIElement::Destroy()
+    {
+        m_RefCount--;
+        if(m_RefCount == 0)
+        {
+            delete this;
+            return 0;
+        }
+        return m_RefCount;
     }
 
     void UIElement::Orphan()
@@ -51,14 +62,14 @@ namespace Silk
         E->m_Parent = this;
         E->m_CID = m_Children.size() - 1;
     }
-    void UIElement::SetMesh(Mesh *m)
+    void UIElement::SetObject(RenderObject *o)
     {
-        if(m_Mesh) m_Mesh->Destroy();
-        m_Mesh = m;
+        if(m_Render) m_Manager->m_Renderer->Destroy(m_Render);
+        m_Render = o;
     }
     void UIElement::Render()
     {
-        if(!m_Mesh) return;
+        if(!m_Render) return;
         
         
         

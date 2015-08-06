@@ -34,20 +34,21 @@ namespace Silk
     
     class Texture;
     class UIManager;
-    class Mesh;
+    class RenderObject;
     
     class UIElement
     {
         public:
-            UIElement(UIManager* Mgr);
-            ~UIElement();
+        
+            i32 AddRef() { m_RefCount++; return m_RefCount; }
+            i32 Destroy();
         
             bool HasParent() const { return m_Parent != 0; }
             void Orphan();
             void AddChild(UIElement* E);
         
-            Mesh* GetMesh() const { return m_Mesh; }
-            void SetMesh(Mesh* m);
+            RenderObject* GetObject() const { return m_Render; }
+            void SetObject(RenderObject* o);
         
             void SetSize(const Vec2& Dimensions) { m_BoundingRect.Set(m_BoundingRect.GetPosition(),Dimensions); }
             void SetSize(Scalar w,Scalar h)      { m_BoundingRect.Set(m_BoundingRect.GetPosition(),Vec2(w,h) ); }
@@ -56,13 +57,17 @@ namespace Silk
         
         protected:
             friend class UIManager;
-            UID        m_ID;
-            UID        m_CID;
-            vector <UIElement*> m_Children;
-            UIElement* m_Parent;
-            UIRect     m_BoundingRect;
-            Mesh*      m_Mesh;
+            UIElement(UIManager* Mgr);
+            ~UIElement();
+            
+            i32           m_RefCount;
+            UID           m_ID;
+            UID           m_CID;
+            UIElement*    m_Parent;
+            UIRect        m_BoundingRect;
+            RenderObject* m_Render;
         
+            vector <UIElement*> m_Children;
             UIManager* m_Manager;
     };
 };

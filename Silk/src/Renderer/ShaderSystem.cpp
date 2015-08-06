@@ -75,6 +75,7 @@ namespace Silk
         string FragmentShader = GenerateFragmentShader();
         
         Shader* S = m_Renderer->GetRasterizer()->CreateShader();
+            printf("Vertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
         if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
         {
             m_Renderer->GetRasterizer()->Destroy(S);

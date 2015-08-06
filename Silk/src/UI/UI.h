@@ -1,10 +1,13 @@
 #pragma once
 #include <UI/UIElement.h>
+#include <Renderer/RenderObject.h>
 
 namespace Silk
 {
-    class Renderer;
     class Camera;
+    class Shader;
+    class Renderer;
+    class RenderUnformSet;
     
     class UIManager
     {
@@ -16,22 +19,30 @@ namespace Silk
         
             void SetViewScale(Vec2 Sc) { m_ViewScale = Sc; m_ViewNeedsUpdate = true; }
         
-            void Render();
+            void Render(PRIMITIVE_TYPE PrimType);
+        
+            UIElement* CreateElement();
+            Shader * GetDefaultShader       () const { return m_DefaultShader       ; }
+            Shader * GetDefaultTextureShader() const { return m_DefaultTextureShader; }
+            Shader * GetDefaultTextShader   () const { return m_DefaultTextShader   ; }
         
             Camera* GetCamera() const { return m_Camera; }
         
         protected:
             friend class UIElement;
-            UID NewUID() { m_NextUID++; return m_NextUID - 1; }
-            UID m_NextUID;
-        
+            
             Renderer* m_Renderer;
-            Camera* m_Camera;
         
             Vec2 m_ViewScale;
             Vec2 m_Resolution;
             bool m_ViewNeedsUpdate;
-            Texture* m_View;
+            Camera  * m_Camera;
+            Texture * m_View;
+            Shader* m_DefaultShader;
+            Shader* m_DefaultTextureShader;
+            Shader* m_DefaultTextShader;
+        
+            RenderUnformSet* m_RenderUniforms;
         
             vector<UIElement*> m_Elements;
     };

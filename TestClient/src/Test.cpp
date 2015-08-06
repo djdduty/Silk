@@ -38,7 +38,6 @@ namespace TestClient
         
         m_Renderer->GetScene()->SetActiveCamera(0);
         if(m_Camera         ) delete m_Camera         ;
-        if(m_ShaderGenerator) delete m_ShaderGenerator;
         if(m_UIManager      ) delete m_UIManager      ;
         if(m_Renderer       ) delete m_Renderer       ;
         if(m_Window         ) delete m_Window         ;
@@ -62,7 +61,7 @@ namespace TestClient
             m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
         
-            m_ShaderGenerator = new ShaderGenerator(m_Renderer);
+            m_ShaderGenerator = m_Renderer->GetShaderGenerator();
             
             Scalar Aspect = m_Rasterizer->GetContext()->GetResolution().y / m_Rasterizer->GetContext()->GetResolution().x;
             

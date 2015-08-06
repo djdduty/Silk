@@ -40,6 +40,8 @@ namespace Silk
         
         UpdateDefaultTexture();
         
+        m_ShaderGenerator = new ShaderGenerator(this);
+        
         m_Configuration = new Configuration();
         
         m_Configuration->SetRootName("Forward Renderer");
@@ -57,10 +59,13 @@ namespace Silk
 
     Renderer::~Renderer() 
     {
+        if(m_Scene) delete m_Scene;
         m_Raster->Destroy(m_DefaultTexture);
         m_Raster->Destroy(m_EngineUniforms);
         
         delete m_RendererUniforms;
+        delete m_ShaderGenerator;
+        delete m_Configuration;
     }
     Texture* Renderer::GetDefaultTexture()
     {
@@ -97,7 +102,7 @@ namespace Silk
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
         
         /* Render UI */
-        m_UIManager->Render();
+        m_UIManager->Render(PrimType);
         
         /* Compute new averages */
         m_Stats.FrameID++;
