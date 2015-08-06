@@ -174,7 +174,7 @@ namespace Silk
             ~ThreadCondition();
         
             void Signal();
-            void WaitSignal();
+            void WaitSignal(bool CustomPredicateTestValue = false,bool *CustomPredicate = 0);
         
         protected:
             bool m_Predicate;

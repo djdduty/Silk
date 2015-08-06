@@ -247,11 +247,12 @@ namespace Silk
 		m_Cond.notify_one();
 		m_Mutex.Unlock();
     }
-    void ThreadCondition::WaitSignal()
+    void ThreadCondition::WaitSignal(bool CustomPredicateTestValue,bool *CustomPredicate)
     {
 		unique_lock<mutex> lock(m_Mutex.m_Mtx);
         m_Predicate = true;
-		while(m_Predicate) m_Cond.wait(lock);
+        if(CustomPredicate) while(m_Predicate && *CustomPredicate == CustomPredicateTestValue) m_Cond.wait(lock);
+        else while(m_Predicate) { m_Cond.wait(lock); }
         m_Predicate = true;
     }
 };
