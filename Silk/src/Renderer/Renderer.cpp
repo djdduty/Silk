@@ -1,11 +1,12 @@
 #include <Renderer/Renderer.h>
 #include <Renderer/Mesh.h>
 #include <Renderer/Texture.h>
-#include <Raster/Raster.h>
 
+#include <Raster/Raster.h>
 #include <Raster/OpenGL/OpenGLShader.h>
 
 #include <Utilities/SimplexNoise.h>
+#include <UI/UI.h>
 
 #include <math.h>
 
@@ -13,7 +14,7 @@
 
 namespace Silk
 {
-    Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_Raster(Raster), m_TaskManager(TaskMgr)
+    Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_Raster(Raster), m_TaskManager(TaskMgr), m_UIManager(0)
     {
         m_DefaultTexture   = m_Raster->CreateTexture();
         m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
@@ -92,8 +93,11 @@ namespace Silk
         SilkObjectVector Lights = m_Scene->GetObjectList()->GetLightList();
         for(i32 i = 0;i < Lights.size();i++) CullResult->m_VisibleObjects->AddObject(Lights[i]);
         
-        /* Render */
+        /* Render objects */
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
+        
+        /* Render UI */
+        m_UIManager->Render();
         
         /* Compute new averages */
         m_Stats.FrameID++;

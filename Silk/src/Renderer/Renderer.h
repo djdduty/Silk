@@ -15,7 +15,7 @@
 
 namespace Silk
 {
-    
+    class UIManager;
     class UniformBuffer;
     class Renderer
     {
@@ -59,9 +59,11 @@ namespace Silk
             Renderer(Rasterizer* Raster,TaskManager* TaskMgr);
             virtual ~Renderer();
         
+            void SetUIManager(UIManager* Mgr) { m_UIManager = Mgr; }
+            
             Rasterizer   * GetRasterizer           () { return m_Raster     ; }
             TaskManager  * GetTaskManager          () { return m_TaskManager; }
-        
+            UIManager    * GetUIManager            () { return m_UIManager  ; }
             Texture      * GetDefaultTexture       ();
             UniformBuffer* GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }
             UniformBuffer* GetRendererUniformBuffer() { return m_RendererUniforms->GetUniforms(); }
@@ -117,11 +119,12 @@ namespace Silk
             Scalar m_DefaultTexturePhase;
             void UpdateDefaultTexture();
         
-            TaskManager* m_TaskManager;
-            Scene* m_Scene;
-            UniformBuffer* m_EngineUniforms;
+            TaskManager     * m_TaskManager     ;
+            UIManager       * m_UIManager       ;
+            Scene           * m_Scene           ;
+            UniformBuffer   * m_EngineUniforms  ;
             RenderUniformSet* m_RendererUniforms;
-            Rasterizer* m_Raster;
-            Configuration* m_Configuration;
+            Rasterizer      * m_Raster          ;
+            Configuration   * m_Configuration   ;
     };
 };

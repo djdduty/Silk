@@ -86,6 +86,8 @@ namespace TestClient
             m_ObjLoader = new ObjLoader();
             
             m_UIManager = new UIManager(m_Renderer);
+            m_Renderer->SetUIManager(m_UIManager);
+            m_UIManager->Initialize();
         }
         else
         {
@@ -354,25 +356,21 @@ namespace TestClient
                  *    `-==-'     `-==-'    *
                 \* * * * * * * * * * * * * */
                 
-                printf("+-----------(Render Statistics)------------+\n");
-                printf("| Frame ID    : %8lld f  " "               |\n",Stats.FrameID);
-                printf("| Run time    : %8.3f s  " "               |\n",m_ElapsedTime);
-                printf("| Frame Rate  : %8.3f Hz "     "(A: %9.3f) |\n",fr,afr);
+                printf("+-------------(Render Statistics)-------------+\n");
+                printf("| Frame ID    : %10lld f  " "                |\n",Stats.FrameID);
+                printf("| Run time    : %10.3f s  " "                |\n",m_ElapsedTime);
                 
-                if(dc >= 1000.0f) printf("| Draw calls  : %8.3f %s  "    "(A: %7.2f %s) |\n",     ConvertUnit(dc),GetUnit(dc).c_str(),ConvertUnit(adc),GetUnit(adc).c_str());
-                else              printf("| Draw calls  : %8d    (A: %7.2f %s) |\n"         ,(i32)ConvertUnit(dc)                    ,ConvertUnit(adc),GetUnit(adc).c_str());
-                
-                if(vc >= 1000.0f) printf("| Vertices    : %8.3f %s  "    "(A: %7.2f %s) |\n",     ConvertUnit(vc),GetUnit(vc).c_str(),ConvertUnit(avc),GetUnit(avc).c_str());
-                else              printf("| Vertices    : %8d    (A: %7.2f %s) |\n"         ,(i32)ConvertUnit(vc)                    ,ConvertUnit(avc),GetUnit(avc).c_str());
-                
-                if(tc >= 1000.0f) printf("| Triangles   : %8.3f %s  "    "(A: %7.2f %s) |\n",     ConvertUnit(tc),GetUnit(tc).c_str(),ConvertUnit(atc),GetUnit(atc).c_str());
-                else              printf("| Triangles   : %8d    (A: %7.2f %s) |\n"         ,(i32)ConvertUnit(tc)                    ,ConvertUnit(atc),GetUnit(atc).c_str());
-                
-                if(vo >= 1000.0f) printf("| Object Count: %8.3f %s  "    "(A: %7.2f %s) |\n",     ConvertUnit(vo),GetUnit(vo).c_str(),ConvertUnit(avo),GetUnit(avo).c_str());
-                else              printf("| Object Count: %8d    (A: %7.2f %s) |\n"         ,(i32)ConvertUnit(vo)                    ,ConvertUnit(avo),GetUnit(avo).c_str());
-                
-                printf("| Cull Effic. : %8.3f \%%  "   "(A: %9.3f) |\n",ceff,aceff);
-                printf("+--------(Sample Duration: %6.2f s)-------+\n",m_Renderer->GetAverageSampleDuration());
+                                  printf("| Frame Rate  : %8.3f %sHz "     "(A: %7.2f" " %sHz)"   " |\n",     ConvertUnit(fr  ),GetUnit(fr  ).c_str(),ConvertUnit(afr  ),GetUnit(afr  ).c_str());
+                if(dc >= 1000.0f) printf("| Draw calls  : %8.3f %s   "     "(A: %7.2f" " %s  )"   " |\n",     ConvertUnit(dc  ),GetUnit(dc  ).c_str(),ConvertUnit(adc  ),GetUnit(adc  ).c_str());
+                else              printf("| Draw calls  : %8d     "        "(A: %7.2f" " %s  )"   " |\n",(i32)ConvertUnit(dc  )                      ,ConvertUnit(adc  ),GetUnit(adc  ).c_str());
+                if(vc >= 1000.0f) printf("| Vertices    : %8.3f %s   "     "(A: %7.2f" " %s  )"   " |\n",     ConvertUnit(vc  ),GetUnit(vc  ).c_str(),ConvertUnit(avc  ),GetUnit(avc  ).c_str());
+                else              printf("| Vertices    : %8d     "        "(A: %7.2f" " %s  )"   " |\n",(i32)ConvertUnit(vc  )                      ,ConvertUnit(avc  ),GetUnit(avc  ).c_str());
+                if(tc >= 1000.0f) printf("| Triangles   : %8.3f %s   "     "(A: %7.2f" " %s  )"   " |\n",     ConvertUnit(tc  ),GetUnit(tc  ).c_str(),ConvertUnit(atc  ),GetUnit(atc  ).c_str());
+                else              printf("| Triangles   : %8d     "        "(A: %7.2f" " %s  )"   " |\n",(i32)ConvertUnit(tc  )                      ,ConvertUnit(atc  ),GetUnit(atc  ).c_str());
+                if(vo >= 1000.0f) printf("| Object Count: %8.3f %s   "     "(A: %7.2f" " %s  )"   " |\n",     ConvertUnit(vo  ),GetUnit(vo  ).c_str(),ConvertUnit(avo  ),GetUnit(avo  ).c_str());
+                else              printf("| Object Count: %8d     "        "(A: %7.2f" " %s  )"   " |\n",(i32)ConvertUnit(vo  )                      ,ConvertUnit(avo  ),GetUnit(avo  ).c_str());
+                                  printf("| Cull Effic. : %8.3f %s \%% "   "(A: %7.2f" " %s \%%)" " |\n",     ConvertUnit(ceff),GetUnit(ceff).c_str(),ConvertUnit(aceff),GetUnit(aceff).c_str());
+                printf("+---------(Sample Duration: %6.2f s)---------+\n",m_Renderer->GetAverageSampleDuration());
                 
                 m_FramePrintTime  = 0.0f;
             }

@@ -14,6 +14,10 @@ namespace TestClient
     }
     void UITest::Run()
     {
+        while(IsRunning())
+        {
+            m_Renderer->Render(PT_TRIANGLES);
+        }
     }
     void UITest::Shutdown()
     {

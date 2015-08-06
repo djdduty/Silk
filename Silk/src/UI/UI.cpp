@@ -33,11 +33,19 @@ namespace Silk
             m_View->UpdateTexture();
         }
         
-        if(m_ViewNeedsUpdate)
+        if(!m_ViewNeedsUpdate) return;
+        m_ViewNeedsUpdate = false;
+        
+        //Render all UI to texture
+        m_View->EnableRTT();
+        
+        for(i32 i = 0;i < m_Elements.size();i++)
         {
-            m_View->EnableRTT();
-            
-            m_View->DisableRTT();
+            m_Elements[i]->Render();
         }
+        
+        m_View->DisableRTT();
+        
+        //Do some other stuff with the view
     }
 };
