@@ -47,6 +47,10 @@ namespace Silk
         for(i32 i = 0;i < IAT_COUNT;i++) m_AttributeOutputsUsed  [i] = false;
         for(i32 i = 0;i < IUT_COUNT;i++) m_UniformInputsUsed     [i] = false;
         for(i32 i = 0;i < OFT_COUNT;i++) m_FragmentOutputsUsed   [i] = false;
+        
+        m_VertexBlocks  .clear();
+        m_GeometryBlocks.clear();
+        m_FragmentBlocks.clear();
     }
     
     void ShaderGenerator::AddVertexModule(CString Code,i32 Index)
@@ -75,7 +79,6 @@ namespace Silk
         string FragmentShader = GenerateFragmentShader();
         
         Shader* S = m_Renderer->GetRasterizer()->CreateShader();
-            printf("Vertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
         if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
         {
             m_Renderer->GetRasterizer()->Destroy(S);
@@ -134,7 +137,7 @@ namespace Silk
             if(m_FragmentBlocks[i].ID == "Lighting") { CustomLightingBlock = i; break; }
         }
         
-        if(CustomLightingBlock == -1)
+        if(CustomLightingBlock == -1 && !SetColor)
         {
             if(m_LightingMode == LM_FLAT) SetAttributeInput(IAT_COLOR,true);
         }

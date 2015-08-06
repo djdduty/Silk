@@ -77,6 +77,7 @@ namespace Silk
             void UpdateUniforms();
             void Render(PRIMITIVE_TYPE PrimType);
             void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
+            void RenderTexture(Texture* Tex,Material* Effect = 0);
         
             void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
             Scene* GetScene() const { return m_Scene; }
@@ -120,6 +121,10 @@ namespace Silk
             Texture* m_DefaultTexture;
             Scalar m_DefaultTexturePhase;
             void UpdateDefaultTexture();
+        
+            //For rendering textures to the screen
+            Material* m_DefaultFSQMaterial;
+            Mesh    * m_FSQ;
         
             TaskManager     * m_TaskManager     ;
             UIManager       * m_UIManager       ;

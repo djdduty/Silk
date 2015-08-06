@@ -67,12 +67,4 @@ namespace Silk
         if(m_Render) m_Manager->m_Renderer->Destroy(m_Render);
         m_Render = o;
     }
-    void UIElement::Render()
-    {
-        if(!m_Render) return;
-        
-        
-        
-        for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->Render();
-    }
 };

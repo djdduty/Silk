@@ -28,7 +28,6 @@ namespace Silk
         Gen->SetShaderVersion(330);
         Gen->SetAllowInstancing(false);
         Gen->SetAllowInstancedTextureMatrix(false);
-        Gen->SetTextureInput(Material::MT_DIFFUSE,true);
         
         Gen->SetUniformInput(ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         Gen->SetUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
@@ -46,7 +45,8 @@ namespace Silk
         
         m_DefaultShader = Gen->Generate();
         
-        //m_DefaultTextureShader = Gen->Generate();
+        Gen->SetTextureInput(Material::MT_DIFFUSE,true);
+        m_DefaultTextureShader = Gen->Generate();
         
         //m_DefaultTextShader = Gen->Generate();
     }
@@ -88,10 +88,6 @@ namespace Silk
         i32 ShaderCount = l.GetShaderCount();
         
         SilkObjectVector MeshesRendered;
-        i32 ActualObjectCount = 0;
-        i32 VertexCount       = 0;
-        i32 TriangleCount     = 0;
-        
         for(i32 i = 0;i < ShaderCount;i++)
         {
             Shader* Shader = l.GetShader(i);
@@ -108,7 +104,7 @@ namespace Silk
                 {
                     //Pass material uniforms
                     Material* Mat = Obj->GetMaterial();
-                    if(Mat->HasUpdated()) Shader->UseMaterial(Obj->GetMaterial());
+                    Shader->UseMaterial(Obj->GetMaterial());
                     
                     //Pass object uniforms
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
@@ -121,7 +117,7 @@ namespace Silk
                     i32 Count = 0;
                     if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
                     else Count = Obj->m_Mesh->GetVertexCount();
-                        
+                    
                     Obj->m_Object->Render(Obj,PrimType,0,Count);
                     
                     i32 vc = Obj->m_Mesh->GetVertexCount();

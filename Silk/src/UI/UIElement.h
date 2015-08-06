@@ -53,8 +53,6 @@ namespace Silk
             void SetSize(const Vec2& Dimensions) { m_BoundingRect.Set(m_BoundingRect.GetPosition(),Dimensions); }
             void SetSize(Scalar w,Scalar h)      { m_BoundingRect.Set(m_BoundingRect.GetPosition(),Vec2(w,h) ); }
         
-            void Render();
-        
         protected:
             friend class UIManager;
             UIElement(UIManager* Mgr);

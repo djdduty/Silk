@@ -55,6 +55,23 @@ namespace Silk
                 Cull->AddNode("Minimum objects for multi-threaded instance transform sync")->Initialize(ConfigValue::VT_I32,&m_Prefs.MinObjectCountForMultithreadedTransformSync);
             }
         }
+        
+        m_ShaderGenerator->Reset();
+        m_ShaderGenerator->SetShaderVersion(330);
+        m_ShaderGenerator->SetAllowInstancing(false);
+        m_ShaderGenerator->SetAllowInstancedTextureMatrix(false);
+        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_FLAT);
+        m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE,true);
+        
+        m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_POSITION,true);
+        m_ShaderGenerator->SetUniformInput  (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
+        m_ShaderGenerator->SetUniformInput  (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
+        
+        m_ShaderGenerator->AddVertexModule  (const_cast<CString>("[SetGLPosition]gl_Position = vec4(a_Position,1.0);[/SetGLPosition]"),0);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,gl_FragCoord.xy);[/SetColor]"),0);
+        
+        m_DefaultFSQMaterial = CreateMaterial();
+        m_DefaultFSQMaterial->SetShader(m_ShaderGenerator->Generate());
     }
 
     Renderer::~Renderer() 
@@ -241,6 +258,21 @@ namespace Silk
         m_Stats.VisibleObjects += ActualObjectCount;
         m_Stats.VertexCount    += VertexCount;
         m_Stats.TriangleCount  += TriangleCount;
+    }
+    void Renderer::RenderTexture(Texture *Tex,Material* Effect)
+    {
+        Material* m = Effect ? Effect : m_DefaultFSQMaterial;
+        Shader* s = m->GetShader();
+        
+        s->Enable();
+        s->UseMaterial(m);
+        
+        
+        m_Stats.DrawCalls     += 1;
+        m_Stats.VertexCount   += 4;
+        m_Stats.TriangleCount += 2;
+        
+        s->Disable();
     }
 
     RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot,bool AddToScene)
