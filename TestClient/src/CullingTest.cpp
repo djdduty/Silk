@@ -38,6 +38,8 @@ namespace TestClient
         Byte* fDat = Load("Common/Font.fnt");
         Font Fnt;
         Fnt.Load(fDat);
+        
+        SetFPSPrintFrequency(4.0f);
     }
     void CullingTest::LoadLights()
     {

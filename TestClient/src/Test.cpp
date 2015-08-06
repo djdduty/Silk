@@ -276,6 +276,19 @@ namespace TestClient
         m_Materials.push_back(Mat);
         return Mat;
     }
+    
+    Scalar ConvertUnit(Scalar n)
+    {
+        if(n >= 1000.0f && n < 1000000.0f) return n * 0.001f;
+        else if(n >= 1000000.0f) return n * 0.000001f;
+        return n * 1.0f;
+    }
+    string GetUnit(Scalar n)
+    {
+        if(n >= 1000.0f && n < 1000000.0f) return "k";
+        else if(n >= 1000000.0f) return "M";
+        return " ";
+    }
     bool Test::IsRunning()
     {
         if(m_Renderer->GetRenderStatistics().FrameID > 0)
@@ -340,16 +353,26 @@ namespace TestClient
                  *   \\____//   \\____//   *
                  *    `-==-'     `-==-'    *
                 \* * * * * * * * * * * * * */
-                printf("+--------------Render Statistics--------------+\n");
-                printf("| Frame ID    : %11lld f  ""               |\n",Stats.FrameID);
-                printf("| Run time    : %11.3f s  ""               |\n",m_ElapsedTime);
-                printf("| Frame Rate  : %11.3f Hz "  "(Avg: %7.2f) |\n",fr   * 1.0000f,afr   * 1.0000f);
-                printf("| Draw calls  : %11.3f k  "  "(Avg: %7.2f) |\n",dc   * 0.0001f,adc   * 0.0001f);
-                printf("| Vertices    : %11.3f k  "  "(Avg: %7.2f) |\n",vc   * 0.0001f,avc   * 0.0001f);
-                printf("| Triangles   : %11.3f k  "  "(Avg: %7.2f) |\n",tc   * 0.0001f,atc   * 0.0001f);
-                printf("| Object Count: %11.3f k  "  "(Avg: %7.2f) |\n",vo   * 0.0001f,avo   * 0.0001f);
-                printf("| Cull Effic. : %11.3f \%%  ""(Avg: %7.2f) |\n",ceff * 1.0000f,aceff * 1.0000f);
-                printf("+---------------------------------------------+\n");
+                
+                printf("+-----------(Render Statistics)------------+\n");
+                printf("| Frame ID    : %8lld f  " "               |\n",Stats.FrameID);
+                printf("| Run time    : %8.3f s  " "               |\n",m_ElapsedTime);
+                printf("| Frame Rate  : %8.3f Hz "     "(A: %9.3f) |\n",fr,afr);
+                
+                if(dc >= 1000.0f) printf("| Draw calls  : %8.3f %s  "    "(A: %9.3f) |\n",     ConvertUnit(dc),GetUnit(dc).c_str(),ConvertUnit(adc));
+                else              printf("| Draw calls  : %8d    (A: %9.3f) |\n"         ,(i32)ConvertUnit(dc)                    ,ConvertUnit(adc));
+                
+                if(vc >= 1000.0f) printf("| Vertices    : %8.3f %s  "    "(A: %9.3f) |\n",     ConvertUnit(vc),GetUnit(vc).c_str(),ConvertUnit(avc));
+                else              printf("| Vertices    : %8d    (A: %9.3f) |\n"         ,(i32)ConvertUnit(vc)                    ,ConvertUnit(avc));
+                
+                if(tc >= 1000.0f) printf("| Triangles   : %8.3f %s  "    "(A: %9.3f) |\n",     ConvertUnit(tc),GetUnit(tc).c_str(),ConvertUnit(atc));
+                else              printf("| Triangles   : %8d    (A: %9.3f) |\n"         ,(i32)ConvertUnit(tc)                    ,ConvertUnit(atc));
+                
+                if(vo >= 1000.0f) printf("| Object Count: %8.3f %s  "    "(A: %9.3f) |\n",     ConvertUnit(vo),GetUnit(vo).c_str(),ConvertUnit(avo));
+                else              printf("| Object Count: %8d    (A: %9.3f) |\n"         ,(i32)ConvertUnit(vo)                    ,ConvertUnit(avo));
+                
+                printf("| Cull Effic. : %8.3f \%%  "   "(A: %9.3f) |\n",ceff,aceff);
+                printf("+--------(Sample Duration: %6.2f s)-------+\n",m_Renderer->GetAverageSampleDuration());
                 
                 m_FramePrintTime  = 0.0f;
             }
