@@ -234,6 +234,7 @@ namespace Silk
             Scalar w;
     };
     
+    class Quat;
     class Mat4
     {
         public:
@@ -248,6 +249,10 @@ namespace Silk
             Scalar Determinant() const;
             Mat4 Transpose() const;
             Mat4 Inverse() const;
+        
+            Vec3 GetTranslation() const;
+            Vec3 GetScale      () const;
+            Quat GetRotation   () const;
         
             Mat4 operator*(const Mat4& rVal) const;
             Mat4& operator *=(const Mat4& rVal);

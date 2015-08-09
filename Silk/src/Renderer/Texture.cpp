@@ -1,8 +1,5 @@
 #include <Renderer/Texture.h>
 
-//From the good old days of PSP programming
-#define GU_RGBA(r,g,b,a)   (((a) << 24)|((r) << 16)|((g) << 8)|(b))
-
 namespace Silk
 {
     Texture::Texture(Rasterizer* r) : m_Pixels(0), m_MemSize(0), m_RefCount(1), m_Rasterizer(r)
@@ -37,7 +34,11 @@ namespace Silk
     {
         if(!m_Pixels) return;
         i32 bIdx = ((i32)Coord.x) + (((i32)Coord.y) * m_Height);
-        m_Pixels[bIdx] = GU_RGBA(uByte(Color.x * 255.0f),uByte(Color.y * 255.0f),uByte(Color.z * 255.0f),uByte(Color.w * 255.0f));
+        Byte* Pixel = (Byte*)&m_Pixels[bIdx];
+        Pixel[0] = Color.x * 255.0f;
+        Pixel[1] = Color.y * 255.0f;
+        Pixel[2] = Color.z * 255.0f;
+        Pixel[3] = Color.w * 255.0f;
     }
     Vec4 Texture::GetPixel(const Vec2& Coord) const
     {

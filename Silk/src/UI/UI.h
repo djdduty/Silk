@@ -15,11 +15,18 @@ namespace Silk
             UIManager(Renderer* r);
             ~UIManager();
         
-            void Initialize();
+            void Initialize(i32 ButtonCount);
+        
+            void OnButtonDown(i32 ButtonID);
+            void OnButtonUp  (i32 ButtonID);
+            bool IsButtonDown(i32 ButtonID) const { return m_ButtonDurations[ButtonID] != -1.0f; }
+            Scalar GetButtonDownDuration(i32 ButtonID) const { return m_ButtonDurations[ButtonID]; }
+            void SetCursorPosition(const Vec2& p);
+            Vec2 GetCursorPosition() const { return m_CursorPosition; }
         
             void SetViewScale(Vec2 Sc) { m_ViewScale = Sc; m_ViewNeedsUpdate = true; }
         
-            void Render(PRIMITIVE_TYPE PrimType);
+            void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
         
             UIElement* CreateElement();
             Shader * GetDefaultShader       () const { return m_DefaultShader       ; }
@@ -45,5 +52,9 @@ namespace Silk
             RenderUnformSet* m_RenderUniforms;
         
             vector<UIElement*> m_Elements;
+        
+            vector<Scalar> m_ButtonDurations;
+            Vec2 m_CursorPosition;
+            Vec2 m_RealCursorPosition;
     };
 };

@@ -14,7 +14,7 @@
 
 namespace Silk
 {
-    Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_Raster(Raster), m_TaskManager(TaskMgr), m_UIManager(0)
+    Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster)
     {
         m_DefaultTexture   = m_Raster->CreateTexture();
         m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
@@ -119,7 +119,7 @@ namespace Silk
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
         
         /* Render UI */
-        m_UIManager->Render(PrimType);
+        if(m_UIManager) m_UIManager->Render(dt,PrimType);
         
         /* Compute new averages */
         m_Stats.FrameID++;

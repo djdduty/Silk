@@ -36,6 +36,7 @@ namespace Silk
             const Mat4& GetProjection();
             const Frustum* GetFrustum() const { return &m_Frustum; }
             Vec4 GetViewport() const { return m_Viewport; }
+            Vec4 GetOrthoRect() const { return m_OrthoDims; }
         
             bool IsPerspective() const { return  m_IsPerspective; }
             bool IsOrthogonal () const { return !m_IsPerspective; }

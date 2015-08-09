@@ -4,6 +4,48 @@
 
 namespace TestClient
 {
+    static Test* g_Test = 0;
+    void OnCursorMove(GLFWwindow* Win,f64 x,f64 y)
+    {
+        if(!g_Test) return;
+        g_Test->GetUI()->SetCursorPosition(Vec2(x,y));
+    }
+    void OnKey(GLFWwindow* Win,i32 Key,i32 ScanCode,i32 Action,i32 Mods)
+    {
+        if(!g_Test) return;
+        printf("k: %d s: %d a: %d m: %d\n",Key,ScanCode,Action,Mods);
+        /*
+         * Break glass in case of game engine
+         *  ____________
+         * |\           \
+         * | \___________\
+         * | | _________ |
+         * | | |   \   | |
+         * | | |   \\  | |
+         * | | |    \  | |
+         * | | |button | |
+         * | | |mapping| |
+         * \ | |class  | |
+         * \ | |_______| |
+         *  \|___________|
+         */
+        
+        if(Action == GLFW_PRESS)
+        {
+                 if(Key == GLFW_KEY_W) g_Test->GetUI()->OnButtonDown(BTN_MOVE_FORWARD );
+            else if(Key == GLFW_KEY_S) g_Test->GetUI()->OnButtonDown(BTN_MOVE_BACKWARD);
+            else if(Key == GLFW_KEY_A) g_Test->GetUI()->OnButtonDown(BTN_MOVE_LEFT    );
+            else if(Key == GLFW_KEY_D) g_Test->GetUI()->OnButtonDown(BTN_MOVE_RIGHT   );
+        }
+        else if(Action == GLFW_RELEASE)
+        {
+                 if(Key == GLFW_KEY_W) g_Test->GetUI()->OnButtonUp(BTN_MOVE_FORWARD );
+            else if(Key == GLFW_KEY_S) g_Test->GetUI()->OnButtonUp(BTN_MOVE_BACKWARD);
+            else if(Key == GLFW_KEY_A) g_Test->GetUI()->OnButtonUp(BTN_MOVE_LEFT    );
+            else if(Key == GLFW_KEY_D) g_Test->GetUI()->OnButtonUp(BTN_MOVE_RIGHT   );
+        }
+    }
+    
     Test::Test()
     {
     }
@@ -45,6 +87,7 @@ namespace TestClient
     }
     void Test::Init()
     {
+        g_Test = this;
         m_Window = new Window();
         #ifdef __APPLE__
         if(m_Window->Create(Vec2(400,300),GetTestName(),true))
@@ -83,10 +126,10 @@ namespace TestClient
             m_DoShutdown = false;
             
             m_ObjLoader = new ObjLoader();
-            
-            m_UIManager = new UIManager(m_Renderer);
-            m_Renderer->SetUIManager(m_UIManager);
-            m_UIManager->Initialize();
+            m_UIManager = 0;
+            m_Cursor    = 0;
+            m_CursorMat = 0;
+            m_CursorObj = 0;
         }
         else
         {
@@ -99,6 +142,64 @@ namespace TestClient
             m_Window          = 0;
         }
         Initialize();
+    }
+    void Test::InitGUI()
+    {
+        m_UIManager = new UIManager(m_Renderer);
+        m_Renderer->SetUIManager(m_UIManager);
+        m_UIManager->Initialize(BTN_COUNT);
+        m_UIManager->GetCamera()->SetZClipPlanes(0.0f,200.0f);
+        m_UIManager->GetCamera()->SetTransform(Translation(Vec3(0,0,-100)));
+        
+        glfwSetCursorPosCallback(m_Window->GetWindow(),OnCursorMove);
+        glfwSetKeyCallback      (m_Window->GetWindow(),OnKey       );
+    }
+    void Test::InitCursor()
+    {
+        if(!LoadTexture("Common/Cursor.png"))
+        {
+            ERROR("TestClient: Unable to initialize cursor. \"Common/Cursor.png\" not found.\n");
+        }
+        
+        m_CursorTexIndex = m_Textures.size() - 1;
+        
+        Mesh* m = new Mesh();
+        f32 s = 20.0f;
+        f32 v[18] =
+        {
+            0,0,0,
+            s,0,0,
+            0,s,0,
+            
+            0,s,0,
+            s,0,0,
+            s,s,0,
+        };
+        
+        s = 0.9f;
+        f32 t[12] =
+        {
+            0,0,
+            s,0,
+            0,s,
+            
+            0,s,
+            s,0,
+            s,s
+        };
+        
+        m->SetVertexBuffer  (6,v);
+        m->SetTexCoordBuffer(6,t);
+        
+        m_Cursor    = m_UIManager->CreateElement();
+        m_CursorObj = m_Renderer ->CreateRenderObject(ROT_MESH,false);
+        m_CursorMat = m_Renderer ->CreateMaterial();
+        m_CursorMat->SetMap(Material::MT_DIFFUSE,m_Textures[m_CursorTexIndex]);
+        
+        m_CursorMat->SetShader   (m_UIManager->GetDefaultTextureShader());
+        m_CursorObj->SetMesh     (m,m_CursorMat);
+        m_Cursor   ->SetObject   (m_CursorObj);
+        m_Cursor   ->SetSize     (32,32);
     }
     Byte* Test::Load(const char* File,i64 *OutSize)
     {
@@ -208,10 +309,11 @@ namespace TestClient
                 
 				swap(C.x,C.z);
                 
-                Tex->SetPixel(Vec2(x,(h-1) - y),C);
+                Tex->SetPixel(Vec2(x,y),C);
             }
         }
         Tex->UpdateTexture();
+        m_Textures.push_back(Tex);
         return Tex;
     }
     Material* Test::AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse,const char* Normal,const char* Parallax)
@@ -320,6 +422,12 @@ namespace TestClient
             Mat4 p = m_Camera->GetProjection();
             
             m_CursorRay = UnProject(Vec3(x,y,0),v,p,Vec4(Viewport[0],Viewport[1],Viewport[2],Viewport[3]));
+            
+            if(m_UIManager && m_CursorObj)
+            {
+                Vec2 cPos = m_UIManager->GetCursorPosition();
+                m_CursorObj->SetTransform(Translation(Vec3(cPos.x,cPos.y,-99.0f)));
+            }
             
             m_LastElapsedTime = m_ElapsedTime;
             m_ElapsedTime     = m_Window->GetElapsedTime();

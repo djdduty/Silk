@@ -708,6 +708,59 @@ namespace Silk
         }
         return r;
     }
+    Vec3 Mat4::GetTranslation() const
+    {
+        return Vec3(x.w,y.w,z.w);
+    }
+    Vec3 Mat4::GetScale() const
+    {
+        return Vec3(x.xyz().Magnitude(),y.xyz().Magnitude(),z.xyz().Magnitude());
+    }
+    Quat Mat4::GetRotation() const
+    {
+        Vec3 iScale = Vec3(Scalar(1.0) / x.Magnitude(),Scalar(1.0) / y.Magnitude(),Scalar(1.0) / z.Magnitude());
+        
+        Vec3 m1 = x.xyz() * iScale.x;
+        Vec3 m2 = y.xyz() * iScale.y;
+        Vec3 m3 = z.xyz() * iScale.z;
+        
+        Scalar t = Scalar(1.0) + m1.x + m2.y + m3.z;
+        
+        Quat q;
+        if(t > Scalar(0.001))
+        {
+            Scalar s = sqrt(t) * Scalar(2.0);
+            q.x = (m3.y - m2.z) / s;
+            q.y = (m1.z - m3.x) / s;
+            q.z = (m2.x - m1.y) / s;
+            q.w = Scalar(0.25) * s;
+        }
+        else if(m1.x > m2.y && m1.x > m3.z)
+        {
+            Scalar s = sqrt(Scalar(1.0) + m1.x - m2.y - m3.z) * Scalar(2.0);
+            q.x = Scalar(0.25) * s;
+            q.y = (m2.x + m1.y) / s;
+            q.z = (m1.z + m3.x) / s;
+            q.w = (m3.y - m2.z) / s;
+        } 
+        else if(m2.y > m3.z)
+        {
+            Scalar s = sqrt(Scalar(1.0) + m2.y - m1.x - m3.z) * Scalar(2.0);
+            q.x = (m2.x + m1.y) / s;
+            q.y = Scalar(0.25) * s;
+            q.z = (m3.y + m2.z) / s;
+            q.w = (m1.z - m3.x) / s;
+        }
+        else
+        {
+            Scalar s = sqrt(Scalar(1.0) + m3.z - m1.x - m2.y) * Scalar(2.0);
+            q.x = (m1.z + m3.x) / s;
+            q.y = (m3.y + m2.z) / s;
+            q.z = Scalar(0.25) * s;
+            q.w = (m2.x - m1.y) / s;
+        }
+        return q;
+    }
 
     Mat4 Mat4::Transpose() const
     {
@@ -912,7 +965,7 @@ namespace Silk
 
         Result[2][0] = 0.0f;
         Result[2][1] = 0.0f;
-        Result[2][2] = -2.0f / Length;
+        Result[2][2] = 2.0f / Length;
         Result[2][3] = Near / (Near - Far);
 
         Result[3][0] = -((Right + Left) / Width );

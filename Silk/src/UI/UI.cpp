@@ -14,7 +14,7 @@ namespace Silk
         if(m_Camera) delete m_Camera;
     }
     
-    void UIManager::Initialize()
+    void UIManager::Initialize(i32 ButtonCount)
     {
         m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         Vec2 hRes = m_Resolution * 0.5f;
@@ -48,11 +48,49 @@ namespace Silk
         Gen->SetTextureInput(Material::MT_DIFFUSE,true);
         m_DefaultTextureShader = Gen->Generate();
         
-        //m_DefaultTextShader = Gen->Generate();
+        //Same as texture shader until SDF font implemented
+        m_DefaultTextShader    = Gen->Generate();
+        
+        for(i32 i = 0;i < ButtonCount;i++) m_ButtonDurations.push_back(-1.0f);
+    }
+    void UIManager::OnButtonDown(i32 ButtonID)
+    {
+        m_ButtonDurations[ButtonID] = 0.0f;
+    }
+    void UIManager::OnButtonUp(i32 ButtonID)
+    {
+        m_ButtonDurations[ButtonID] = -1.0f;
+    }
+    void UIManager::SetCursorPosition(const Vec2& p)
+    {
+        m_RealCursorPosition = p;
+        
+        //Lock cursor to window
+        Vec2 Temp = m_RealCursorPosition;
+        if(p.x < 0             ) Temp.x = 0             ;
+        if(p.x > m_Resolution.x) Temp.x = m_Resolution.x;
+        if(p.y < 0             ) Temp.y = 0             ;
+        if(p.y > m_Resolution.y) Temp.y = m_Resolution.y;
+        
+        //Transform to normalized window coordinates
+        if(Temp.x != 0) Temp.x /= m_Resolution.x;
+        if(Temp.y != 0) Temp.y /= m_Resolution.y;
+        
+        //Transform to "virtual" window coordinates
+        Vec4 Ortho  = m_Camera->GetOrthoRect();
+        Vec3 CamPos = m_Camera->GetTransform().GetTranslation();
+        
+        m_CursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.zw() * Temp);
     }
     
-    void UIManager::Render(PRIMITIVE_TYPE PrimType)
+    void UIManager::Render(Scalar dt,PRIMITIVE_TYPE PrimType)
     {
+        //Update button times
+        for(i32 i = 0;i < m_ButtonDurations.size();i++)
+        {
+            if(m_ButtonDurations[i] != -1.0f) m_ButtonDurations[i] += dt;
+        }
+        
         //Update texture and projection if resolution changes
         Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();;
         if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
@@ -76,10 +114,65 @@ namespace Silk
         ObjectList l;
         l.SetIndexed(false);
         
-        for(i32 i = 0;i < m_Elements.size();i++)
+        //Depth sorting
+        vector<UIElement*> DepthSorted;
+        vector<UIElement*> Temp(m_Elements);
+        while(DepthSorted.size() != m_Elements.size())
+        {
+            for(i32 i = 0;i < Temp.size();i++)
+            {
+                Scalar Tz = Temp[i]->m_Render->GetTransform().GetTranslation().z;
+                if(DepthSorted.size() == 0)
+                {
+                    DepthSorted.push_back(Temp[i]);
+                    Temp.erase(Temp.begin() + i);
+                    break;
+                }
+                
+                for(i32 j = 0;j < DepthSorted.size();j++)
+                {
+                    Scalar Dz = DepthSorted[j]->m_Render->GetTransform().GetTranslation().z;
+                    if(Tz > Dz)
+                    {
+                        if(j < DepthSorted.size() - 1)
+                        {
+                            if(Tz < Dz)
+                            {
+                                DepthSorted.insert(DepthSorted.begin() + j,Temp[i]);
+                                Temp.erase(Temp.begin() + i);
+                                break;
+                            }
+                            else continue;
+                        }
+                        else
+                        {
+                            DepthSorted.push_back(Temp[i]);
+                            Temp.erase(Temp.begin() + i);
+                            break;
+                        }
+                    }
+                    else if(Tz < Dz)
+                    {
+                        if(j != 0) DepthSorted.insert(DepthSorted.begin() + (j - 1),Temp[i]);
+                        else DepthSorted.insert(DepthSorted.begin(),Temp[i]);
+                        Temp.erase(Temp.begin() + i);
+                        break;
+                    }
+                    else
+                    {
+                        DepthSorted.insert(DepthSorted.begin() + j,Temp[i]);
+                        Temp.erase(Temp.begin() + i);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        //for(i32 i = 0;i < DepthSorted.size();i++)
+        for(i32 i = DepthSorted.size() - 1;i >= 0;i--)
         {
             //To do: culling
-            l.AddObject(m_Elements[i]->m_Render);
+            l.AddObject(DepthSorted[i]->m_Render);
         }
         
         //Render all UI to texture

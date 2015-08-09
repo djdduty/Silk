@@ -6,6 +6,19 @@
 
 namespace TestClient
 {
+    enum BUTTON_ID
+    {
+        BTN_LEFT_MOUSE   ,
+        BTN_RIGHT_MOUSE  ,
+        
+        BTN_MOVE_FORWARD ,  //W
+        BTN_MOVE_BACKWARD,  //S
+        BTN_MOVE_LEFT    ,  //A
+        BTN_MOVE_RIGHT   ,  //D
+        
+        BTN_COUNT,
+    };
+    
     class Test
     {
         public:
@@ -13,6 +26,10 @@ namespace TestClient
             virtual ~Test();
         
             void Init();
+            void InitGUI();
+            void InitCursor();
+        
+            UIManager* GetUI() const { return m_UIManager; }
         
             Byte* Load(const char* File,i64 *OutSize = 0);
             bool  Save(const char* File,Byte* Data,i64 Size);
@@ -47,11 +64,17 @@ namespace TestClient
             Scalar m_FramePrintTime;
             Scalar m_FramePrintInterval;
             bool m_DoShutdown;
+        
+            UIElement   * m_Cursor;
+            RenderObject* m_CursorObj;
+            Material    * m_CursorMat;
+            i32 m_CursorTexIndex;
             Ray m_CursorRay;
         
             ObjLoader* m_ObjLoader;
             vector<RenderObject*> m_Meshes     ;
             vector<Material    *> m_Materials  ;
+            vector<Texture     *> m_Textures   ;
             vector<RenderObject*> m_Lights     ;
             vector<RenderObject*> m_LightMeshes;
     };

@@ -11,16 +11,19 @@ namespace TestClient
     
     void UITest::Initialize()
     {
+        InitGUI();
+        InitCursor();
+        
         Mesh* m = new Mesh();
         f32 v[18] =
         {
             0  ,  0,0,
-            200,  0,0,
+            100,  0,0,
             0  ,100,0,
             
             0  ,100,0,
-            200,  0,0,
-            200,100,0,
+            100,  0,0,
+            100,100,0,
         };
     
         f32 c[24] =
@@ -49,7 +52,6 @@ namespace TestClient
         m->SetColorBuffer   (6,c);
         m->SetTexCoordBuffer(6,t);
         
-        m_UIManager->Initialize();
         UIElement   * Button = m_UIManager->CreateElement();
         RenderObject* Obj    = m_Renderer ->CreateRenderObject(ROT_MESH,false);
         Material    * Mat    = m_Renderer ->CreateMaterial();
@@ -58,7 +60,7 @@ namespace TestClient
         Obj   ->SetMesh     (m,Mat);
         Obj   ->SetTransform(Translation(Vec3(1,1,0)));
         Button->SetObject   (Obj);
-        Button->SetSize     (200,100);
+        Button->SetSize     (100,100);
         
         Button = m_UIManager->CreateElement();
         Obj    = m_Renderer ->CreateRenderObject(ROT_MESH,false);
@@ -68,7 +70,10 @@ namespace TestClient
         Obj   ->SetMesh     (m,Mat);
         Obj   ->SetTransform(Translation(Vec3(50,50,0)));
         Button->SetObject   (Obj);
-        Button->SetSize     (200,100);
+        Button->SetSize     (100,100);
+        
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     }
     void UITest::Run()
     {
