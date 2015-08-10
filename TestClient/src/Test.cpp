@@ -434,16 +434,26 @@ namespace TestClient
             Vec3 a(3 ,21,39);
             Vec3 b(10,4 ,31);
             Vec3 u(0 ,1 , 0);
-            i32  c = 10;
+            f32  c = 10;
             
             Timer flopTmr;
             flopTmr.Start();
-            i32 Flops = 0;
+            f32 Flops = 0;
             while(m_DeltaTime < 0.016666667f)
             {
-                for(i32 i = 0;i < c;i++) (b - a).Normalized().Dot(u);
-                Flops += 19 * c;
+                for(f32 i = 0;i < c;i++) (b - a).Normalized().Dot(u);
                 m_DeltaTime += flopTmr;
+                Flops += 22.0f * c;
+                /* Account for m_DeltaTime += flopTmr, Timer::operator Time() has an
+                 * unclear amount of float operations, since it's all obfuscated std
+                 * code, but I'll arbitrarily assume it's worth ~4 flops just so the
+                 * measurement isn't off by too much. The actual amount of time that
+                 * the function consumes is probably more than that though. It would
+                 * be better for the estimation to be too low than too high, I guess
+                 *
+                 * ...Also account for the two loops and these two add-eq operations
+                 */
+                Flops += 13.0f;
             }
             FlopsPerSecond = ((f32)Flops) / flopTmr;
             m_FreeFLOPSSamples.SetSampleCount(m_FramePrintInterval / m_DeltaTime);
