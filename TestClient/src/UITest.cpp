@@ -86,7 +86,7 @@ namespace TestClient
         Text->GetObject()->SetTransform(Translation(Vec3(20,20,1)));
         
         Text->SetFont(Fnt);
-        Text->SetText("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        Text->SetText("Test Test Test Test Test Test Test Test");
         Text->SetScale(0.5f);
         
         m_UIElements.push_back(Text);
@@ -104,8 +104,10 @@ namespace TestClient
             
             if(m_UIManager)
             {
+                Scalar tsc = Res.y / GetPreferredInitResolution().y;
                 /* Dynamic text */
                 UIText* Text = (UIText*)m_UIElements[2];
+                Text->SetScale(0.5f * tsc);
                 Font* Fnt = Text->GetFont();
                 for(i32 i = 0;i < Text->GetText().length();i++)
                 {
