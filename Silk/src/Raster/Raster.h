@@ -185,7 +185,8 @@ namespace Silk
     {
         public:
             Shader(Renderer* r);
-            virtual ~Shader() {}
+            i32 AddRef() { m_RefCount++; }
+            i32 Destroy();
         
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode) = 0;
         
@@ -198,7 +199,9 @@ namespace Silk
             virtual void Disable() = 0;
         
         protected:
+            virtual ~Shader() {}
             friend class ShaderGenerator;
+            u32 m_RefCount;
             bool m_UniformInputs[ShaderGenerator::IUT_COUNT];
             bool m_FragmentOutputs[ShaderGenerator::OFT_COUNT];
             bool m_SupportsInstancing;

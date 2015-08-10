@@ -48,8 +48,11 @@ namespace Silk
         Gen->SetTextureInput(Material::MT_DIFFUSE,true);
         m_DefaultTextureShader = Gen->Generate();
         
-        //Same as texture shader until SDF font implemented
+        Gen->AddFragmentModule(const_cast<CString>("[Alpha]float Alpha = smoothstep(0.5 - 0.25,0.5 + 0.25,texture(u_DiffuseMap,sTexCoord).a) * o_Color.a;[/Alpha]"),0);
+        Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(o_Color.rgb,Alpha);[/SetColor]"),1);
         m_DefaultTextShader    = Gen->Generate();
+        
+        Gen->Reset();
         
         for(i32 i = 0;i < ButtonCount;i++) m_ButtonDurations.push_back(-1.0f);
     }
@@ -93,7 +96,10 @@ namespace Silk
         
         m_CursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.zw() * Temp);
     }
-    
+    void UIManager::Update(Scalar dt)
+    {
+        for(i32 i = 0;i < m_Elements.size();i++) m_Elements[i]->_Update(dt);
+    }
     void UIManager::Render(Scalar dt,PRIMITIVE_TYPE PrimType)
     {
         //Update button times
@@ -254,11 +260,20 @@ namespace Silk
         
         //Do some other stuff with the view
     }
-    UIElement* UIManager::CreateElement()
+    void UIManager::AddElement(UIElement *Element)
     {
-        UIElement* Element = new UIElement(this);
+        Element->m_Manager = this;
         m_Elements.push_back(Element);
         Element->m_ID = m_Elements.size() - 1;
-        return Element;
+    }
+    void UIManager::RemoveElement(UIElement *Element)
+    {
+        if(!Element->m_Manager) return;
+        m_Elements.erase(m_Elements.begin() + Element->m_ID);
+        for(i32 i = Element->m_ID;i < m_Elements.size();i++)
+        {
+            m_Elements[i]->m_ID--;
+        }
+        Element->m_ID = -1;
     }
 };

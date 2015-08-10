@@ -3,6 +3,7 @@
 #include <Raster/OpenGL/OpenGLTexture.h>
 #include <Raster/OpenGL/OpenGLRasterizer.h>
 #include <Raster/OpenGL/OpenGLUniform.h>
+#include <Renderer/Renderer.h>
 
 namespace Silk
 {
@@ -225,11 +226,21 @@ namespace Silk
         }
         return Offset;
     }
-    Shader::Shader(Renderer* r) : m_Renderer(r)
+    Shader::Shader(Renderer* r) : m_RefCount(1), m_Renderer(r)
     {
         for(i32 i = 0;i < ShaderGenerator::IUT_COUNT;i++) m_UniformInputs  [i] = false;
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_FragmentOutputs[i] = false;
         m_SupportsInstancing = false;
+    }
+    i32 Shader::Destroy()
+    {
+        m_RefCount--;
+        if(m_RefCount == 0)
+        {
+            m_Renderer->GetRasterizer()->Destroy(this);
+            return 0;
+        }
+        return m_RefCount;
     }
     
     void RasterContext::SetResolution(const Vec2& Resolution) 

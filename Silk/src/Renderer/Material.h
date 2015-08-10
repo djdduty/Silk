@@ -37,10 +37,13 @@ namespace Silk
                 MT_COUNT       ,
             };
         
+            i32 AddRef() { m_RefCount++; return m_RefCount; }
+            i32 Destroy();
+        
             void SetMap(MAP_TYPE Type,Texture* Map);
             Texture* GetMap(MAP_TYPE Type) const { return m_Maps[Type]; }
         
-            void SetShader(Shader* Shdr) { m_Shader = Shdr; m_HasUpdated = true; }
+            void SetShader(Shader* Shdr);
             Shader* GetShader() const { return m_Shader; }
         
             void SetRoughness(f32 Roughness);
@@ -72,7 +75,8 @@ namespace Silk
             friend class Renderer;
             Material(Renderer* r);
             ~Material();
-            
+        
+            i32 m_RefCount;
             MaterialUniformSet* m_Uniforms;
             Texture* m_Maps[MT_COUNT];
             Shader* m_Shader;

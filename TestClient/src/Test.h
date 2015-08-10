@@ -41,12 +41,16 @@ namespace TestClient
         
             void SetFPSPrintFrequency(Scalar Hz) { m_FramePrintInterval = 1.0f / Hz; }
             void SetTargetFrameRate(Scalar Hz) { m_TargetFrameRate = Hz; m_TaskManager->GetTaskContainer()->SetTimestep(Hz); }
+        
+            void LimitFPS();
+            void PrintDebugInfo();
             bool IsRunning();
             Scalar GetDeltaTime() { return m_DeltaTime; }
         
             virtual void Run() = 0;
             virtual void Shutdown() = 0;
             virtual const char* GetTestName() const = 0;
+            virtual Vec2 GetPreferredInitResolution() const;
         
             Window         * m_Window;
             Renderer       * m_Renderer;
@@ -58,14 +62,17 @@ namespace TestClient
         protected:
             virtual void Initialize() = 0;
             TaskManager* m_TaskManager;
-            UIManager  * m_UIManager;
-            Scalar m_ElapsedTime;
-            Scalar m_LastElapsedTime;
-            Scalar m_DeltaTime;
-            Scalar m_TargetFrameRate;
-            Scalar m_FramePrintTime;
-            Scalar m_FramePrintInterval;
-            SampleBuffer m_FreeFLOPSSamples;
+            UIManager  * m_UIManager  ;
+        
+            Scalar m_ElapsedTime        ;
+            Scalar m_LastElapsedTime    ;
+            Scalar m_DeltaTime          ;
+            Scalar m_TargetFrameRate    ;
+            Scalar m_FramePrintTime     ;
+            Scalar m_FramePrintInterval ;
+            Scalar m_FLOPSPerSecond     ;
+            Scalar m_FLOPSPerFrame      ;
+            SampleBuffer m_FreeFLOPSSamples     ;
             SampleBuffer m_FLOPSPerSecondSamples;
             bool m_DoShutdown;
         

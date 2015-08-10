@@ -85,7 +85,7 @@ namespace TestClient
             if(m_Materials[i]->GetMap(Material::MT_DIFFUSE )) m_Materials[i]->GetMap(Material::MT_DIFFUSE )->Destroy();
             if(m_Materials[i]->GetMap(Material::MT_NORMAL  )) m_Materials[i]->GetMap(Material::MT_NORMAL  )->Destroy();
             if(m_Materials[i]->GetMap(Material::MT_PARALLAX)) m_Materials[i]->GetMap(Material::MT_PARALLAX)->Destroy();
-            if(m_Materials[i]->GetShader()) m_Renderer->GetRasterizer()->Destroy(m_Materials[i]->GetShader());
+            if(m_Materials[i]->GetShader()) m_Materials[i]->SetShader(0);
             m_Renderer->Destroy(m_Materials[i]);
         }
         m_Materials.clear();
@@ -104,11 +104,7 @@ namespace TestClient
     {
         g_Test = this;
         m_Window = new Window();
-        #ifdef __APPLE__
-        if(m_Window->Create(Vec2(400,300),GetTestName(),true))
-        #else
-        if(m_Window->Create(Vec2(800,600),GetTestName(),true))
-        #endif
+        if(m_Window->Create(GetPreferredInitResolution(),GetTestName(),true))
         {
             m_Rasterizer = m_Window->GetRasterizer();
             ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -118,6 +114,7 @@ namespace TestClient
             m_TaskManager = new TaskManager();
             m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
+            m_Renderer->Init();
         
             m_ShaderGenerator = m_Renderer->GetShaderGenerator();
             
@@ -208,10 +205,13 @@ namespace TestClient
         m->SetVertexBuffer  (6,v);
         m->SetTexCoordBuffer(6,t);
         
-        m_Cursor    = m_UIManager->CreateElement();
+        m_Cursor    = new UIElement();
+        m_UIManager->AddElement(m_Cursor);
+        
         m_CursorObj = m_Renderer ->CreateRenderObject(ROT_MESH,false);
         m_CursorMat = m_Renderer ->CreateMaterial();
         m_CursorMat->SetMap(Material::MT_DIFFUSE,m_Textures[m_CursorTexIndex]);
+        m_Textures[m_CursorTexIndex]->Destroy();
         
         m_CursorMat->SetShader   (m_UIManager->GetDefaultTextureShader());
         m_CursorObj->SetMesh     (m,m_CursorMat);
@@ -335,6 +335,8 @@ namespace TestClient
         }
         Tex->UpdateTexture();
         m_Textures.push_back(Tex);
+        
+        printf("Tex: 0x%lX <%s>\n",(intptr_t)Tex,Path);
         return Tex;
     }
     Material* Test::AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse,const char* Normal,const char* Parallax)
@@ -392,7 +394,9 @@ namespace TestClient
         m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
         m_ShaderGenerator->SetLightingMode(LightingMode);
 
-        Mat->SetShader(m_ShaderGenerator->Generate());
+        Shader* Shdr = m_ShaderGenerator->Generate();
+        Mat->SetShader(Shdr);
+        Shdr->Destroy();
         
         Mat->SetSpecular(Vec4(0,0,0,0));
         Mat->SetShininess(0.0f);
@@ -417,10 +421,87 @@ namespace TestClient
         else if(n >= 1000000000000.0 && n < 1000000000000000.0) return "T";
         return " ";
     }
+    void Test::LimitFPS()
+    {
+        Vec3 a(3 ,21,39);
+        Vec3 b(10,4 ,31);
+        Vec3 u(0 ,1 , 0);
+        f32  c = 10;
+        
+        m_FLOPSPerFrame  = 0.0f;
+        m_FLOPSPerSecond = 0.0f;
+        
+        Timer flopTmr;
+        flopTmr.Start();
+        f32 tdt = 1.0f / m_TargetFrameRate;
+        while(m_DeltaTime + flopTmr < tdt)
+        {
+            for(f32 i = 0;i < c;i++) (b - a).Normalized().Dot(u);
+            m_FLOPSPerFrame += 22.0f * c;
+            m_FLOPSPerFrame += 12.0f;
+        }
+        m_DeltaTime += flopTmr;
+        m_FLOPSPerSecond = m_FLOPSPerFrame / flopTmr;
+        m_FreeFLOPSSamples     .SetSampleCount(m_FramePrintInterval / m_DeltaTime);
+        m_FLOPSPerSecondSamples.SetSampleCount(m_FramePrintInterval / m_DeltaTime);
+        m_FreeFLOPSSamples     .AddSample(m_FLOPSPerFrame );
+        m_FLOPSPerSecondSamples.AddSample(m_FLOPSPerSecond);
+    }
+    void Test::PrintDebugInfo()
+    {
+        const Renderer::RenderStats& Stats = m_Renderer->GetRenderStatistics();
+        f32 vc    = Stats.VertexCount   ;
+        f32 tc    = Stats.TriangleCount ;
+        f32 dc    = Stats.DrawCalls     ;
+        f32 fr    = Stats.FrameRate     ;
+        f32 vo    = Stats.VisibleObjects;
+        f32 fls   = m_FLOPSPerSecond    ;
+        f32 fl    = m_FLOPSPerFrame     ;
+        f32 ceff  = (Stats.MultithreadedCullingEfficiency - 1.0f) * 100.0f;
+        
+        f32 avc    = Stats.AverageVertexCount   .GetAverage();
+        f32 atc    = Stats.AverageTriangleCount .GetAverage();
+        f32 adc    = Stats.AverageDrawCalls     .GetAverage();
+        f32 afr    = Stats.AverageFramerate     .GetAverage();
+        f32 avo    = Stats.AverageVisibleObjects.GetAverage();
+        f32 afls   = m_FLOPSPerSecondSamples    .GetAverage();
+        f32 afl    = m_FreeFLOPSSamples         .GetAverage();
+        f32 aceff  = (Stats.AverageMultithreadedCullingEfficiency.GetAverage() - 1.0f) * 100.0f;
+        if(ceff  < 0.0f) ceff = 0.0f;
+        if(aceff < 0.0f) aceff = 0.0f;
+        
+        /* * * * * * * * * * * * * *\
+         *     /.-'       `-.\     *
+         *    //             \\    *
+         *   /j_______________j\   *
+         *  /o.-==-. .-. .-==-.o\  *
+         *  ||      )) ((      ||  *
+         *   \\____//   \\____//   *
+         *    `-==-'     `-==-'    *
+        \* * * * * * * * * * * * * */
+        
+        printf("+--------------(Render Statistics)--------------+\n");
+        printf("| Frame ID    : %10lld f  " "                  |\n",Stats.FrameID);
+        printf("| Run time    : %10.3f s  " "                  |\n",m_ElapsedTime);
+        
+                           printf("| Frame Rate  : %8.3f %sHz "     " (A: %7.2f" " %sHz )"   " |\n",     ConvertUnit(fr  ),GetPrefix(fr  ).c_str(),ConvertUnit(afr  ),GetPrefix(afr  ).c_str());
+        if(dc  >= 1000.0f) printf("| Draw calls  : %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(dc  ),GetPrefix(dc  ).c_str(),ConvertUnit(adc  ),GetPrefix(adc  ).c_str());
+        else               printf("| Draw calls  : %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(dc  )                        ,ConvertUnit(adc  ),GetPrefix(adc  ).c_str());
+        if(vc  >= 1000.0f) printf("| Vertices    : %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(vc  ),GetPrefix(vc  ).c_str(),ConvertUnit(avc  ),GetPrefix(avc  ).c_str());
+        else               printf("| Vertices    : %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(vc  )                        ,ConvertUnit(avc  ),GetPrefix(avc  ).c_str());
+        if(tc  >= 1000.0f) printf("| Triangles   : %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(tc  ),GetPrefix(tc  ).c_str(),ConvertUnit(atc  ),GetPrefix(atc  ).c_str());
+        else               printf("| Triangles   : %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(tc  )                        ,ConvertUnit(atc  ),GetPrefix(atc  ).c_str());
+        if(vo  >= 1000.0f) printf("| Object Count: %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(vo  ),GetPrefix(vo  ).c_str(),ConvertUnit(avo  ),GetPrefix(avo  ).c_str());
+        else               printf("| Object Count: %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(vo  )                        ,ConvertUnit(avo  ),GetPrefix(avo  ).c_str());
+        if(fls >= 1000.0f) printf("| FLOPS/second: %8.3f %so/s"     " (A: %7.2f" " %so/s)"   " |\n",     ConvertUnit(fls ),GetPrefix(fls ).c_str(),ConvertUnit(afls ),GetPrefix(afls ).c_str());
+        else               printf("| FLOPS/second: %8d  o/s"        " (A: %7.2f" " %so/s)"   " |\n",(i32)ConvertUnit(fls )                        ,ConvertUnit(afls ),GetPrefix(afls ).c_str());
+        if(fl  >= 1000.0f) printf("| Free Flt Ops: %8.3f %so/f"     " (A: %7.2f" " %so/f)"   " |\n",     ConvertUnit(fl  ),GetPrefix(fl  ).c_str(),ConvertUnit(afl  ),GetPrefix(afl  ).c_str());
+        else               printf("| Free Flt Ops: %8d  o/f"        " (A: %7.2f" " %so/f)"   " |\n",(i32)ConvertUnit(fl  )                        ,ConvertUnit(afl  ),GetPrefix(afl  ).c_str());
+                           printf("| Cull Effic. : %8.3f %s \%% "   " (A: %7.2f" " %s \%% )" " |\n",     ConvertUnit(ceff),GetPrefix(ceff).c_str(),ConvertUnit(aceff),GetPrefix(aceff).c_str());
+        printf("+----------(Sample Duration: %6.2f s)----------+\n",m_Renderer->GetAverageSampleDuration());
+    }
     bool Test::IsRunning()
     {
-        f32 FlopsPerSecond = 0.0f;
-        f32 Flops = 0.0f;
         if(m_Renderer->GetRenderStatistics().FrameID > 0)
         {
             /* End previous frame */
@@ -433,26 +514,7 @@ namespace TestClient
             m_DeltaTime       = m_ElapsedTime - m_LastElapsedTime;
             
             /* Limit framerate and measure extra time in float operations */
-            Vec3 a(3 ,21,39);
-            Vec3 b(10,4 ,31);
-            Vec3 u(0 ,1 , 0);
-            f32  c = 10;
-            
-            Timer flopTmr;
-            flopTmr.Start();
-            f32 tdt = 1.0f / m_TargetFrameRate;
-            while(m_DeltaTime + flopTmr < tdt)
-            {
-                for(f32 i = 0;i < c;i++) (b - a).Normalized().Dot(u);
-                Flops += 22.0f * c;
-                Flops += 12.0f;
-            }
-            m_DeltaTime += flopTmr;
-            FlopsPerSecond = ((f32)Flops) / flopTmr;
-            m_FreeFLOPSSamples     .SetSampleCount(m_FramePrintInterval / m_DeltaTime);
-            m_FLOPSPerSecondSamples.SetSampleCount(m_FramePrintInterval / m_DeltaTime);
-            m_FreeFLOPSSamples     .AddSample(Flops);
-            m_FLOPSPerSecondSamples.AddSample(FlopsPerSecond);
+            LimitFPS();
         }
         
         /* Start new frame */
@@ -487,67 +549,28 @@ namespace TestClient
                 m_CursorObj->SetTransform(Translation(Vec3(cPos.x,cPos.y,-99.0f)));
             }
             
+            /* Update UI */
+            if(m_UIManager) m_UIManager->Update(m_DeltaTime);
+            
             /* Render */
             m_Renderer->Render(m_DeltaTime,PT_TRIANGLES);
             
             m_FramePrintTime += m_DeltaTime;
             if(m_FramePrintTime > m_FramePrintInterval)
             {
-                const Renderer::RenderStats& Stats = m_Renderer->GetRenderStatistics();
-                f32 vc    = Stats.VertexCount   ;
-                f32 tc    = Stats.TriangleCount ;
-                f32 dc    = Stats.DrawCalls     ;
-                f32 fr    = Stats.FrameRate     ;
-                f32 vo    = Stats.VisibleObjects;
-                f32 fls   = FlopsPerSecond;
-                f32 fl    = Flops;
-                f32 ceff  = (Stats.MultithreadedCullingEfficiency - 1.0f) * 100.0f;
-                
-                f32 avc    = Stats.AverageVertexCount   .GetAverage();
-                f32 atc    = Stats.AverageTriangleCount .GetAverage();
-                f32 adc    = Stats.AverageDrawCalls     .GetAverage();
-                f32 afr    = Stats.AverageFramerate     .GetAverage();
-                f32 avo    = Stats.AverageVisibleObjects.GetAverage();
-                f32 afls   = m_FLOPSPerSecondSamples    .GetAverage();
-                f32 afl    = m_FreeFLOPSSamples         .GetAverage();
-                f32 aceff  = (Stats.AverageMultithreadedCullingEfficiency.GetAverage() - 1.0f) * 100.0f;
-                if(ceff  < 0.0f) ceff = 0.0f;
-                if(aceff < 0.0f) aceff = 0.0f;
-                
-                /* * * * * * * * * * * * * *\
-                 *     /.-'       `-.\     *
-                 *    //             \\    *
-                 *   /j_______________j\   *
-                 *  /o.-==-. .-. .-==-.o\  *
-                 *  ||      )) ((      ||  *
-                 *   \\____//   \\____//   *
-                 *    `-==-'     `-==-'    *
-                \* * * * * * * * * * * * * */
-                
-                printf("+--------------(Render Statistics)--------------+\n");
-                printf("| Frame ID    : %10lld f  " "                  |\n",Stats.FrameID);
-                printf("| Run time    : %10.3f s  " "                  |\n",m_ElapsedTime);
-                
-                                   printf("| Frame Rate  : %8.3f %sHz "     " (A: %7.2f" " %sHz )"   " |\n",     ConvertUnit(fr  ),GetPrefix(fr  ).c_str(),ConvertUnit(afr  ),GetPrefix(afr  ).c_str());
-                if(dc  >= 1000.0f) printf("| Draw calls  : %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(dc  ),GetPrefix(dc  ).c_str(),ConvertUnit(adc  ),GetPrefix(adc  ).c_str());
-                else               printf("| Draw calls  : %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(dc  )                        ,ConvertUnit(adc  ),GetPrefix(adc  ).c_str());
-                if(vc  >= 1000.0f) printf("| Vertices    : %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(vc  ),GetPrefix(vc  ).c_str(),ConvertUnit(avc  ),GetPrefix(avc  ).c_str());
-                else               printf("| Vertices    : %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(vc  )                        ,ConvertUnit(avc  ),GetPrefix(avc  ).c_str());
-                if(tc  >= 1000.0f) printf("| Triangles   : %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(tc  ),GetPrefix(tc  ).c_str(),ConvertUnit(atc  ),GetPrefix(atc  ).c_str());
-                else               printf("| Triangles   : %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(tc  )                        ,ConvertUnit(atc  ),GetPrefix(atc  ).c_str());
-                if(vo  >= 1000.0f) printf("| Object Count: %8.3f %s   "     " (A: %7.2f" " %s   )"   " |\n",     ConvertUnit(vo  ),GetPrefix(vo  ).c_str(),ConvertUnit(avo  ),GetPrefix(avo  ).c_str());
-                else               printf("| Object Count: %8d     "        " (A: %7.2f" " %s   )"   " |\n",(i32)ConvertUnit(vo  )                        ,ConvertUnit(avo  ),GetPrefix(avo  ).c_str());
-                if(fls >= 1000.0f) printf("| FLOPS/second: %8.3f %so/s"     " (A: %7.2f" " %so/s)"   " |\n",     ConvertUnit(fls ),GetPrefix(fls ).c_str(),ConvertUnit(afls ),GetPrefix(afls ).c_str());
-                else               printf("| FLOPS/second: %8d  o/s"        " (A: %7.2f" " %so/s)"   " |\n",(i32)ConvertUnit(fls )                        ,ConvertUnit(afls ),GetPrefix(afls ).c_str());
-                if(fl  >= 1000.0f) printf("| Free Flt Ops: %8.3f %so/f"     " (A: %7.2f" " %so/f)"   " |\n",     ConvertUnit(fl  ),GetPrefix(fl  ).c_str(),ConvertUnit(afl  ),GetPrefix(afl  ).c_str());
-                else               printf("| Free Flt Ops: %8d  o/f"        " (A: %7.2f" " %so/f)"   " |\n",(i32)ConvertUnit(fl  )                        ,ConvertUnit(afl  ),GetPrefix(afl  ).c_str());
-                                   printf("| Cull Effic. : %8.3f %s \%% "   " (A: %7.2f" " %s \%% )" " |\n",     ConvertUnit(ceff),GetPrefix(ceff).c_str(),ConvertUnit(aceff),GetPrefix(aceff).c_str());
-                printf("+----------(Sample Duration: %6.2f s)----------+\n",m_Renderer->GetAverageSampleDuration());
-    
+                PrintDebugInfo();
                 m_FramePrintTime  = 0.0f;
             }
             return true;
         }
         return false;
+    }
+    Vec2 Test::GetPreferredInitResolution() const
+    {
+        #ifdef __APPLE__
+        return Vec2(400,300);
+        #else
+        return Vec2(800,600);
+        #endif
     }
 };

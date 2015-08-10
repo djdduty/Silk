@@ -60,6 +60,8 @@ namespace Silk
             virtual ~Renderer();
         
             void SetUIManager(UIManager* Mgr) { m_UIManager = Mgr; }
+        
+            void Init();
             
             Rasterizer     * GetRasterizer           () { return m_Raster         ; }
             TaskManager    * GetTaskManager          () { return m_TaskManager    ; }

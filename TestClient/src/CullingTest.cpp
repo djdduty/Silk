@@ -18,6 +18,7 @@ namespace TestClient
 
     void CullingTest::Initialize()
     {
+        m_ShaderGenerator->Reset();
         m_ShaderGenerator->SetShaderVersion  (330);
         m_ShaderGenerator->SetAllowInstancing(false);
         
@@ -34,10 +35,6 @@ namespace TestClient
         LoadMaterial();
         LoadLights  ();
         LoadMeshes  ();
-        
-        Byte* fDat = Load("Common/Font.fnt");
-        Font Fnt;
-        Fnt.Load(fDat);
         
         SetFPSPrintFrequency(4.0f);
     }
@@ -116,7 +113,6 @@ namespace TestClient
             a += 7.5f * GetDeltaTime();
             
             m_Camera->SetTransform(RotationY(a * 0.3f) * Translation(Vec3(0,1,6)) * RotationX(20.0f));
-            
             Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
             //m_Meshes[0]->SetTransform(RotationZ(a));
             

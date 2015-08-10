@@ -16,6 +16,23 @@ namespace Silk
 {
     Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster)
     {
+    }
+
+    Renderer::~Renderer() 
+    {
+        if(m_Scene) delete m_Scene;
+        m_DefaultTexture->Destroy();
+        m_DefaultFSQMaterial->GetShader()->Destroy();
+        m_DefaultFSQMaterial->Destroy();
+        m_Raster->Destroy(m_EngineUniforms);
+        
+        delete m_RendererUniforms;
+        delete m_ShaderGenerator;
+        delete m_Configuration;
+    }
+    
+    void Renderer::Init()
+    {
         m_DefaultTexture   = m_Raster->CreateTexture();
         m_DefaultTexture->CreateTexture(DEFAULT_TEXTURE_SIZE,DEFAULT_TEXTURE_SIZE);
         m_DefaultTexture->InitializeTexture();
@@ -66,24 +83,17 @@ namespace Silk
         m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_POSITION,true);
         m_ShaderGenerator->SetUniformInput  (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
         m_ShaderGenerator->SetUniformInput  (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
+        m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_COLOR   ,true);
         
         m_ShaderGenerator->AddVertexModule  (const_cast<CString>("[SetGLPosition]gl_Position = vec4(a_Position,1.0);[/SetGLPosition]"),0);
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]f_Color = texture(u_DiffuseMap,gl_FragCoord.xy);[/SetColor]"),0);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = texture(u_DiffuseMap,gl_FragCoord.xy);[/SetColor]"),0);
         
         m_DefaultFSQMaterial = CreateMaterial();
-        m_DefaultFSQMaterial->SetShader(m_ShaderGenerator->Generate());
+        Shader* Shdr = m_ShaderGenerator->Generate();
+        m_DefaultFSQMaterial->SetShader(Shdr);
+        Shdr->Destroy();
     }
-
-    Renderer::~Renderer() 
-    {
-        if(m_Scene) delete m_Scene;
-        m_Raster->Destroy(m_DefaultTexture);
-        m_Raster->Destroy(m_EngineUniforms);
-        
-        delete m_RendererUniforms;
-        delete m_ShaderGenerator;
-        delete m_Configuration;
-    }
+    
     Texture* Renderer::GetDefaultTexture()
     {
         m_DefaultTextureNeedsUpdate = true;

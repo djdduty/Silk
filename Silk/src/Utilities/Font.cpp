@@ -48,8 +48,10 @@ namespace Silk
                     Glyph &g = m_Glyphs [ParseFirstIntAfter(Lines[i],"id")];
                     g.uv0 =         Vec2(ParseFirstIntAfter(Lines[i],"x"       ),ParseFirstIntAfter(Lines[i],"y"      ));
                     g.uv1 = g.uv0 + Vec2(ParseFirstIntAfter(Lines[i],"width"   ),ParseFirstIntAfter(Lines[i],"height" ));
+                    g.Size = g.uv1 - g.uv0;
                     g.Offset =      Vec2(ParseFirstIntAfter(Lines[i],"xoffset" ),ParseFirstIntAfter(Lines[i],"yoffset"));
                     g.xAdvance =         ParseFirstIntAfter(Lines[i],"xadvance");
+                    g.IsValid = true;
                 }
                 else
                 {
@@ -99,7 +101,6 @@ namespace Silk
         {
             m_Glyphs[i].uv0 *= CoordScale;
             m_Glyphs[i].uv1 *= CoordScale;
-            m_Glyphs[i].Offset *= CoordScale;
         }
     }
 };

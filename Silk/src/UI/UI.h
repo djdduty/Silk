@@ -27,9 +27,12 @@ namespace Silk
         
             void SetViewScale(Vec2 Sc) { m_ViewScale = Sc; m_ViewNeedsUpdate = true; }
         
+            void Update(Scalar dt);
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
         
-            UIElement* CreateElement();
+            void AddElement(UIElement* Element);
+            void RemoveElement(UIElement* Element);
+        
             Shader * GetDefaultShader       () const { return m_DefaultShader       ; }
             Shader * GetDefaultTextureShader() const { return m_DefaultTextureShader; }
             Shader * GetDefaultTextShader   () const { return m_DefaultTextShader   ; }

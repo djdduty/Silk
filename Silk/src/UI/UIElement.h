@@ -39,6 +39,7 @@ namespace Silk
     class UIElement
     {
         public:
+            UIElement();
         
             i32 AddRef() { m_RefCount++; return m_RefCount; }
             i32 Destroy();
@@ -55,10 +56,12 @@ namespace Silk
         
             UIRect GetArea() const;
         
+            virtual void Update(Scalar dt) { }
+        
         protected:
             friend class UIManager;
-            UIElement(UIManager* Mgr);
-            ~UIElement();
+            virtual ~UIElement();
+            void _Update(Scalar dt);
             
             i32           m_RefCount;
             UID           m_ID;

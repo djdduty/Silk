@@ -46,7 +46,10 @@ namespace Silk {
             m_InstanceList->pop_back();
         }
         
+        if(m_Mesh) m_Mesh->Destroy();
         m_Mesh = M;
+        
+        if(m_Material) m_Material->Destroy();
         m_Material = Mat;
         
         if(Mat->GetShader()->SupportsInstancing())
@@ -74,8 +77,9 @@ namespace Silk {
         {
             m_Object->SetMesh(m_Mesh);
         }
-        m_Mesh->AddRef();
         
+        m_Mesh->AddRef();
+        m_Material->AddRef();
         MarkAsUpdated();
     }
 
@@ -205,27 +209,30 @@ namespace Silk {
                     for(i32 i = Obj->m_ListIndex;i < m_MeshObjects.size();i++) m_MeshObjects[i]->m_ListIndex = i;
                     
                     Mesh* m = Obj->GetMesh();
-                    if(m_ObjectsByMesh[m->m_MeshListID].size() == 1)
+                    if(m->m_MeshListID != -1 && m_ObjectsByMesh.size() != 0)
                     {
-                        //Remove mesh from list and remove newly empty object list from m_ObjectsByMesh
-                        m_ObjectsByMesh.erase(m_ObjectsByMesh.begin() + m->m_MeshListID);
-                        m_Meshes       .erase(m_Meshes       .begin() + m->m_MeshListID);
-                        
-                        //Renew mesh list indices
-                        for(i32 i = m->m_MeshListID;i < m_Meshes.size();i++)
+                        if(m_ObjectsByMesh[m->m_MeshListID].size() == 1)
                         {
-                            m_Meshes[i]->m_MeshListID = i;
+                            //Remove mesh from list and remove newly empty object list from m_ObjectsByMesh
+                            m_ObjectsByMesh.erase(m_ObjectsByMesh.begin() + m->m_MeshListID);
+                            m_Meshes       .erase(m_Meshes       .begin() + m->m_MeshListID);
+                            
+                            //Renew mesh list indices
+                            for(i32 i = m->m_MeshListID;i < m_Meshes.size();i++)
+                            {
+                                m_Meshes[i]->m_MeshListID = i;
+                            }
                         }
-                    }
-                    else
-                    {
-                        //Remove object from m_ObjectsByMesh
-                        m_ObjectsByMesh[m->m_MeshListID].erase(m_ObjectsByMesh[m->m_MeshListID].begin() + Obj->m_MeshListIndex);
-                        
-                        //Renew mesh list indices
-                        for(i32 i = Obj->m_MeshListIndex;i < m_ObjectsByMesh[m->m_MeshListID].size();i++)
+                        else
                         {
-                            m_ObjectsByMesh[m->m_MeshListID][i]->m_MeshListIndex = i;
+                            //Remove object from m_ObjectsByMesh
+                            m_ObjectsByMesh[m->m_MeshListID].erase(m_ObjectsByMesh[m->m_MeshListID].begin() + Obj->m_MeshListIndex);
+                            
+                            //Renew mesh list indices
+                            for(i32 i = Obj->m_MeshListIndex;i < m_ObjectsByMesh[m->m_MeshListID].size();i++)
+                            {
+                                m_ObjectsByMesh[m->m_MeshListID][i]->m_MeshListIndex = i;
+                            }
                         }
                     }
                 }

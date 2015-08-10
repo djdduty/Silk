@@ -22,7 +22,7 @@ namespace Silk
     }
     
     
-    UIElement::UIElement(UIManager* Mgr) : m_RefCount(1), m_ID(0), m_CID(0), m_Parent(0), m_Render(0), m_Manager(Mgr)
+    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(0), m_Parent(0), m_Render(0), m_Manager(0)
     {
     }
     UIElement::~UIElement()
@@ -34,6 +34,7 @@ namespace Silk
         m_RefCount--;
         if(m_RefCount == 0)
         {
+            m_Manager->RemoveElement(this);
             delete this;
             return 0;
         }
@@ -72,5 +73,10 @@ namespace Silk
         UIRect r;
         r.Set(m_Render->GetTransform().GetTranslation().xy(),m_Dimensions);
         return r;
+    }
+    void UIElement::_Update(Scalar dt)
+    {
+        for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Update(dt);
+        Update(dt);
     }
 };

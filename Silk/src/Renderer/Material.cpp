@@ -29,7 +29,7 @@ namespace Silk
         return MaterialMapNames[Type];
     }
     
-    Material::Material(Renderer* r) : m_Renderer(r), m_HasUpdated(true)
+    Material::Material(Renderer* r) : m_RefCount(1), m_Shader(0), m_Renderer(r), m_HasUpdated(true)
     {
         for(i32 i = 0;i < MT_COUNT;i++) m_Maps[i] = 0;
         m_Uniforms = new MaterialUniformSet(m_Renderer);
@@ -38,6 +38,17 @@ namespace Silk
     {
         delete m_Uniforms;
     }
+    i32 Material::Destroy()
+    {
+        m_RefCount--;
+        if(m_RefCount == 0)
+        {
+            m_Renderer->Destroy(this);
+            //delete this;
+            return 0;
+        }
+        return m_RefCount;
+    }
     void Material::SetMap(MAP_TYPE Type,Texture *Map)
     {
         if(!Map) return;
@@ -45,6 +56,12 @@ namespace Silk
         m_Maps[Type] = Map;
         Map->AddRef();
         m_HasUpdated = true;
+    }
+    void Material::SetShader(Shader *Shdr)
+    {
+        if(m_Shader) m_Shader->Destroy();
+        m_Shader = Shdr;
+        if(m_Shader) m_Shader->AddRef();
     }
     
     UniformBuffer* Material::GetUniforms()

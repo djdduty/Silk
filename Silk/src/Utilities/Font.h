@@ -13,6 +13,7 @@ namespace Silk
             {
                 Vec2 uv0;
                 Vec2 uv1;
+                Vec2 Size;
                 Vec2 Offset;
                 i32 xAdvance;
                 
@@ -26,6 +27,8 @@ namespace Silk
         
             i32 GetGlyphCount() const { return m_GlyphCount; }
             Glyph GetGlyph(i32 CID) const { return m_Glyphs[CID]; }
+        
+            i32 GetGlyphSize() const { return m_GlyphSize; }
         
         protected:
             Glyph m_Glyphs[256];
