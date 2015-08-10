@@ -40,6 +40,7 @@ namespace TestClient
             Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse = 0,const char* Normal = 0,const char* Parallax = 0);
         
             void SetFPSPrintFrequency(Scalar Hz) { m_FramePrintInterval = 1.0f / Hz; }
+            void SetTargetFrameRate(Scalar Hz) { m_TargetFrameRate = Hz; m_TaskManager->GetTaskContainer()->SetTimestep(Hz); }
             bool IsRunning();
             Scalar GetDeltaTime() { return m_DeltaTime; }
         
@@ -61,9 +62,11 @@ namespace TestClient
             Scalar m_ElapsedTime;
             Scalar m_LastElapsedTime;
             Scalar m_DeltaTime;
+            Scalar m_TargetFrameRate;
             Scalar m_FramePrintTime;
             Scalar m_FramePrintInterval;
             SampleBuffer m_FreeFLOPSSamples;
+            SampleBuffer m_FLOPSPerSecondSamples;
             bool m_DoShutdown;
         
             UIElement   * m_Cursor;

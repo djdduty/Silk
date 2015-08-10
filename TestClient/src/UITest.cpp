@@ -11,6 +11,7 @@ namespace TestClient
     
     void UITest::Initialize()
     {
+        /*
         InitGUI();
         InitCursor();
         
@@ -70,9 +71,9 @@ namespace TestClient
         m_Meshes    .push_back(Obj   );
         m_UIElements.push_back(Button);
         
-        
+        */
         ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_Rasterizer->SetClearColor(Vec4(0,0,0,0.1f));
+        m_Rasterizer->SetClearColor(Vec4(0,0,0,1.0f));
     }
     void UITest::Run()
     {
@@ -81,19 +82,22 @@ namespace TestClient
         while(IsRunning())
         {
             Vec2 Res = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
-            m_UIManager->GetCamera()->SetTransform(Translation(Vec3(Res.x * 0.5f,Res.y * 0.5f,0.0f)));
-            
-            Vec2 Pos = m_UIManager->GetCursorPosition();
-            if(m_UIManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
+            if(m_UIManager)
             {
-                if(m_UIElements[1]->GetArea().Contains(LastPos))
-                {
-                    
-                    m_UIElements[1]->GetObject()->SetTransform(m_UIElements[1]->GetObject()->GetTransform() * Translation(Vec3(Pos.x - LastPos.x,Pos.y - LastPos.y,0.0f)));
-                }
-            }
+                m_UIManager->GetCamera()->SetTransform(Translation(Vec3(Res.x * 0.5f,Res.y * 0.5f,0.0f)));
             
-            LastPos = Pos;
+                Vec2 Pos = m_UIManager->GetCursorPosition();
+                if(m_UIManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
+                {
+                    if(m_UIElements[1]->GetArea().Contains(LastPos))
+                    {
+                        
+                        m_UIElements[1]->GetObject()->SetTransform(m_UIElements[1]->GetObject()->GetTransform() * Translation(Vec3(Pos.x - LastPos.x,Pos.y - LastPos.y,0.0f)));
+                    }
+                }
+                
+                LastPos = Pos;
+            }
         }
     }
     void UITest::Shutdown()
