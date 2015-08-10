@@ -75,7 +75,7 @@ namespace Silk
             void Destroy(RenderObject* Obj);
         
             void UpdateUniforms();
-            void Render(PRIMITIVE_TYPE PrimType);
+            void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
             void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
             void RenderTexture(Texture* Tex,Material* Effect = 0);
         
@@ -114,7 +114,6 @@ namespace Silk
             friend class UIManager;
             RenderPreferences m_Prefs;
             RenderStats m_Stats;
-            Timer m_FrameTimer;
             bool m_DoRecompileAllShaders;
         
             bool m_DefaultTextureNeedsUpdate;

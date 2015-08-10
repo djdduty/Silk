@@ -23,6 +23,7 @@ namespace Silk
             Scalar GetButtonDownDuration(i32 ButtonID) const { return m_ButtonDurations[ButtonID]; }
             void SetCursorPosition(const Vec2& p);
             Vec2 GetCursorPosition() const { return m_CursorPosition; }
+            void SetMouseButtonIDs(i32 Left,i32 Right,i32 Middle = -1);
         
             void SetViewScale(Vec2 Sc) { m_ViewScale = Sc; m_ViewNeedsUpdate = true; }
         
@@ -54,6 +55,9 @@ namespace Silk
             vector<UIElement*> m_Elements;
         
             vector<Scalar> m_ButtonDurations;
+            i32 m_MouseLeftID;
+            i32 m_MouseMiddleID;
+            i32 m_MouseRightID;
             Vec2 m_CursorPosition;
             Vec2 m_RealCursorPosition;
     };

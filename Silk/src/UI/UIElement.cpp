@@ -67,4 +67,10 @@ namespace Silk
         if(m_Render) m_Manager->m_Renderer->Destroy(m_Render);
         m_Render = o;
     }
+    UIRect UIElement::GetArea() const
+    {
+        UIRect r;
+        r.Set(m_Render->GetTransform().GetTranslation().xy(),m_Dimensions);
+        return r;
+    }
 };

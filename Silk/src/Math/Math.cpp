@@ -269,7 +269,7 @@ namespace Silk
         Scalar mag = Magnitude();
         if(mag == 0.0f) return Vec3(0,0,0);
         mag = 1.0f / mag;
-        return Vec3(x * mag,y * mag,z * mag);
+        return *this * mag;
     }
 
     Vec3 Vec3::Cross(const Vec3& rval) const

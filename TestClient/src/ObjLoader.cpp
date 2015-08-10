@@ -21,7 +21,7 @@ namespace TestClient
         m_Normals  .clear();
         m_TexCoords.clear();
 
-        char *delims = " \n\r";
+        const char *delims = " \n\r";
         const unsigned int CHARACTER_COUNT = 500;
         char line[CHARACTER_COUNT] = { 0 };
 

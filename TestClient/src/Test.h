@@ -63,6 +63,7 @@ namespace TestClient
             Scalar m_DeltaTime;
             Scalar m_FramePrintTime;
             Scalar m_FramePrintInterval;
+            SampleBuffer m_FreeFLOPSSamples;
             bool m_DoShutdown;
         
             UIElement   * m_Cursor;
@@ -72,6 +73,7 @@ namespace TestClient
             Ray m_CursorRay;
         
             ObjLoader* m_ObjLoader;
+            vector<UIElement   *> m_UIElements ;
             vector<RenderObject*> m_Meshes     ;
             vector<Material    *> m_Materials  ;
             vector<Texture     *> m_Textures   ;

@@ -15,16 +15,14 @@ namespace Silk
     class Light
     {
         public:
-            Light() :
-                m_Direction(Vec4()), m_Position(Vec4()), m_Color(COLOR_WHITE), m_Cutoff(0.0), m_Soften(1.0), m_Type(LT_POINT), m_Power(10.0)
+            Light()               : m_Color(COLOR_WHITE), m_Cutoff(0.0), m_Soften(1.0), m_Power(10.0), m_Type(LT_POINT)
             {
                 m_Attenuation.Constant      = 0.0;
                 m_Attenuation.Linear        = 0.0;
                 m_Attenuation.Exponential   = 0.0;
             }
         
-            Light(LightType Type) :
-                m_Type(Type), m_Position(Vec4()), m_Direction(Vec4()), m_Color(COLOR_WHITE), m_Cutoff(0.0), m_Soften(1.0), m_Power(10.0)
+            Light(LightType Type) : m_Color(COLOR_WHITE), m_Cutoff(0.0), m_Soften(1.0), m_Power(10.0), m_Type(Type)
             {
                 m_Attenuation.Constant    = 0.0;
                 m_Attenuation.Linear      = 0.0;

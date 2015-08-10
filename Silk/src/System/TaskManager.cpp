@@ -32,7 +32,10 @@ namespace Silk
     {
         return m_DependenciesLeft == 0;
     }
-    WorkerThread::WorkerThread(TaskManager* Manager) : m_Shutdown(false), m_DidStop(false), m_IsIdling(false), m_ShouldWake(false), m_Manager(Manager), m_Thread(new Thread(this))
+    WorkerThread::WorkerThread(TaskManager* Manager) : m_Shutdown(false), m_DidStop(false), m_IsIdling(false),
+                                                       m_ShouldWake(false), m_Manager(Manager), m_Thread(new Thread(this)),
+                                                       m_LastFrameDuration(0.0f), m_LastFrameIdleDuration(0.0f), m_ID(0),
+                                                       m_LocalTime(0.0f)
     {
     }
     WorkerThread::~WorkerThread()
@@ -105,7 +108,7 @@ namespace Silk
     }
     
     TaskContainer::TaskContainer() : m_ThreadDifferenceSampleCount(20), m_DurationSampleCount(20), m_ThreadTimeQuota(1.0f / 60.0f),
-                                     m_MaxThreadQuotaExcessPercent(0.0f)
+                                     m_MaxThreadQuotaExcessPercent(0.5f)
     {
         i32 tCount = std::thread::hardware_concurrency();
         for(i32 i = 0;i < tCount;i++)
@@ -168,6 +171,9 @@ namespace Silk
             if(th > 0) PostThreadDuration(th,m_TaskManager->GetThread(th - 1)->GetLastFrameDuration());
             else PostThreadDuration(0,m_TaskManager->GetLastMainThreadWorkDuration());
         }
+        
+        //Decrease over time to prevent never showing the warning again after a big frame rate drop
+        if(m_MaxThreadQuotaExcessPercent > 0.5f) m_MaxThreadQuotaExcessPercent *= 0.99f;
     }
     
     void TaskContainer::AddTask(Task* T,bool AllowOnMainThread)
@@ -251,13 +257,13 @@ namespace Silk
     {
         if(Duration > m_ThreadTimeQuota)
         {
-            Scalar PercentExcess = (Duration / m_ThreadTimeQuota);
+            Scalar PercentExcess = (Duration / m_ThreadTimeQuota) - 1.0f;
             if(PercentExcess > m_MaxThreadQuotaExcessPercent)
             {
                 m_MaxThreadQuotaExcessPercent = PercentExcess;
                 Scalar ThreadFreq = 1.0f / Duration;
                 Scalar TargetFreq = 1.0f / m_ThreadTimeQuota;
-                WARNING("Heavy load. Thread[%d] frequency (%0.2f Hz) below target frequency (%0.2f Hz) by %0.2f Hz.\n",ThreadID,ThreadFreq,TargetFreq,TargetFreq - ThreadFreq);
+                WARNING("Heavy load. Thread[%d] frequency (%0.2f Hz) below target frequency (%0.2f Hz) by %0.2f Hz. (%0.2f\%% Target frame duration)\n",ThreadID,ThreadFreq,TargetFreq,TargetFreq - ThreadFreq,(1.0f + PercentExcess) * 100.0f);
             }
         }
         

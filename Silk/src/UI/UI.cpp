@@ -6,7 +6,7 @@ namespace Silk
 {
     UIManager::UIManager(Renderer* r) : m_Renderer(r), m_ViewScale(1.0f,1.0f), m_Resolution(0.0f,0.0f), m_ViewNeedsUpdate(true),
                                         m_Camera(0), m_View(0), m_DefaultShader(0), m_DefaultTextureShader(0), m_DefaultTextShader(0),
-                                        m_RenderUniforms(0)
+                                        m_RenderUniforms(0), m_MouseLeftID(-1), m_MouseMiddleID(-1), m_MouseRightID(-1)
     {
     }
     UIManager::~UIManager()
@@ -56,6 +56,17 @@ namespace Silk
     void UIManager::OnButtonDown(i32 ButtonID)
     {
         m_ButtonDurations[ButtonID] = 0.0f;
+        
+        //Should something go here?
+        if(ButtonID == m_MouseLeftID)
+        {
+        }
+        else if(ButtonID == m_MouseRightID)
+        {
+        }
+        else if(ButtonID == m_MouseMiddleID)
+        {
+        }
     }
     void UIManager::OnButtonUp(i32 ButtonID)
     {
@@ -197,7 +208,7 @@ namespace Silk
                 {
                     //Pass material uniforms
                     Material* Mat = Obj->GetMaterial();
-                    Shader->UseMaterial(Obj->GetMaterial());
+                    Shader->UseMaterial(Mat);
                     
                     //Pass object uniforms
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
@@ -213,6 +224,7 @@ namespace Silk
                     
                     Obj->m_Object->Render(Obj,PrimType,0,Count);
                     
+                    
                     i32 vc = Obj->m_Mesh->GetVertexCount();
                     i32 tc = 0;
                     if(PrimType == PT_TRIANGLES     ) tc = vc / 3;
@@ -222,6 +234,7 @@ namespace Silk
                     m_Renderer->m_Stats.VisibleObjects++;
                     m_Renderer->m_Stats.VertexCount   += vc;
                     m_Renderer->m_Stats.TriangleCount += tc;
+                    m_Renderer->m_Stats.DrawCalls     ++   ;
                     
                     MeshesRendered.push_back(Obj);
                 }

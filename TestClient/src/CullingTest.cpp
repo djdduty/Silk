@@ -139,8 +139,6 @@ namespace TestClient
             {
                 m_LightMeshes[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
             }
-            
-            m_Renderer->Render(PT_TRIANGLES);
         }
     }
 

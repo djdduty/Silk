@@ -52,21 +52,12 @@ namespace TestClient
         m->SetColorBuffer   (6,c);
         m->SetTexCoordBuffer(6,t);
         
-        UIElement   * Button = m_UIManager->CreateElement();
-        RenderObject* Obj    = m_Renderer ->CreateRenderObject(ROT_MESH,false);
+        UIElement   * Button = m_UIManager->CreateElement ();
         Material    * Mat    = m_Renderer ->CreateMaterial();
-        
-        Mat   ->SetShader   (m_UIManager->GetDefaultShader());
-        Obj   ->SetMesh     (m,Mat);
-        Obj   ->SetTransform(Translation(Vec3(1,1,0)));
-        Button->SetObject   (Obj);
-        Button->SetSize     (100,100);
-        
-        Button = m_UIManager->CreateElement();
-        Obj    = m_Renderer ->CreateRenderObject(ROT_MESH,false);
-        Mat    = m_Renderer ->CreateMaterial();
+        RenderObject* Obj    = m_Renderer ->CreateRenderObject(ROT_MESH,false);
         
         Mat   ->SetShader   (m_UIManager->GetDefaultTextureShader());
+        Mat   ->SetMap      (Material::MT_DIFFUSE,m_Textures[m_CursorTexIndex]);
         Obj   ->SetMesh     (m,Mat);
         Obj   ->SetTransform(Translation(Vec3(50,50,0)));
         Button->SetObject   (Obj);
@@ -74,14 +65,35 @@ namespace TestClient
         
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+        
+        m_Materials .push_back(Mat   );
+        m_Meshes    .push_back(Obj   );
+        m_UIElements.push_back(Button);
+        
+        
+        ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_Rasterizer->SetClearColor(Vec4(0,0,0,0.1f));
     }
     void UITest::Run()
     {
+        Vec2 LastPos;
+        
         while(IsRunning())
         {
             Vec2 Res = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
             m_UIManager->GetCamera()->SetTransform(Translation(Vec3(Res.x * 0.5f,Res.y * 0.5f,0.0f)));
-            m_Renderer->Render(PT_TRIANGLES);
+            
+            Vec2 Pos = m_UIManager->GetCursorPosition();
+            if(m_UIManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
+            {
+                if(m_UIElements[1]->GetArea().Contains(LastPos))
+                {
+                    
+                    m_UIElements[1]->GetObject()->SetTransform(m_UIElements[1]->GetObject()->GetTransform() * Translation(Vec3(Pos.x - LastPos.x,Pos.y - LastPos.y,0.0f)));
+                }
+            }
+            
+            LastPos = Pos;
         }
     }
     void UITest::Shutdown()

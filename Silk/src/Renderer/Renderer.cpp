@@ -93,12 +93,9 @@ namespace Silk
     {
         m_RendererUniforms->UpdateUniforms();
     }
-    void Renderer::Render(PRIMITIVE_TYPE PrimType)
+    void Renderer::Render(Scalar dt,PRIMITIVE_TYPE PrimType)
     {
-        Scalar dt = m_FrameTimer;
         if(dt <= 0) dt = 1.0f / 60.0f;
-        m_FrameTimer.Stop();
-        m_FrameTimer.Start();
         
         if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 1 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms

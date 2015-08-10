@@ -50,8 +50,10 @@ namespace Silk
             RenderObject* GetObject() const { return m_Render; }
             void SetObject(RenderObject* o);
         
-            void SetSize(const Vec2& Dimensions) { m_BoundingRect.Set(m_BoundingRect.GetPosition(),Dimensions); }
-            void SetSize(Scalar w,Scalar h)      { m_BoundingRect.Set(m_BoundingRect.GetPosition(),Vec2(w,h) ); }
+            void SetSize(const Vec2& Dimensions) { m_Dimensions = Dimensions; }
+            void SetSize(Scalar w,Scalar h)      { m_Dimensions = Vec2(w,h) ; }
+        
+            UIRect GetArea() const;
         
         protected:
             friend class UIManager;
@@ -62,7 +64,7 @@ namespace Silk
             UID           m_ID;
             UID           m_CID;
             UIElement*    m_Parent;
-            UIRect        m_BoundingRect;
+            Vec2          m_Dimensions;
             RenderObject* m_Render;
         
             vector <UIElement*> m_Children;

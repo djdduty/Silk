@@ -209,7 +209,7 @@ namespace TestClient
             GetTimer(CameraTime);
 
             StartTimer();
-                m_Renderer->Render(PT_TRIANGLES);
+                m_Renderer->Render(GetDeltaTime(),PT_TRIANGLES);
             GetTimer(RenderTime);
             
             StartTimer();

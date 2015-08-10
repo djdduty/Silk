@@ -83,7 +83,7 @@ namespace Silk
     class OpenGLUniformBuffer : public UniformBuffer
     {
         public:
-            OpenGLUniformBuffer() : m_Buffer(0), UniformBuffer() { }
+            OpenGLUniformBuffer() : UniformBuffer(), m_Buffer(0) { }
             ~OpenGLUniformBuffer();
         
             virtual void InitializeBuffer();
