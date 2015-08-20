@@ -12,6 +12,7 @@
 
 #include <System/TaskManager.h>
 #include <Utilities/Utilities.h>
+#include <Utilities/DebugDrawer.h>
 
 namespace Silk
 {
@@ -60,6 +61,7 @@ namespace Silk
             virtual ~Renderer();
         
             void SetUIManager(UIManager* Mgr) { m_UIManager = Mgr; }
+            void SetDebugDrawer(DebugDrawer* Draw) { m_DebugDrawer = Draw; }
         
             void Init();
             
@@ -67,11 +69,12 @@ namespace Silk
             TaskManager    * GetTaskManager          () { return m_TaskManager    ; }
             ShaderGenerator* GetShaderGenerator      () { return m_ShaderGenerator; }
             UIManager      * GetUIManager            () { return m_UIManager      ; }
+            DebugDrawer    * GetDebugDrawer          () { return m_DebugDrawer    ; }
             Texture        * GetDefaultTexture       ();
             UniformBuffer  * GetEngineUniformBuffer  () { return m_EngineUniforms                 ; }
             UniformBuffer  * GetRendererUniformBuffer() { return m_RendererUniforms->GetUniforms(); }
         
-            RenderObject* CreateRenderObject(RENDER_OBJECT_TYPE Rot, bool AddToScene = true);
+            RenderObject* CreateRenderObject(RENDER_OBJECT_TYPE Rot);
             Material    * CreateMaterial();
             void Destroy(Material    * Mat);
             void Destroy(RenderObject* Obj);
@@ -129,6 +132,7 @@ namespace Silk
         
             TaskManager     * m_TaskManager     ;
             UIManager       * m_UIManager       ;
+            DebugDrawer     * m_DebugDrawer     ;
             ShaderGenerator * m_ShaderGenerator ;
             Scene           * m_Scene           ;
             UniformBuffer   * m_EngineUniforms  ;

@@ -3,7 +3,9 @@
 
 namespace Silk
 {
-    Mesh::Mesh() : m_IndexBufferID(-1), m_MeshListID(-1), m_RefCount(1)
+    Mesh::Mesh() : PrimitiveType(PT_COUNT), m_IndexBufferID(-1), m_VertexBufferID(-1), m_NormalBufferID(-1), m_TangentBufferID(-1),
+                   m_ColorBufferID(-1), m_TexCoordBufferID(-1), m_MeshListID(-1), m_MeshList(0), m_RefCount(1), m_LastFrameRendered(-1),
+                   m_VisibleInstanceCount(0)
     {
     }
     Mesh::~Mesh()
@@ -15,6 +17,15 @@ namespace Silk
         m_RefCount--;
         if(m_RefCount == 0)
         {
+            if(m_MeshList)
+            {
+                m_MeshList->erase(m_MeshList->begin() + m_MeshListID);
+                
+                for(i32 i = m_MeshListID;i < m_MeshList->size();i++)
+                {
+                    (*m_MeshList)[i]->m_MeshListID--;
+                }
+            }
             delete this;
         }
     }
@@ -22,26 +33,32 @@ namespace Silk
     void Mesh::SetIndexBuffer(i32 Count,void* Indices,bool IsStatic,i32 Stride)
     {
         AddAttribute("",-1,AT_UINT,1,Count * sizeof(u32),Count,Stride,Indices);
+        m_IndexBufferID = m_Attributes.size() - 1;
     }
     void Mesh::SetVertexBuffer(i32 Count,void* Vertices,bool IsStatic,i32 Stride)
     {
         AddAttribute(PositionAttribName,PositionAttribIndex,AT_FLOAT,3,Count * sizeof(f32) * 3,Count,Stride,Vertices);
+        m_VertexBufferID = m_Attributes.size() - 1;
     }
     void Mesh::SetNormalBuffer(i32 Count,void* Normals,bool IsStatic,i32 Stride)
     {
         AddAttribute(NormalAttribName,NormalAttribIndex,AT_FLOAT,3,Count * sizeof(f32) * 3,Count,Stride,Normals);
+        m_NormalBufferID = m_Attributes.size() - 1;
     }
     void Mesh::SetTangentBuffer(i32 Count,void* Tangents,bool IsStatic,i32 Stride)
     {
         AddAttribute(TangentAttribName,TangentAttribIndex,AT_FLOAT,3,Count * sizeof(f32) * 3,Count,Stride,Tangents);
+        m_TangentBufferID = m_Attributes.size() - 1;
     }
     void Mesh::SetColorBuffer(i32 Count,void* Colors,bool IsStatic,i32 Stride)
     {
         AddAttribute(ColorAttribName,ColorAttribIndex,AT_FLOAT,4,Count * sizeof(f32) * 4,Count,Stride,Colors);
+        m_ColorBufferID = m_Attributes.size() - 1;
     }
     void Mesh::SetTexCoordBuffer(i32 Count,void* TexCoords,bool IsStatic,i32 Stride)
     {
         AddAttribute(TexCoordAttribName,TexCoordAttribIndex,AT_FLOAT,2,Count * sizeof(f32) * 2,Count,Stride,TexCoords);
+        m_TexCoordBufferID = m_Attributes.size() - 1;
     }
     i32 Mesh::GetVertexCount() const
     {

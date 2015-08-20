@@ -7,8 +7,9 @@
 #include <Renderer/Mesh.h>
 #include <Renderer/Light.h>
 #include <Renderer/UniformBufferTypes.h>
-
 #include <Renderer/Material.h>
+
+#include <Utilities/BoundingBox.h>
 
 #include <Math/Math.h>
 
@@ -22,18 +23,6 @@ namespace Silk
     class RasterObject;
     class Shader;
     class Rasterizer;
-
-    enum PRIMITIVE_TYPE
-    {
-        PT_POINTS,
-        PT_SPRITES,
-        PT_LINES,
-        PT_LINE_STRIP,
-        PT_TRIANGLES,
-        PT_TRIANGLE_STRIP,
-        PT_TRIANGLE_FAN,
-        PT_COUNT,
-    };
     
     enum RENDER_OBJECT_TYPE
     {
@@ -61,12 +50,15 @@ namespace Silk
             i32 GetCulledInstanceIndex() const { return m_CulledInstanceIndex; }
             RasterObject* GetObject() const { return m_Object; }
 
-            void SetMesh     (Mesh    * M, Material* Mat);
-            void SetLight    (Light   * L               );
-            void SetMaterial (Material* Mat             );
+            void SetMesh     (Mesh    * M,Material* Mat);
+            void SetLight    (Light   * L              );
+            void SetMaterial (Material* Mat            );
         
             void SetTransform(Mat4 Transform);
             void SetTextureTransform(Mat4 Transform);
+        
+            OBB GetBoundingBox() { return m_BoundingBox; }
+            void UpdateOBB();
         
             ModelUniformSet* GetUniformSet() { return m_Uniforms; }
             void UpdateUniforms();
@@ -84,6 +76,7 @@ namespace Silk
             friend class CullingAlgorithm;
 
             RasterObject* m_Object;
+            OBB m_BoundingBox;
 
             RENDER_OBJECT_TYPE     m_Type           ;
             bool                   m_Enabled        ;

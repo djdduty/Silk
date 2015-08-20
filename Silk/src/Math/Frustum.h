@@ -11,11 +11,11 @@ namespace Silk
         public:
             enum FRUSTUM_PLANE
             {
-                FP_NEAR,
                 FP_LEFT,
                 FP_RIGHT,
                 FP_TOP,
                 FP_BOTTOM,
+                FP_NEAR,
                 FP_FAR
             };
         
@@ -29,5 +29,6 @@ namespace Silk
         
         protected:
             Plane m_Planes[6];
+            Vec3  m_Offset;
     };
 }

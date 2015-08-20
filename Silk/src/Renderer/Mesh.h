@@ -7,6 +7,18 @@ using namespace std;
 
 namespace Silk
 {
+    enum PRIMITIVE_TYPE
+    {
+        PT_POINTS,
+        PT_SPRITES,
+        PT_LINES,
+        PT_LINE_STRIP,
+        PT_TRIANGLES,
+        PT_TRIANGLE_STRIP,
+        PT_TRIANGLE_FAN,
+        PT_COUNT,
+    };
+    
     class RenderObject;
     class Mesh
     {
@@ -60,8 +72,16 @@ namespace Silk
         
             i32 GetAttributeCount() const { return m_Attributes.size(); }
             const MeshAttribute* GetAttribute(i32 Index) const { return &m_Attributes[Index]; }
+            const MeshAttribute* GetIndexAttribute    () const { return &m_Attributes[m_IndexBufferID   ]; }
+            const MeshAttribute* GetVertexAttribute   () const { return &m_Attributes[m_VertexBufferID  ]; }
+            const MeshAttribute* GetNormalAttribute   () const { return &m_Attributes[m_NormalBufferID  ]; }
+            const MeshAttribute* GetTangentAttribute  () const { return &m_Attributes[m_TangentBufferID ]; }
+            const MeshAttribute* GetColorAttribute    () const { return &m_Attributes[m_ColorBufferID   ]; }
+            const MeshAttribute* GetTexCoordAttribute () const { return &m_Attributes[m_TexCoordBufferID]; }
         
             RenderObject* GetBaseObject() const { return m_Obj; }
+        
+            PRIMITIVE_TYPE PrimitiveType;
         
         protected:
             friend class Scene;
@@ -74,10 +94,17 @@ namespace Silk
             RenderObject* m_Obj;
             i32 GetAttributeIndex(i32 ShaderIndex) const;
             i32 m_IndexBufferID;
+            i32 m_VertexBufferID;
+            i32 m_NormalBufferID;
+            i32 m_TangentBufferID;
+            i32 m_ColorBufferID;
+            i32 m_TexCoordBufferID;
             i32 m_MeshListID;
+            vector<Mesh*>* m_MeshList;
             i32 m_RefCount;
             vector<MeshAttribute> m_Attributes;
             vector<RenderObject*> m_Instances;
+            i64 m_LastFrameRendered;
             i32 m_VisibleInstanceCount;
     };
 };

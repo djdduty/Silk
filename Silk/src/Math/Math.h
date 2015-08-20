@@ -253,6 +253,9 @@ namespace Silk
             Vec3 GetTranslation() const;
             Vec3 GetScale      () const;
             Quat GetRotation   () const;
+            Vec3 GetX          () const { return Vec3(x.x,y.x,z.x).Normalized(); }
+            Vec3 GetY          () const { return Vec3(x.y,y.y,z.y).Normalized(); }
+            Vec3 GetZ          () const { return Vec3(x.z,y.z,z.z).Normalized(); }
         
             Mat4 operator*(const Mat4& rVal) const;
             Mat4& operator *=(const Mat4& rVal);
@@ -266,6 +269,30 @@ namespace Silk
             Vec4 y;
             Vec4 z;
             Vec4 w;
+        
+            void DebugPrint() const
+            {
+                #define NEG_ZERO_FIX(v) ((abs(v) < 0.000001) ? 0.0 : v)
+                printf("x: %s%5.6f  %s%5.6f  %s%5.6f  %s%5.6f\n",NEG_ZERO_FIX(x.x) < 0 ? "" : " ",NEG_ZERO_FIX(x.x),
+                                                                 NEG_ZERO_FIX(x.y) < 0 ? "" : " ",NEG_ZERO_FIX(x.y),
+                                                                 NEG_ZERO_FIX(x.z) < 0 ? "" : " ",NEG_ZERO_FIX(x.z),
+                                                                 NEG_ZERO_FIX(x.w) < 0 ? "" : " ",NEG_ZERO_FIX(x.w));
+                
+                printf("y: %s%5.6f  %s%5.6f  %s%5.6f  %s%5.6f\n",NEG_ZERO_FIX(y.x) < 0 ? "" : " ",NEG_ZERO_FIX(y.x),
+                                                                 NEG_ZERO_FIX(y.y) < 0 ? "" : " ",NEG_ZERO_FIX(y.y),
+                                                                 NEG_ZERO_FIX(y.z) < 0 ? "" : " ",NEG_ZERO_FIX(y.z),
+                                                                 NEG_ZERO_FIX(y.w) < 0 ? "" : " ",NEG_ZERO_FIX(y.w));
+                
+                printf("z: %s%5.6f  %s%5.6f  %s%5.6f  %s%5.6f\n",NEG_ZERO_FIX(z.x) < 0 ? "" : " ",NEG_ZERO_FIX(z.x),
+                                                                 NEG_ZERO_FIX(z.y) < 0 ? "" : " ",NEG_ZERO_FIX(z.y),
+                                                                 NEG_ZERO_FIX(z.z) < 0 ? "" : " ",NEG_ZERO_FIX(z.z),
+                                                                 NEG_ZERO_FIX(z.w) < 0 ? "" : " ",NEG_ZERO_FIX(z.w));
+                
+                printf("w: %s%5.6f  %s%5.6f  %s%5.6f  %s%5.6f\n",NEG_ZERO_FIX(w.x) < 0 ? "" : " ",NEG_ZERO_FIX(w.x),
+                                                                 NEG_ZERO_FIX(w.y) < 0 ? "" : " ",NEG_ZERO_FIX(w.y),
+                                                                 NEG_ZERO_FIX(w.z) < 0 ? "" : " ",NEG_ZERO_FIX(w.z),
+                                                                 NEG_ZERO_FIX(w.w) < 0 ? "" : " ",NEG_ZERO_FIX(w.w));
+            }
         
             static Mat4 Identity;
     };
@@ -353,6 +380,9 @@ namespace Silk
     
     void SeedRandom(i32 Seed);
     Scalar Random(Scalar Min,Scalar Max);
+    Scalar Random   (Scalar Span           );
+    Vec3   Random   (Vec3 Min   ,Vec3   Max);
+    Vec3   RandomVec(Scalar Span           );
     Vec3 ColorFunc(Scalar Factor);
     bool IsPower2(i32 x);
 }

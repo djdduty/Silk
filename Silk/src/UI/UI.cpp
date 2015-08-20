@@ -81,21 +81,28 @@ namespace Silk
         m_RealCursorPosition = p;
         
         //Lock cursor to window
-        Vec2 Temp = m_RealCursorPosition;
-        if(p.x < 0             ) Temp.x = 0             ;
-        if(p.x > m_Resolution.x) Temp.x = m_Resolution.x;
-        if(p.y < 0             ) Temp.y = 0             ;
-        if(p.y > m_Resolution.y) Temp.y = m_Resolution.y;
+        Vec2 Temp0 = m_RealCursorPosition;
+        Vec2 Temp1 = m_RealCursorPosition;
+        if(p.x < 0             ) Temp0.x = 0             ;
+        if(p.x > m_Resolution.x) Temp0.x = m_Resolution.x;
+        if(p.y < 0             ) Temp0.y = 0             ;
+        if(p.y > m_Resolution.y) Temp0.y = m_Resolution.y;
         
         //Transform to normalized window coordinates
-        if(Temp.x != 0) Temp.x /= m_Resolution.x;
-        if(Temp.y != 0) Temp.y /= m_Resolution.y;
+        if(Temp0.x != 0) Temp0.x /= m_Resolution.x;
+        if(Temp0.y != 0) Temp0.y /= m_Resolution.y;
+        if(Temp1.x != 0) Temp1.x /= m_Resolution.x;
+        if(Temp1.y != 0) Temp1.y /= m_Resolution.y;
         
         //Transform to "virtual" window coordinates
         Vec4 Ortho  = m_Camera->GetOrthoRect();
         Vec3 CamPos = m_Camera->GetTransform().GetTranslation();
         
-        m_CursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.zw() * Temp);
+        m_LastCursorPosition = m_CursorPosition;
+        m_CursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.zw() * Temp0);
+        
+        m_LastUnBoundedCursorPosition = m_UnBoundedCursorPosition;
+        m_UnBoundedCursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.xw() * Temp1);
     }
     void UIManager::Update(Scalar dt)
     {

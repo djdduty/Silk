@@ -23,6 +23,10 @@ namespace Silk
             Scalar GetButtonDownDuration(i32 ButtonID) const { return m_ButtonDurations[ButtonID]; }
             void SetCursorPosition(const Vec2& p);
             Vec2 GetCursorPosition() const { return m_CursorPosition; }
+            Vec2 GetCursorDelta   () const { return m_CursorPosition - m_LastCursorPosition; }
+            Vec2 GetUnBoundedCursorPosition() const { return m_UnBoundedCursorPosition; }
+            Vec2 GetUnBoundedCursorDelta   () const { return m_UnBoundedCursorPosition - m_LastUnBoundedCursorPosition; }
+            void ResetCursorDelta ()       { m_LastCursorPosition = m_CursorPosition; m_LastUnBoundedCursorPosition = m_UnBoundedCursorPosition; }
             void SetMouseButtonIDs(i32 Left,i32 Right,i32 Middle = -1);
         
             void SetViewScale(Vec2 Sc) { m_ViewScale = Sc; m_ViewNeedsUpdate = true; }
@@ -61,6 +65,9 @@ namespace Silk
             i32 m_MouseLeftID;
             i32 m_MouseMiddleID;
             i32 m_MouseRightID;
+            Vec2 m_LastUnBoundedCursorPosition;
+            Vec2 m_UnBoundedCursorPosition;
+            Vec2 m_LastCursorPosition;
             Vec2 m_CursorPosition;
             Vec2 m_RealCursorPosition;
     };

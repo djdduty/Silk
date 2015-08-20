@@ -18,17 +18,20 @@ namespace TestClient
 
     void CullingTest::Initialize()
     {
+        InitGUI();
+        InitFlyCamera();
+        
         m_ShaderGenerator->Reset();
-        m_ShaderGenerator->SetShaderVersion  (330);
-        m_ShaderGenerator->SetAllowInstancing(false);
+        m_ShaderGenerator->SetShaderVersion   (330);
+        m_ShaderGenerator->SetAllowInstancing (false);
         
-        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
-        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
-        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
+        m_ShaderGenerator->SetUniformInput    (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
+        m_ShaderGenerator->SetUniformInput    (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
+        m_ShaderGenerator->SetUniformInput    (ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
         
-        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION,true);
-        m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
-        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
+        m_ShaderGenerator->SetAttributeInput  (ShaderGenerator::IAT_POSITION,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_COLOR   ,true);
+        m_ShaderGenerator->SetAttributeOutput (ShaderGenerator::IAT_POSITION,true);
         
         m_ShaderGenerator->SetParallaxFunction(ShaderGenerator::PF_RELIEF);
         
@@ -36,7 +39,7 @@ namespace TestClient
         LoadLights  ();
         LoadMeshes  ();
         
-        SetFPSPrintFrequency(4.0f);
+        SetFPSPrintFrequency(0.5f);
     }
     void CullingTest::LoadLights()
     {
@@ -110,9 +113,8 @@ namespace TestClient
         
         while(IsRunning())
         {
-            a += 7.5f * GetDeltaTime();
+            a += GetDeltaTime();
             
-            m_Camera->SetTransform(RotationY(a * 0.3f) * Translation(Vec3(0,1,6)) * RotationX(20.0f));
             Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
             //m_Meshes[0]->SetTransform(RotationZ(a));
             
@@ -120,8 +122,8 @@ namespace TestClient
             
             //Point
             //m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a * 0.01f),1.0f);
-            m_Lights[0]->GetLight()->m_Power = 15.0f + (sin(a * 0.01f) * 5.0f);
+            m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a * 0.1f),1.0f);
+            m_Lights[0]->GetLight()->m_Power = 15.0f + (sin(a * 0.1f) * 5.0f);
             m_Lights[0]->SetTransform(Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
             
             //Spot
@@ -129,7 +131,7 @@ namespace TestClient
             //m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
             
             //Directional
-            m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),90 + (a)) * Rotation(Vec3(1,0,0),-90.0f));
+            m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),90 + (a * 7.5f)) * Rotation(Vec3(1,0,0),-90.0f));
             
             for(i32 i = 0;i < m_Lights.size();i++)
             {

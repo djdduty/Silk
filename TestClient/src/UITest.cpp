@@ -57,7 +57,7 @@ namespace TestClient
         m_UIManager->AddElement(Button);
         
         Material    * Mat    = m_Renderer ->CreateMaterial();
-        RenderObject* Obj    = m_Renderer ->CreateRenderObject(ROT_MESH,false);
+        RenderObject* Obj    = m_Renderer ->CreateRenderObject(ROT_MESH);
         
         Mat   ->SetShader   (m_UIManager->GetDefaultTextureShader());
         Mat   ->SetMap      (Material::MT_DIFFUSE,m_Textures[m_CursorTexIndex]);
@@ -78,7 +78,7 @@ namespace TestClient
         Fnt->Load(fDat);
         
         UIText* Text = new UIText();
-        Text->SetObject(m_Renderer->CreateRenderObject(ROT_MESH,false));;
+        Text->SetObject(m_Renderer->CreateRenderObject(ROT_MESH));
         m_UIManager->AddElement(Text);
         Text->SetMaterial(m_Renderer->CreateMaterial());
         Text->GetMaterial()->SetShader(m_UIManager->GetDefaultTextShader());
@@ -107,7 +107,7 @@ namespace TestClient
                 Scalar tsc = Res.y / GetPreferredInitResolution().y;
                 /* Dynamic text */
                 UIText* Text = (UIText*)m_UIElements[2];
-                Text->SetScale(0.5f * tsc);
+                Text->SetScale(0.1f * tsc);
                 Font* Fnt = Text->GetFont();
                 for(i32 i = 0;i < Text->GetText().length();i++)
                 {

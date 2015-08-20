@@ -107,6 +107,8 @@ namespace Silk
     {
         if(dt <= 0) dt = 1.0f / 60.0f;
         
+        if(m_DebugDrawer) m_DebugDrawer->Update(dt);
+        
         if(m_DefaultTextureNeedsUpdate && m_Stats.FrameID % 1 == 0) UpdateDefaultTexture();
         UpdateUniforms(); //Automatically passed to shaders that require render uniforms
         
@@ -196,7 +198,8 @@ namespace Silk
             for(i32 m = 0;m < Meshes.size();m++)
             {
                 RenderObject* Obj = Meshes[m];
-                if(Obj->IsInstanced() && Obj->m_InstanceIndex != 0) continue;
+                if(Obj->IsInstanced() && Obj->m_Mesh->m_LastFrameRendered == m_Stats.FrameID) continue;
+                Obj->m_Mesh->m_LastFrameRendered = m_Stats.FrameID;
             
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
                 {
@@ -228,13 +231,15 @@ namespace Silk
                     i32 Count = 0;
                     if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
                     else Count = Obj->m_Mesh->GetVertexCount();
-                        
-                    Obj->m_Object->Render(Obj,PrimType,0,Count);
+                    
+                    PRIMITIVE_TYPE p = Obj->m_Mesh->PrimitiveType == PT_COUNT ? PrimType : Obj->m_Mesh->PrimitiveType;
+                    Obj->m_Object->Render(Obj,p,0,Count);
+                    
                     i32 vc = Obj->m_Mesh->GetVertexCount();
                     i32 tc = 0;
-                    if(PrimType == PT_TRIANGLES     ) tc = vc / 3;
-                    if(PrimType == PT_TRIANGLE_STRIP
-                    || PrimType == PT_TRIANGLE_FAN  ) tc = vc - 2;
+                    if(p == PT_TRIANGLES     ) tc = vc / 3;
+                    if(p == PT_TRIANGLE_STRIP
+                    || p == PT_TRIANGLE_FAN  ) tc = vc - 2;
                     
                     if(Obj->IsInstanced())
                     {
@@ -259,6 +264,28 @@ namespace Silk
         for(i32 i = 0;i < MeshesRendered.size();i++)
         {
             MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
+            
+            if(m_DebugDrawer)
+            {
+                if(MeshesRendered[i]->IsInstanced())
+                {
+                    i32 ic = 0;
+                    const vector<RenderObject*>* iList = MeshesRendered[i]->m_Mesh->GetInstanceList();
+                    for(i32 c = 0;c < iList->size();c++)
+                    {
+                        if((*iList)[c]->m_CulledInstanceIndex == -1) continue;
+                        
+                        m_DebugDrawer->Transform((*iList)[c]->GetTransform());
+                        m_DebugDrawer->AABB     ((*iList)[c]->GetBoundingBox().GetLocalAABB(),Vec4(1,1,1,1));
+                        ic++;
+                    }
+                }
+                else
+                {
+                    m_DebugDrawer->Transform(MeshesRendered[i]->GetTransform());
+                    m_DebugDrawer->AABB     (MeshesRendered[i]->GetBoundingBox().GetLocalAABB(),Vec4(1,1,1,1));
+                }
+            }
         }
         
         m_Stats.DrawCalls      += MeshesRendered.size();
@@ -282,16 +309,9 @@ namespace Silk
         s->Disable();
     }
 
-    RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot,bool AddToScene)
+    RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot)
     {
-        RenderObject* Object = new RenderObject(Rot, this, m_Raster->CreateObject());
-        
-        if(!Object)
-            return nullptr;
-
-        if(AddToScene) m_Scene->AddRenderObject(Object);
-
-        return Object;
+        return new RenderObject(Rot,this,m_Raster->CreateObject());
     }
     Material* Renderer::CreateMaterial()
     {

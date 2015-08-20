@@ -4,6 +4,9 @@
 #include <ObjLoader.h>
 #include <Window.h>
 
+#define CAMERA_MOVE_SPEED 15.0f
+#define CAMERA_TURN_SPEED 0.6f
+
 namespace TestClient
 {
     enum BUTTON_ID
@@ -15,6 +18,8 @@ namespace TestClient
         BTN_MOVE_BACKWARD,  //S
         BTN_MOVE_LEFT    ,  //A
         BTN_MOVE_RIGHT   ,  //D
+        
+        BTN_QUIT         ,  //Escape
         
         BTN_COUNT,
     };
@@ -28,6 +33,7 @@ namespace TestClient
             void Init();
             void InitGUI();
             void InitCursor();
+            void InitFlyCamera(const Vec3& InitPos = Vec3(0,5,0));
         
             UIManager* GetUI() const { return m_UIManager; }
         
@@ -36,13 +42,13 @@ namespace TestClient
         
             RenderObject* AddLight(LightType Type,const Vec3& Pos);
             i32 AddMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count = 1);
-            Texture* LoadTexture(const char *Path);
+            Texture * LoadTexture(const char *Path);
             Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse = 0,const char* Normal = 0,const char* Parallax = 0);
         
             void SetFPSPrintFrequency(Scalar Hz) { m_FramePrintInterval = 1.0f / Hz; }
-            void SetTargetFrameRate(Scalar Hz) { m_TargetFrameRate = Hz; m_TaskManager->GetTaskContainer()->SetTimestep(Hz); }
+            void SetTargetFrameRate  (Scalar Hz) { m_TargetFrameRate = Hz; m_TaskManager->GetTaskContainer()->SetTimestep(Hz); }
         
-            void LimitFPS();
+            void LimitFPS ();
             void PrintDebugInfo();
             bool IsRunning();
             Scalar GetDeltaTime() { return m_DeltaTime; }
@@ -56,6 +62,7 @@ namespace TestClient
             Renderer       * m_Renderer;
             Rasterizer     * m_Rasterizer;
             ShaderGenerator* m_ShaderGenerator;
+            DebugDrawer    * m_DebugDraw;
         
             Camera         * m_Camera;
         
@@ -75,6 +82,12 @@ namespace TestClient
             SampleBuffer m_FreeFLOPSSamples     ;
             SampleBuffer m_FLOPSPerSecondSamples;
             bool m_DoShutdown;
+            
+            Vec3 m_CamPos;
+            Quat m_xCamRot;
+            Quat m_yCamRot;
+            Quat m_CamRot;
+            bool m_FlyCameraEnabled;
         
             UIElement   * m_Cursor;
             RenderObject* m_CursorObj;

@@ -23,6 +23,7 @@ namespace Silk
             virtual CullingResult* PerformCulling() = 0;
             virtual const char* GetAlgorithmName() const = 0;
         
+            //Only call from thread when setting as false
             void SetObjectVisibility(RenderObject* Obj,bool Visibility);
         
             Scene* GetScene() const { return m_Scene; }

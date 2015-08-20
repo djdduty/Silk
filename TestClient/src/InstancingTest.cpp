@@ -20,7 +20,7 @@ namespace TestClient
         
         for(i32 i = 0;i < ObjsSize;i++)
         {
-            m_Objs[i] = m_Renderer->CreateRenderObject(ROT_MESH,false);
+            m_Objs[i] = m_Renderer->CreateRenderObject(ROT_MESH);
             m_Objs[i]->SetMesh(m_Mesh,m_Material);
             RespawnParticle(i);
             m_Renderer->GetScene()->AddRenderObject(m_Objs[i]);

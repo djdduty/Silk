@@ -4,9 +4,9 @@
 
 namespace Silk {
     RenderObject::RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObject* Object) : 
-        m_Object(Object), m_Type(Type), m_Enabled(true), m_IsCulled(false), m_Renderer(Renderer), m_Material(0), m_Mesh(0), m_Light(0),
-        m_Uniforms(0), m_ShaderListIndex(-1), m_MeshListIndex(-1), m_ListIndex(0), m_List(0), m_InstanceList(0), m_InstanceIndex(-1),
-        m_CulledInstanceIndex(-1)
+        m_Object(Object), m_BoundingBox(this), m_Type(Type), m_Enabled(true), m_IsCulled(false), m_Renderer(Renderer),
+        m_Material(0), m_Mesh(0), m_Light(0), m_Uniforms(0), m_ShaderListIndex(-1), m_MeshListIndex(-1), m_ListIndex(0),
+        m_List(0), m_InstanceList(0), m_InstanceIndex(-1), m_CulledInstanceIndex(-1)
     {
         m_Uniforms = new ModelUniformSet(m_Renderer,this);
     }
@@ -33,7 +33,7 @@ namespace Silk {
             return;
         }
 
-        if((m_Mesh && (m_Mesh != M)) && m_Mesh->m_Obj == this)
+        if((m_Mesh && (m_Mesh != M)) && m_Mesh->m_Obj == this && m_InstanceList)
         {
             if((*m_InstanceList)[0] != this) m_Mesh->m_Obj = (*m_InstanceList)[0];
             else m_Mesh->m_Obj = (*m_InstanceList)[1];
@@ -75,11 +75,13 @@ namespace Silk {
         }
         else
         {
+            m_Mesh->m_Obj = this;
             m_Object->SetMesh(m_Mesh);
         }
         
         m_Mesh->AddRef();
         m_Material->AddRef();
+        UpdateOBB();
         MarkAsUpdated();
     }
 
@@ -116,6 +118,31 @@ namespace Silk {
     void RenderObject::SetTextureTransform(Mat4 Transform)
     {
         m_Uniforms->SetTextureMatrix(Transform);
+    }
+    void RenderObject::UpdateOBB()
+    {
+        if(m_Type == ROT_MESH && m_Mesh)
+        {
+            if(m_Mesh->GetAttributeCount() == 0) return;
+            const Mesh::MeshAttribute* a = m_Mesh->GetVertexAttribute();
+            if(a->Count == 0) return;
+            
+            Vec3 Min,Max;
+            Min = Max = ((Vec3*)a->Pointer)[0];
+            for(i32 i = 0;i < a->Count;i++)
+            {
+                Vec3 Vert = ((Vec3*)a->Pointer)[i];
+                if(Vert.x < Min.x) Min.x = Vert.x;
+                if(Vert.y < Min.y) Min.y = Vert.y;
+                if(Vert.z < Min.z) Min.z = Vert.z;
+                
+                if(Vert.x > Max.x) Max.x = Vert.x;
+                if(Vert.y > Max.y) Max.y = Vert.y;
+                if(Vert.z > Max.z) Max.z = Vert.z;
+            }
+            
+            m_BoundingBox.m_ModelSpaceBounds.Set(Min,Max);
+        }
     }
     void RenderObject::UpdateUniforms()
     {
@@ -170,6 +197,7 @@ namespace Silk {
                     {
                         m_Meshes.push_back(m);
                         m->m_MeshListID = m_Meshes.size() - 1;
+                        m->m_MeshList = &m_Meshes;
                         
                         m_ObjectsByMesh.push_back(vector<RenderObject*>());
                         m_ObjectsByMesh[m->m_MeshListID].push_back(Obj);

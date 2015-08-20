@@ -43,13 +43,19 @@ namespace Silk
     
     void Plane::Normalize()
     {
-        Scalar iDistance = 1.0f / Normal.Magnitude();
+        Scalar MagSq = Normal.MagnitudeSq();
+        if(MagSq == 0) return;
+        
+        Scalar iDistance = 1.0f / sqrt(MagSq);
         Normal *= iDistance;
         Offset *= iDistance;
     }
     Plane Plane::Normalized() const
     {
-        Scalar iDistance = 1.0f / Normal.Magnitude();
+        Scalar MagSq = Normal.MagnitudeSq();
+        if(MagSq == 0) return *this;
+        
+        Scalar iDistance = 1.0f / sqrt(MagSq);
         Vec3 n = Normal * iDistance;
         Scalar o = Offset * iDistance;
         return Plane(Vec4(n,o));

@@ -24,7 +24,7 @@ namespace TestClient
         RenderObject* LObj = 0;
         Light* L = 0;
         
-        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
+        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT);
         L = new Light(LT_POINT);
         
         LObj->SetLight(L);
@@ -36,7 +36,7 @@ namespace TestClient
         m_Renderer->GetScene()->AddRenderObject(LObj);
         m_Lights.push_back(LObj);
         
-        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
+        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT);
         L = new Light(LT_SPOT);
         
         LObj->SetLight(L);
@@ -52,7 +52,7 @@ namespace TestClient
         m_Lights.push_back(LObj);
         
         
-        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT, false);
+        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT);
         L = new Light(LT_DIRECTIONAL);
         
         LObj->SetLight(L);
@@ -73,7 +73,7 @@ namespace TestClient
         m_Mesh->SetTangentBuffer (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTangents ()));
         m_Mesh->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
         
-        m_Object = m_Renderer->CreateRenderObject(ROT_MESH,false);
+        m_Object = m_Renderer->CreateRenderObject(ROT_MESH);
         m_Object->SetMesh(m_Mesh,m_Material);
         m_Renderer->GetScene()->AddRenderObject(m_Object);
         
@@ -88,7 +88,7 @@ namespace TestClient
         
         for(i32 i = 0;i < m_Lights.size();i++)
         {
-            RenderObject* d = m_Renderer->CreateRenderObject(ROT_MESH,false);
+            RenderObject* d = m_Renderer->CreateRenderObject(ROT_MESH);
             d->SetMesh(m_LDispMesh,m_LDispMat);
             m_Renderer->GetScene()->AddRenderObject(d);
             m_LightDisplays.push_back(d);

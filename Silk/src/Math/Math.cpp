@@ -1283,7 +1283,11 @@ namespace Silk
     
     static std::minstd_rand0 gen;
     void SeedRandom(i32 Seed) { if(Seed == -1) { gen.seed((i32)time(0)); } else gen.seed(Seed); }
-    Scalar Random(Scalar Min,Scalar Max) { uniform_real_distribution<> dist(Min,Max); return dist(gen);  }
+    Scalar Random   (Scalar Min ,Scalar Max) { uniform_real_distribution<> dist(Min,Max); return dist(gen);  }
+    Scalar Random   (Scalar Span           ) { Scalar hSpan = Span * 0.5f;uniform_real_distribution<> dist(-hSpan,hSpan); return dist(gen); }
+    Vec3   Random   (Vec3 Min   ,Vec3   Max) { return Vec3(Random(Min.x,Max.x),Random(Min.y,Max.y),Random(Min.z,Max.z)); }
+    Vec3   RandomVec(Scalar Span           ) { return Vec3(Random(Span       ),Random(Span       ),Random(Span       )); }
+    
     Vec3 ColorFunc(Scalar Factor)
     {
         Scalar Div = (abs(fmodf(Factor,1.0f)) * 6.0f);

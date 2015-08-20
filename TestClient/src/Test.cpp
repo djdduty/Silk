@@ -28,7 +28,6 @@ namespace TestClient
     void OnKey(GLFWwindow* Win,i32 Key,i32 ScanCode,i32 Action,i32 Mods)
     {
         if(!g_Test) return;
-        printf("k: %d s: %d a: %d m: %d\n",Key,ScanCode,Action,Mods);
         /*
          * Break glass in case of game engine
          *  ____________
@@ -47,17 +46,19 @@ namespace TestClient
         
         if(Action == GLFW_PRESS)
         {
-                 if(Key == GLFW_KEY_W) g_Test->GetUI()->OnButtonDown(BTN_MOVE_FORWARD );
-            else if(Key == GLFW_KEY_S) g_Test->GetUI()->OnButtonDown(BTN_MOVE_BACKWARD);
-            else if(Key == GLFW_KEY_A) g_Test->GetUI()->OnButtonDown(BTN_MOVE_LEFT    );
-            else if(Key == GLFW_KEY_D) g_Test->GetUI()->OnButtonDown(BTN_MOVE_RIGHT   );
+                 if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_FORWARD );
+            else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_BACKWARD);
+            else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_LEFT    );
+            else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_RIGHT   );
+            else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonDown(BTN_QUIT         );
         }
         else if(Action == GLFW_RELEASE)
         {
-                 if(Key == GLFW_KEY_W) g_Test->GetUI()->OnButtonUp(BTN_MOVE_FORWARD );
-            else if(Key == GLFW_KEY_S) g_Test->GetUI()->OnButtonUp(BTN_MOVE_BACKWARD);
-            else if(Key == GLFW_KEY_A) g_Test->GetUI()->OnButtonUp(BTN_MOVE_LEFT    );
-            else if(Key == GLFW_KEY_D) g_Test->GetUI()->OnButtonUp(BTN_MOVE_RIGHT   );
+                 if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_FORWARD );
+            else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_BACKWARD);
+            else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_LEFT    );
+            else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_RIGHT   );
+            else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonUp(BTN_QUIT         );
         }
     }
     
@@ -115,6 +116,9 @@ namespace TestClient
             m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
             m_Renderer->Init();
+            
+            m_DebugDraw = new DebugDrawer(m_Renderer);
+            m_Renderer->SetDebugDrawer(m_DebugDraw);
         
             m_ShaderGenerator = m_Renderer->GetShaderGenerator();
             
@@ -136,7 +140,7 @@ namespace TestClient
             m_Window->PollEvents();
             m_Rasterizer->ClearActiveFramebuffer();
             
-            m_DoShutdown = false;
+            m_DoShutdown = m_FlyCameraEnabled = false;
             
             m_ObjLoader = new ObjLoader();
             m_UIManager = 0;
@@ -164,6 +168,7 @@ namespace TestClient
         m_UIManager->GetCamera()->SetZClipPlanes(0.0f,200.0f);
         m_UIManager->GetCamera()->SetTransform(Translation(Vec3(0,0,-100)));
         
+        glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
         glfwSetMouseButtonCallback(m_Window->GetWindow(),OnClick     );
         glfwSetCursorPosCallback  (m_Window->GetWindow(),OnCursorMove);
         glfwSetKeyCallback        (m_Window->GetWindow(),OnKey       );
@@ -208,7 +213,7 @@ namespace TestClient
         m_Cursor    = new UIElement();
         m_UIManager->AddElement(m_Cursor);
         
-        m_CursorObj = m_Renderer ->CreateRenderObject(ROT_MESH,false);
+        m_CursorObj = m_Renderer ->CreateRenderObject(ROT_MESH);
         m_CursorMat = m_Renderer ->CreateMaterial();
         m_CursorMat->SetMap(Material::MT_DIFFUSE,m_Textures[m_CursorTexIndex]);
         m_Textures[m_CursorTexIndex]->Destroy();
@@ -221,6 +226,14 @@ namespace TestClient
         m_UIElements.push_back(m_Cursor   );
         m_Meshes    .push_back(m_CursorObj);
         m_Materials .push_back(m_CursorMat);
+    }
+    void Test::InitFlyCamera(const Vec3& InitPos)
+    {
+        m_CamPos = InitPos;
+        m_xCamRot = Quat(0,1,0,0);
+        m_yCamRot = Quat(1,0,0,0);
+        m_CamRot  = Quat(0,1,0,0);
+        m_FlyCameraEnabled = true;
     }
     Byte* Test::Load(const char* File,i64 *OutSize)
     {
@@ -265,7 +278,7 @@ namespace TestClient
     }
     RenderObject* Test::AddLight(LightType Type,const Vec3& Pos)
     {
-        RenderObject* LObj = m_Renderer->CreateRenderObject(ROT_LIGHT,false);
+        RenderObject* LObj = m_Renderer->CreateRenderObject(ROT_LIGHT);
         Light* L = new Light(Type);
         
         LObj->SetLight(L);
@@ -293,7 +306,7 @@ namespace TestClient
         i32 First = m_Meshes.size();
         for(i32 i = 0;i < Count;i++)
         {
-            Obj = m_Renderer->CreateRenderObject(ROT_MESH,false);
+            Obj = m_Renderer->CreateRenderObject(ROT_MESH);
             Obj->SetMesh(M,Mat);
             m_Renderer->GetScene()->AddRenderObject(Obj);
             
@@ -327,8 +340,6 @@ namespace TestClient
                 C.y = f32(Pixels[Idx + 1]) * Inv255; 
                 C.z = f32(Pixels[Idx + 2]) * Inv255;
                 C.w = f32(Pixels[Idx + 3]) * Inv255;
-                
-				swap(C.x,C.z);
                 
                 Tex->SetPixel(Vec2(x,y),C);
             }
@@ -470,16 +481,6 @@ namespace TestClient
         if(ceff  < 0.0f) ceff = 0.0f;
         if(aceff < 0.0f) aceff = 0.0f;
         
-        /* * * * * * * * * * * * * *\
-         *     /.-'       `-.\     *
-         *    //             \\    *
-         *   /j_______________j\   *
-         *  /o.-==-. .-. .-==-.o\  *
-         *  ||      )) ((      ||  *
-         *   \\____//   \\____//   *
-         *    `-==-'     `-==-'    *
-        \* * * * * * * * * * * * * */
-        
         printf("+--------------(Render Statistics)--------------+\n");
         printf("| Frame ID    : %10lld f  " "                  |\n",Stats.FrameID);
         printf("| Run time    : %10.3f s  " "                  |\n",m_ElapsedTime);
@@ -502,6 +503,10 @@ namespace TestClient
     }
     bool Test::IsRunning()
     {
+        if(m_UIManager)
+        {
+            if(m_UIManager->IsButtonDown(BTN_QUIT)) m_DoShutdown = true;
+        }
         if(m_Renderer->GetRenderStatistics().FrameID > 0)
         {
             /* End previous frame */
@@ -520,6 +525,8 @@ namespace TestClient
         /* Start new frame */
         if(!m_Window->GetCloseRequested() && !m_DoShutdown)
         {
+            if(m_UIManager) m_UIManager->ResetCursorDelta();
+            
             /* Prepare the task manager */
             m_TaskManager->BeginFrame();
             
@@ -532,6 +539,24 @@ namespace TestClient
             /* Adjust aspect ratio (in case window resized) */
             Scalar Aspect = m_Rasterizer->GetContext()->GetResolution().y / m_Rasterizer->GetContext()->GetResolution().x;
             m_Camera->SetFieldOfView(Vec2(60.0f,60.0f * Aspect));
+            
+            /* Transform camera */
+            if(m_FlyCameraEnabled && m_UIManager)
+            {
+                Vec2 CursorDelta = m_UIManager->GetUnBoundedCursorDelta() * 0.5f;
+                if(CursorDelta.Magnitude() > 0.01f)
+                {
+                    m_xCamRot *= Quat(Vec3(0,1,0), CursorDelta.x * CAMERA_TURN_SPEED);
+                    m_yCamRot *= Quat(Vec3(1,0,0),-CursorDelta.y * CAMERA_TURN_SPEED);
+                    m_CamRot = m_xCamRot * m_yCamRot;
+                }
+                if(m_UIManager->IsButtonDown(BTN_MOVE_FORWARD )) m_CamPos += m_CamRot * Vec3(0,0,-CAMERA_MOVE_SPEED) * GetDeltaTime();
+                if(m_UIManager->IsButtonDown(BTN_MOVE_BACKWARD)) m_CamPos += m_CamRot * Vec3(0,0, CAMERA_MOVE_SPEED) * GetDeltaTime();
+                if(m_UIManager->IsButtonDown(BTN_MOVE_LEFT    )) m_CamPos += m_CamRot * Vec3(-CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
+                if(m_UIManager->IsButtonDown(BTN_MOVE_RIGHT   )) m_CamPos += m_CamRot * Vec3( CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
+                
+                m_Camera->SetTransform(Translation(m_CamPos) * m_CamRot.ToMat());
+            }
             
             /* Compute ray from cursor into world (could be useful) */
             f64 x,y;

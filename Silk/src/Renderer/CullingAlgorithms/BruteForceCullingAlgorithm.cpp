@@ -15,16 +15,15 @@ namespace Silk
     {
         for(i32 i = 0;i < m_Count;i++)
         {
-            bool IsVisible = false;
-            
             RenderObject* Obj = m_Parent->GetScene()->GetObjectList()->GetMeshList()[m_StartIndex + i];
-            Mat4 t = Obj->GetTransform();
+            const Frustum* F = m_Parent->GetScene()->GetActiveCamera()->GetFrustum();
             
             //To do: More advanced culling code, not just testing object position
-            if(m_Parent->GetScene()->GetActiveCamera()->GetFrustum()->ContainsPoint(Vec3(t.x.w,t.y.w,t.z.w))) IsVisible = true;
-            
-            if(IsVisible) m_VisibleObjects.push_back(Obj);
-            else m_Parent->SetObjectVisibility(Obj,false); //Only call from thread when setting as false
+            if(F->ContainsPoint(Obj->GetTransform().GetTranslation()))
+            {
+                m_VisibleObjects.push_back(Obj);
+            }
+            else m_Parent->SetObjectVisibility(Obj,false);
         }
     }
     
@@ -47,6 +46,16 @@ namespace Silk
         Result->m_VisibleObjects = new ObjectList();
         Result->m_VisibleObjects->SetIndexed(false);
         
+        Camera c;
+        c.SetZClipPlanes(0.01f,100.0f);
+        static f32 a = 0.0f;
+        a += 0.1f;
+        c.SetPerspective(Vec2(40.0f,40.0f));
+        c.SetTransform(Translation(Vec3(0,0,sin(a) * 100.0f)));
+        c.GetProjection();
+        Camera* tmp = m_Scene->GetActiveCamera();
+        m_Scene->SetActiveCamera(&c);
+        
         ObjectList *l = m_Scene->GetObjectList();
         if(l->GetMeshList().size() > m_Scene->GetRenderer()->GetMinObjectCountForMultithreadedCulling())
         {
@@ -63,12 +72,14 @@ namespace Silk
             m_TaskManager->WaitForThreads();
             
             Result->m_TotalTaskDuration = 0.0f;
+            i32 tobj = 0;
             for(i32 i = 0;i < m_TaskManager->GetCoreCount();i++)
             {
                 for(i32 o = 0;o < Tasks[i]->m_VisibleObjects.size();o++)
                 {
                     Result->m_VisibleObjects->AddObject(Tasks[i]->m_VisibleObjects[o]);
                     SetObjectVisibility(Tasks[i]->m_VisibleObjects[o],true);
+                    tobj++;
                 }
                 
                 Result->m_TotalTaskDuration += Tasks[i]->m_Duration;
@@ -105,6 +116,8 @@ namespace Silk
             Result->m_RealDuration = tmr;
             Result->m_Efficiency = 0.0f;
         }
+        
+        m_Scene->SetActiveCamera(tmp);
         
         return Result;
     }
