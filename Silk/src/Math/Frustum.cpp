@@ -5,8 +5,7 @@ namespace Silk
 {
     void Frustum::Set(Camera* c)
     {
-        Mat4 pv = (c->GetProjection()/* * c->GetTransform().Inverse()*/).Transpose();
-        m_Offset = c->GetTransform().GetTranslation();
+        Mat4 pv = (c->GetProjection() * c->GetTransform().Inverse()).Transpose();
         
 		m_Planes[FP_LEFT  ] = Plane(Vec4(pv.x.w + pv.x.x,
                                          pv.y.w + pv.y.x,
@@ -49,7 +48,7 @@ namespace Silk
     {
         for(i32 i = 0;i < 6;i++)
         {
-            if(m_Planes[i].DistanceToPoint(Pt + m_Offset) < 0)
+            if(m_Planes[i].DistanceToPoint(Pt) < 0)
             {
                 return false;
             }

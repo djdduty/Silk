@@ -29,6 +29,5 @@ namespace Silk
         
         protected:
             Plane m_Planes[6];
-            Vec3  m_Offset;
     };
 }

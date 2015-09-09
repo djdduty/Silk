@@ -22,6 +22,7 @@ namespace Silk
         for(i32 i = 0;i < m_Scene->GetObjectList()->GetMeshList().size();i++)
         {
             Result->m_VisibleObjects->AddObject(m_Scene->GetObjectList()->GetMeshList()[i]);
+			SetObjectVisibility(m_Scene->GetObjectList()->GetMeshList()[i],true);
         }
         Result->m_RealDuration = tmr;
         return Result;
