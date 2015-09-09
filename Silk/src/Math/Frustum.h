@@ -1,6 +1,8 @@
 #pragma once
 #include <Math/Math.h>
 #include <Math/Plane.h>
+#include <Utilities/BoundingBox.h>
+#include <Renderer/RenderObject.h>
 
 namespace Silk
 {
@@ -26,6 +28,7 @@ namespace Silk
             Plane GetPlane(FRUSTUM_PLANE p) const { return m_Planes[p]; }
         
             bool ContainsPoint(const Vec3& Pt) const;
+            bool ContainsOBB(const Vec3& Pt, const OBB& BoundingBox) const;
         
         protected:
             Plane m_Planes[6];

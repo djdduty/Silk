@@ -21,7 +21,7 @@ namespace Silk
             const Frustum* F = m_Parent->GetScene()->GetActiveCamera()->GetFrustum();
             
             //To do: More advanced culling code, not just testing object position
-            if(F->ContainsPoint(Obj->GetTransform().GetTranslation()))
+            if(F->ContainsOBB(Obj->GetTransform().GetTranslation(), Obj->GetBoundingBox()))
             {
                 m_VisibleObjects.push_back(Obj);
             }
@@ -39,8 +39,6 @@ namespace Silk
     
     CullingResult* BruteForceCullingAlgorithm::PerformCulling()
     {
-        const Frustum* ClipPlanes = m_Scene->GetActiveCamera()->GetFrustum();
-        
         Timer tmr;
         tmr.Start();
         
@@ -92,6 +90,7 @@ namespace Silk
 		}
         else
         {
+            const Frustum* ClipPlanes = m_Scene->GetActiveCamera()->GetFrustum();
             for(i32 i = 0;i < l->GetMeshList().size();i++)
             {
                 bool IsVisible = false;
@@ -100,8 +99,8 @@ namespace Silk
                 if(Obj->IsAlwaysVisible()) { Result->m_VisibleObjects->AddObject(Obj); continue; }
                 
                 Mat4 t = Obj->GetTransform();
-                
-                if(ClipPlanes->ContainsPoint(Vec3(t.x.w,t.y.w,t.z.w))) IsVisible = true;
+
+                if(ClipPlanes->ContainsOBB(Vec3(t.x.w,t.y.w,t.z.w), Obj->GetBoundingBox())) IsVisible = true;
             
                 SetObjectVisibility(Obj,IsVisible);
                 if(IsVisible) Result->m_VisibleObjects->AddObject(Obj);

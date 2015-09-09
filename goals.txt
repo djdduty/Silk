@@ -1,0 +1,67 @@
+RenderObject
+    -Wrap ObjectIdentifier and Mesh/Camera/Texture/Whatever
+    -Created only by the Renderer Interface(as a factory) with a pointer to said Renderer (to add itself to updated later and such)
+
+Renderer interface (The stuff that won’t get overridden from abstraction)
+    -Will contain LightingImplementation (set this to your class that implements lighting implementation)
+    -Will contain ShadowImplementation (we might not have to abstract this, could just use CSM(see below) ALL the time)
+    -Will be responsible for combining the lighting buffer(see below), the albedo buffer, and the shadow maps
+    -Will contain list of active PPS and set up that list based on configuration
+    -Will access and control the render list and trigger the culling methods
+    -Basically the god class
+
+Debug Rendering
+    -Wireframe rendering
+
+Frustum Culling in Renderer Interface
+    -Needs to be smarter
+
+After this the real fun starts
+Start Forward+ Implementation (Should probably rename Render Implementation to Lighting Implementation, since that’s the only thing we really want to abstract here?)
+    -Light collection and shader uniform passing
+    -actual shader lighting “modules”.
+    -Perhaps lighting implementations should just populate a “lighting buffer” for use later outside of any specific implementation, rather than blend / create the final pre-pps image
+
+Basic Cascaded Shadow Maps (or other) implementation
+    -We can possibly decouple this from the lighting as well if lighting implementations output a seperate lighting buffer rather than make the final(pre-pps) image(see above)
+    -Combine this, the lighting buffer, and albedo when these maps are finally done
+
+Post Processing Stage(anything run after the lighting that uses the resulting rendered buffers)
+    -Be able to tell a Render implementation what buffers we want populated for various PPS effects (SSAO needs depth, HDR needs the lighting information, etc)
+    -SSAO
+    -HDR
+    -AA as a PPS?
+    -Custom, they can probably tell a shader module(see above) that a resulting value should populate a buffer(that they setup) when enabled
+    -Make it easy to override any default PPS with a new implementation (this is why decoupling it is so nice)
+
+Particle System
+    -GPU calculated
+    -Use modules to inject into shaders without caring what lighting implementation is used (this is the reason for decoupling the lighting and other shader code)
+
+Physically based rendering in our Forward+ Render(Lighting) implementation
+    -Fancy specular!
+    -All the material values should already be automatically passed (see above)
+
+Skinned animation
+    -Automatically passed uniforms and attributes if the mesh has them
+    -Vertex shader module (so it doesn’t matter what lighting implementation is used, it is decoupled)
+    -Must be very efficient, 30-40 skinned meshes with no impact?
+    -Add some debug rendering to show a bone skeleton, and potential toggle vertex weights for a single mesh at a time
+
+Potential Global Illumination implementations
+    -Does it go in the lighting implementations, or act similar to a pps?
+    -What is the most efficient implementation vs the best looking one
+
+(Optimizations along the way are next)
+
+Occlusion Culling
+    -How does this not cause a problem with shadow mapping?
+
+Indoor Portal culling
+    -Might not be necessary
+
+UIManager
+    -Turn into factory
+
+Shader Generator
+    -Regenerate during runtime upon configuration changes if necessary

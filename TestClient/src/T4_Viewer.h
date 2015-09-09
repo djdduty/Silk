@@ -37,7 +37,6 @@ namespace TestClient
 #else
             virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
 #endif
-            virtual CullingAlgorithm* GetPreferredCullingAlgorithm() const { return new NullCullingAlgorithm(m_Renderer->GetScene()); }
         
         protected:
             ATRFile m_ATR;

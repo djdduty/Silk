@@ -521,7 +521,7 @@ namespace TestClient
             m_DeltaTime       = m_ElapsedTime - m_LastElapsedTime;
             
             /* Limit framerate and measure extra time in float operations */
-            LimitFPS();
+            //LimitFPS();
         }
         
         /* Start new frame */
