@@ -116,9 +116,6 @@ namespace TestClient
             m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
             m_Renderer->Init();
-            
-            m_DebugDraw = new DebugDrawer(m_Renderer);
-            m_Renderer->SetDebugDrawer(m_DebugDraw);
         
             m_ShaderGenerator = m_Renderer->GetShaderGenerator();
             
@@ -126,7 +123,7 @@ namespace TestClient
             
             m_Camera = new Camera(Vec2(60.0f,60.0f * Aspect),0.001f,2000.0f);
             m_Renderer->GetScene()->SetActiveCamera(m_Camera);
-            m_Renderer->GetScene()->SetCullingAlgorithm(new BruteForceCullingAlgorithm(m_Renderer->GetScene(),m_TaskManager));
+			m_Renderer->GetScene()->SetCullingAlgorithm(GetPreferredCullingAlgorithm());
             
             m_ElapsedTime = m_LastElapsedTime = m_Window->GetElapsedTime();
             
@@ -235,6 +232,11 @@ namespace TestClient
         m_CamRot  = Quat(0,1,0,0);
         m_FlyCameraEnabled = true;
     }
+	void Test::InitDebugDisplay()
+	{
+        m_DebugDraw = new DebugDrawer(m_Renderer);
+        m_Renderer->SetDebugDrawer(m_DebugDraw);
+	}
     Byte* Test::Load(const char* File,i64 *OutSize)
     {
         FILE* fp = fopen(File,"rb");

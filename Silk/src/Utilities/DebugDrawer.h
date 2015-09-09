@@ -21,7 +21,7 @@ namespace Silk
                                                  const Vec3& Scale  = Vec3(1,1,1  ));
             virtual void Box(const Mat4& t,const Vec3& HalfExtents,const Vec4& Color);
             virtual void OBB(const OBB& Box,const Vec4& Color);
-            virtual void AABB(const AABB& Box,const Vec4& Color);
+            virtual void AABB(const Mat4& ObjTrans,const AABB& Box,const Vec4& Color);
         
             void AddVertex(Scalar x,Scalar y,Scalar z,Scalar r,Scalar g,Scalar b,Scalar a) { AddVertex(Vec3(x,y,z),Vec4(r,g,b,a)); }
             void AddVertex(const Vec3& Vert,const Vec4& Color);

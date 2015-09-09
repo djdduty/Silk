@@ -185,7 +185,7 @@ namespace Silk
     {
         public:
             Shader(Renderer* r);
-            i32 AddRef() { m_RefCount++; }
+            i32 AddRef() { m_RefCount++; return m_RefCount; }
             i32 Destroy();
         
             virtual i32 Load(CString VertexCode,CString GeometryCode,CString FragmentCode) = 0;

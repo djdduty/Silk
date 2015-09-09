@@ -91,9 +91,9 @@ namespace Silk
     }
     void DebugDrawer::OBB(const Silk::OBB &Box,const Vec4& Color)
     {
-        DebugDrawer::Box(Box.GetObject()->GetTransform(),Box.GetLocalAABB().GetExtents(),Color);
+		DebugDrawer::Box(Box.GetObject()->GetTransform() * Translation((Box.GetLocalAABB().GetCenter())),Box.GetLocalAABB().GetExtents(),Color);
     }
-    void DebugDrawer::AABB(const Silk::AABB& Box,const Vec4& Color)
+    void DebugDrawer::AABB(const Mat4& ObjTrans,const Silk::AABB& Box,const Vec4& Color)
     {
         DebugDrawer::Box(Translation((Box.GetCenter())),Box.GetExtents(),Color);
     }
@@ -105,6 +105,8 @@ namespace Silk
 
     void DebugDrawer::Update(Scalar dt)
     {
+		if(m_Verts.size() == 0) return; 
+
         Mesh* m = new Mesh();
         m->PrimitiveType = PT_LINES;
         m->SetVertexBuffer(m_Verts .size(),&m_Verts [0].x);

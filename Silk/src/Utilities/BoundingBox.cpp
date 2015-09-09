@@ -1,4 +1,5 @@
 #include <Utilities/BoundingBox.h>
+#include <Renderer/RenderObject.h>
 #include <cmath>
 
 namespace Silk
@@ -43,6 +44,45 @@ namespace Silk
 
     AABB OBB::ComputeWorldAABB()
     {
-        return AABB(Vec3(),Vec3());
+		/* 
+         *       1-------3
+         *      /|      /|
+         *     5_______7 |
+         *     | 0_____|_2
+         *     |/      |/
+         *     4_______6
+         *
+         */
+		Vec3 HalfExtents = m_ModelSpaceBounds.GetExtents();
+		Mat4 tt = m_Obj->GetTransform().Transpose();
+        Vec3 Box[8] =
+        {
+			tt * ((Vec3(-1.0f,-1.0f, 1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+            tt * ((Vec3(-1.0f, 1.0f, 1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+            tt * ((Vec3( 1.0f,-1.0f, 1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+            tt * ((Vec3( 1.0f, 1.0f, 1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+            
+            tt * ((Vec3(-1.0f,-1.0f,-1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+            tt * ((Vec3(-1.0f, 1.0f,-1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+            tt * ((Vec3( 1.0f,-1.0f,-1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+            tt * ((Vec3( 1.0f, 1.0f,-1.0f) * HalfExtents) + m_ModelSpaceBounds.GetCenter()),
+        };
+
+		Vec3 Min,Max;
+        Min = Max = Box[0];
+        for(i32 i = 0;i < 8;i++)
+        {
+			Vec3 Vert = Box[i];
+            if(Vert.x < Min.x) Min.x = Vert.x;
+            if(Vert.y < Min.y) Min.y = Vert.y;
+            if(Vert.z < Min.z) Min.z = Vert.z;
+            
+            if(Vert.x > Max.x) Max.x = Vert.x;
+            if(Vert.y > Max.y) Max.y = Vert.y;
+            if(Vert.z > Max.z) Max.z = Vert.z;
+        }
+            
+
+        return AABB(Min,Max);
     }
 }

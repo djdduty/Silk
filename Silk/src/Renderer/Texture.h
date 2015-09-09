@@ -19,6 +19,7 @@ namespace Silk
             virtual void DisableRTT() = 0;
         
             void CreateTexture(i32 Width,i32 Height);
+			void CreateTexture(i32 Width,i32 Height,Byte* Data);
             void SetPixel(const Vec2& Coord,const Vec4& Color);
             Vec4 GetPixel(const Vec2& Coord) const;
         

@@ -97,7 +97,7 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,u_Shininess);\n"                                                               +
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color);// + (SpecularPower * u_Lights[l].Color * sSpecular);\n" +
+    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color) + (sColor * 0.4);// + (SpecularPower * u_Lights[l].Color * sSpecular);\n" +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"                +
     "\t\t\t\tFinalColor *= u_Lights[l].Power * Att;\n"                                                                                +
@@ -121,7 +121,7 @@ namespace Silk
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\tfloat Soften = smoothstep(u_Lights[l].Cutoff,u_Lights[l].Soften,cosLightAngle);\n"                                       +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
+    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color) + (sColor * 0.4);// + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tfloat Att = 1.0 / (u_Lights[l].CAtt + (u_Lights[l].LAtt * Dist) + (u_Lights[l].QAtt * (Dist * Dist)));\n"                +
     "\t\t\t\tFinalColor *= u_Lights[l].Power * Soften * Att * 0.0;\n"                                                                       +
@@ -138,7 +138,7 @@ namespace Silk
     "\t\t\t\t\tSpecularPower       = pow(SpecularAngle,u_Shininess);\n"                                                               +
     "\t\t\t\t}\n\n"                                                                                                                   +
     "\t\t\t\t//Light equation\n"                                                                                                      +
-    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color) + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
+    "\t\t\t\tvec4 FinalColor = (ndotl * sColor * u_Lights[l].Color) + (sColor * 0.4);// + (SpecularPower * u_Lights[l].Color * sSpecular);\n"             +
     "\t\t\t\t//Attenuation\n"                                                                                                         +
     "\t\t\t\tFinalColor *= u_Lights[l].Power;\n"                                                                                      +
     "\t\t\t\t" + FragmentColorOutputName + " += FinalColor;\n";

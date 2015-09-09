@@ -1,8 +1,8 @@
 #pragma once
-#include <Silk.h>
-#include <System/TaskManager.h>
-#include <ObjLoader.h>
-#include <Window.h>
+#include "Silk.h"
+#include "System/TaskManager.h"
+#include "ObjLoader.h"
+#include "Window.h"
 
 #define CAMERA_MOVE_SPEED 15.0f
 #define CAMERA_TURN_SPEED 0.6f
@@ -33,7 +33,6 @@ namespace TestClient
             void Init();
             void InitGUI();
             void InitCursor();
-			void InitDebugDisplay();
             void InitFlyCamera(const Vec3& InitPos = Vec3(0,5,0));
         
             UIManager* GetUI() const { return m_UIManager; }
@@ -58,7 +57,6 @@ namespace TestClient
             virtual void Shutdown() = 0;
             virtual const char* GetTestName() const = 0;
             virtual Vec2 GetPreferredInitResolution() const;
-			virtual CullingAlgorithm* GetPreferredCullingAlgorithm() const { return new BruteForceCullingAlgorithm(m_Renderer->GetScene(),m_TaskManager); }
         
             Window         * m_Window;
             Renderer       * m_Renderer;

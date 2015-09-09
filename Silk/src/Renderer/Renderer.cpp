@@ -14,7 +14,7 @@
 
 namespace Silk
 {
-    Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster)
+	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0)
     {
     }
 
@@ -207,7 +207,7 @@ namespace Silk
                     
                     //Pass material uniforms
                     Material* Mat = Obj->GetMaterial();
-                    if(Mat->HasUpdated()) Shader->UseMaterial(Obj->GetMaterial());
+                    /*if(Mat->HasUpdated())*/ Shader->UseMaterial(Obj->GetMaterial());
                     
                     //Pass object uniforms
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
@@ -276,14 +276,15 @@ namespace Silk
                         if((*iList)[c]->m_CulledInstanceIndex == -1) continue;
                         
                         m_DebugDrawer->Transform((*iList)[c]->GetTransform());
-                        m_DebugDrawer->AABB     ((*iList)[c]->GetBoundingBox().GetLocalAABB(),Vec4(1,1,1,1));
+                        m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),(*iList)[c]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
                         ic++;
                     }
                 }
                 else
                 {
                     m_DebugDrawer->Transform(MeshesRendered[i]->GetTransform());
-                    m_DebugDrawer->AABB     (MeshesRendered[i]->GetBoundingBox().GetLocalAABB(),Vec4(1,1,1,1));
+					m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),MeshesRendered[i]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
+					m_DebugDrawer->OBB      (MeshesRendered[i]->GetBoundingBox(),Vec4(1,0,0,1));
                 }
             }
         }

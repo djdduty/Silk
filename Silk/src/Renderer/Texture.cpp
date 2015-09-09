@@ -21,7 +21,7 @@ namespace Silk
         }
         return r;
     }
-
+	
     void Texture::CreateTexture(i32 Width,i32 Height)
     {
         if(m_Pixels) delete [] m_Pixels;
@@ -30,10 +30,18 @@ namespace Silk
         m_Pixels  = new u32[(Width * Height) + 1];
         m_MemSize = Width * Height * sizeof(u32);
     }
+    void Texture::CreateTexture(i32 Width,i32 Height,Byte* Data)
+    {
+        if(m_Pixels) delete [] m_Pixels;
+        m_Width   = Width;
+        m_Height  = Height;
+        m_MemSize = Width * Height * sizeof(u32);
+		m_Pixels = (u32*)Data;
+    }
     void Texture::SetPixel(const Vec2 &Coord,const Vec4 &Color)
     {
         if(!m_Pixels) return;
-        i32 bIdx = ((i32)Coord.x) + (((i32)Coord.y) * m_Height);
+        i32 bIdx = ((i32)Coord.x) + (((i32)Coord.y) * m_Width);
         Byte* Pixel = (Byte*)&m_Pixels[bIdx];
         Pixel[0] = Color.x * 255.0f;
         Pixel[1] = Color.y * 255.0f;
@@ -43,7 +51,7 @@ namespace Silk
     Vec4 Texture::GetPixel(const Vec2& Coord) const
     {
         if(!m_Pixels) return Vec4(0,0,0,0);
-        i32 bIdx = ((i32)Coord.x) + (((i32)Coord.y) * m_Height);
+        i32 bIdx = ((i32)Coord.x) + (((i32)Coord.y) * m_Width);
         Vec4 p;
         const f32 Inv255 = 1.0f / 255.0f;
         p.x = ((f32)((uByte*)&m_Pixels[bIdx])[0]) * Inv255;
