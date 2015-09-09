@@ -12,7 +12,7 @@
 #include <vector>
 using namespace std;
 
-#include <T4\MeshStructs.h>
+#include "MeshStructs.h"
 
 class MTFBlock
 {
