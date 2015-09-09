@@ -44,11 +44,29 @@ namespace Silk
         m_Planes[4].Normalize();
         m_Planes[5].Normalize();
     }
+
     bool Frustum::ContainsPoint(const Vec3& Pt) const
     {
         for(i32 i = 0;i < 6;i++)
         {
             if(m_Planes[i].DistanceToPoint(Pt) < 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool Frustum::ContainsOBB(const Vec3& Pt, const OBB& BoundingBox) const
+    {
+        Vec3 Center = Pt + BoundingBox.GetLocalAABB().GetCenter();
+        Vec3 HalfDims = BoundingBox.GetLocalAABB().GetDimensions();
+        float Longest = HalfDims.x;
+        if(HalfDims.y > Longest) Longest = HalfDims.y;
+        if(HalfDims.z > Longest) Longest = HalfDims.z;
+        for(i32 i = 0;i < 6;i++)
+        {
+            if((m_Planes[i].DistanceToPoint(Center) + Longest) < 0)
             {
                 return false;
             }

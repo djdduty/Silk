@@ -85,4 +85,12 @@ namespace Silk
 
         return AABB(Min,Max);
     }
+
+    AABB OBB::GetLocalAABB() const
+    {
+        AABB Ret = AABB(m_ModelSpaceBounds.GetCenter() - m_ModelSpaceBounds.GetExtents(),
+                        m_ModelSpaceBounds.GetCenter() + m_ModelSpaceBounds.GetExtents());
+        Ret.m_HalfExtents *= m_Obj->GetTransform().GetScale();
+        return Ret;
+    }
 }

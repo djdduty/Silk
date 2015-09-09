@@ -34,9 +34,9 @@ int main(int ArgC,char *ArgV[])
     //Test* Test = new LightingTest();
     //Test* Test = new NormalMappingTest();
     //Test* Test = new ParallaxMappingTest();
-    Test* Test = new CullingTest();
+    //Test* Test = new CullingTest();
     //Test* Test = new UITest();
-	//Test* Test = new T4_Viewer(ArgC,ArgV);
+	Test* Test = new T4_Viewer(ArgC,ArgV);
     
     Test->Init    ();
     Test->Run     ();

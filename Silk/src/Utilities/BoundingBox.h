@@ -11,6 +11,7 @@ namespace Silk
         
             void Set(const Vec3& Min,const Vec3& Max);
 
+
             bool Contains(const AABB& Other);
             bool Intersects(const AABB& Other);
 
@@ -19,6 +20,7 @@ namespace Silk
             Vec3 GetDimensions() const { return m_HalfExtents * 2.0f; }
         
         protected:
+            friend class OBB;
             Vec3 m_HalfExtents;
             Vec3 m_Center;
 	};
@@ -32,7 +34,7 @@ namespace Silk
         
             AABB ComputeWorldAABB();
         
-            AABB GetLocalAABB() const { return m_ModelSpaceBounds; }
+            AABB GetLocalAABB() const;
             RenderObject* GetObject() const { return m_Obj; }
         
         protected:

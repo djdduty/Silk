@@ -19,7 +19,7 @@ namespace Silk
             const Frustum* F = m_Parent->GetScene()->GetActiveCamera()->GetFrustum();
             
             //To do: More advanced culling code, not just testing object position
-            if(F->ContainsPoint(Obj->GetTransform().GetTranslation()))
+            if(F->ContainsOBB(Obj->GetTransform().GetTranslation(), Obj->GetBoundingBox()))
             {
                 m_VisibleObjects.push_back(Obj);
             }
@@ -37,8 +37,6 @@ namespace Silk
     
     CullingResult* BruteForceCullingAlgorithm::PerformCulling()
     {
-        const Frustum* ClipPlanes = m_Scene->GetActiveCamera()->GetFrustum();
-        
         Timer tmr;
         tmr.Start();
         
@@ -54,9 +52,11 @@ namespace Silk
         c.SetTransform(Translation(Vec3(0,0,sin(a) * 100.0f)));
         c.GetProjection();
         Camera* tmp = m_Scene->GetActiveCamera();
-        m_Scene->SetActiveCamera(&c);
+        //m_Scene->SetActiveCamera(&c);
+        tmp->SetZClipPlanes(0.01f, 100.0f);
+        const Frustum* ClipPlanes = m_Scene->GetActiveCamera()->GetFrustum();
 
-		m_Scene->GetRenderer()->GetDebugDrawer()->DrawCamera(&c,Vec4(1,0,1,1));
+		//m_Scene->GetRenderer()->GetDebugDrawer()->DrawCamera(&c,Vec4(1,0,1,1));
         
         ObjectList *l = m_Scene->GetObjectList();
         if(l->GetMeshList().size() > m_Scene->GetRenderer()->GetMinObjectCountForMultithreadedCulling())
@@ -108,8 +108,8 @@ namespace Silk
                 
                 RenderObject* Obj = m_Scene->GetObjectList()->GetMeshList()[i];
                 Mat4 t = Obj->GetTransform();
-                
-                if(ClipPlanes->ContainsPoint(Vec3(t.x.w,t.y.w,t.z.w))) IsVisible = true;
+
+                if(ClipPlanes->ContainsOBB(Vec3(t.x.w,t.y.w,t.z.w), Obj->GetBoundingBox())) IsVisible = true;
             
                 SetObjectVisibility(Obj,IsVisible);
                 if(IsVisible) Result->m_VisibleObjects->AddObject(Obj);
