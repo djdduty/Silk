@@ -49,12 +49,14 @@ namespace Silk
         Camera c;
         c.SetZClipPlanes(0.01f,100.0f);
         static f32 a = 0.0f;
-        a += 0.1f;
+        a += 0.01f;
         c.SetPerspective(Vec2(40.0f,40.0f));
         c.SetTransform(Translation(Vec3(0,0,sin(a) * 100.0f)));
         c.GetProjection();
         Camera* tmp = m_Scene->GetActiveCamera();
         m_Scene->SetActiveCamera(&c);
+
+		m_Scene->GetRenderer()->GetDebugDrawer()->DrawCamera(&c,Vec4(1,0,1,1));
         
         ObjectList *l = m_Scene->GetObjectList();
         if(l->GetMeshList().size() > m_Scene->GetRenderer()->GetMinObjectCountForMultithreadedCulling())

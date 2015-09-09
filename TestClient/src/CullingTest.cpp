@@ -20,6 +20,7 @@ namespace TestClient
     {
         InitGUI();
         InitFlyCamera();
+		InitDebugDisplay();
         
         m_ShaderGenerator->Reset();
         m_ShaderGenerator->SetShaderVersion   (330);

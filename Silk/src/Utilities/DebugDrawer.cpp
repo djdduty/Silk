@@ -1,5 +1,6 @@
 #include <Utilities/DebugDrawer.h>
 #include <Renderer/Renderer.h>
+#include <Renderer/Camera.h>
 
 namespace Silk
 {
@@ -97,6 +98,47 @@ namespace Silk
     {
         DebugDrawer::Box(Translation((Box.GetCenter())),Box.GetExtents(),Color);
     }
+	void DebugDrawer::DrawCamera(Camera* Cam,const Vec4& Color)
+	{
+		/* 
+         *       1-------3
+         *      /|      /|
+         *     5_______7 |
+         *     | 0_____|_2
+         *     |/      |/
+         *     4_______6
+         *
+         */
+		Mat4 tt = (Cam->GetTransform() * Cam->GetProjection().Inverse()).Transpose();
+		Vec3 HalfExtents(1.0,1.0,1.0);
+        Vec3 Box[8] =
+        {
+            tt * (Vec3(-1.0f,-1.0f, 1.0f) * HalfExtents),
+            tt * (Vec3(-1.0f, 1.0f, 1.0f) * HalfExtents),
+            tt * (Vec3( 1.0f,-1.0f, 1.0f) * HalfExtents),
+            tt * (Vec3( 1.0f, 1.0f, 1.0f) * HalfExtents),
+            
+            tt * (Vec3(-1.0f,-1.0f,-1.0f) * HalfExtents),
+            tt * (Vec3(-1.0f, 1.0f,-1.0f) * HalfExtents),
+            tt * (Vec3( 1.0f,-1.0f,-1.0f) * HalfExtents),
+            tt * (Vec3( 1.0f, 1.0f,-1.0f) * HalfExtents),
+        };
+
+        Line(Box[0],Box[1],Color);
+        Line(Box[2],Box[3],Color);
+        Line(Box[1],Box[3],Color);
+        Line(Box[0],Box[2],Color);
+        
+        Line(Box[4],Box[5],Color);
+        Line(Box[6],Box[7],Color);
+        Line(Box[4],Box[6],Color);
+        Line(Box[5],Box[7],Color);
+        
+        Line(Box[4],Box[0],Color);
+        Line(Box[6],Box[2],Color);
+        Line(Box[5],Box[1],Color);
+        Line(Box[7],Box[3],Color);
+	}
     void DebugDrawer::AddVertex(const Vec3 &Vert,const Vec4 &Color)
     {
         m_Verts.push_back(Vert);

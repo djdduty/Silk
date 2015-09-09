@@ -32,7 +32,11 @@ namespace TestClient
             void AddActorToScene(Actor* a);
         
             virtual const char* GetTestName() const { return "Turok: Evolution Viewer"; }
+#ifdef __APPLE__
             virtual Vec2 GetPreferredInitResolution() const { return Vec2(800,600); }
+#else
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
+#endif
             virtual CullingAlgorithm* GetPreferredCullingAlgorithm() const { return new NullCullingAlgorithm(m_Renderer->GetScene()); }
         
         protected:
