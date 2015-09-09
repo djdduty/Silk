@@ -199,6 +199,8 @@ namespace Silk
             {
                 RenderObject* Obj = Meshes[m];
                 if(Obj->IsInstanced() && Obj->m_Mesh->m_LastFrameRendered == m_Stats.FrameID) continue;
+                else if(Obj->IsInstanced()) Obj = (*Obj->GetMesh()->GetInstanceList())[0];
+                
                 Obj->m_Mesh->m_LastFrameRendered = m_Stats.FrameID;
             
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
@@ -254,6 +256,7 @@ namespace Silk
                         VertexCount   += vc;
                         TriangleCount += tc;
                     }
+                    
                     MeshesRendered.push_back(Obj);
                 }
             }
@@ -301,6 +304,8 @@ namespace Silk
         
         s->Enable();
         s->UseMaterial(m);
+        
+        //Do full screen quad rendering here
         
         
         m_Stats.DrawCalls     += 1;

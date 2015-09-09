@@ -68,6 +68,8 @@ namespace TestClient
         AddMesh("CullingTest/Scene.object",m_Materials[0],Vec3(0,0,0));
         i32 mid = AddMesh("CullingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
+        
+        m_Meshes[AddMesh("CullingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,100))]->SetTransform(Translation(Vec3(0,0,-100)) * Scale(10.0f));
 
 		mid = AddMesh("CullingTest/CullObject.object",m_Materials[2],Vec3(0,2,0),NUM_OF_CULL_OBJECTS);
 		for(i32 i = 0;i < NUM_OF_CULL_OBJECTS;i++)

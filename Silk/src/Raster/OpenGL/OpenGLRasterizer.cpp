@@ -280,19 +280,25 @@ namespace Silk
             {
                 glBindVertexArray(m_VAO);
                 
-                glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTransformsID].BufferID);
+                SupplyBufferData(InstanceTransformAttribIndex       ,GL_ARRAY_BUFFER,16,sizeof(Mat4) * m_InstanceTransforms.size(),&m_InstanceTransforms       [0].x.x,GL_DYNAMIC_DRAW);
+                SupplyBufferData(InstanceNormalTransformAttribIndex ,GL_ARRAY_BUFFER,16,sizeof(Mat4) * m_InstanceTransforms.size(),&m_InstanceNormalTransforms [0].x.x,GL_DYNAMIC_DRAW);
+            
+                //To do: Find out why this doesn't work (It leaves some objects unrendered even when they should be)
+                
+                /*glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTransformsID].BufferID);
                 glBufferSubData(GL_ARRAY_BUFFER,m_MiniTransformSet  * sizeof(Mat4),(m_MaxiTransformSet  - m_MiniTransformSet ) * sizeof(Mat4),&m_InstanceTransforms      [m_MiniTransformSet].x.x);
                 
                 glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceNormalTransformsID].BufferID);
                 glBufferSubData(GL_ARRAY_BUFFER,m_MiniNTransformSet * sizeof(Mat4),(m_MaxiNTransformSet - m_MiniNTransformSet) * sizeof(Mat4),&m_InstanceNormalTransforms[m_MiniTransformSet].x.x);
-                
+                */
                 if(m_Rasterizer->SupportsInstanceTextureTransforms())
                 {
                     glBindBuffer   (GL_ARRAY_BUFFER,m_Attributes[m_InstanceTextureTransformsID].BufferID);
                     glBufferSubData(GL_ARRAY_BUFFER,m_MiniTTransformSet * sizeof(Mat4),(m_MaxiTTransformSet - m_MiniTTransformSet) * sizeof(Mat4),&m_InstanceTextureTransforms[m_MiniTransformSet].x.x);
                 }
+                
+                glBindVertexArray(0);
             }
-            glBindVertexArray(0);
         }
         m_MiniTransformSet = m_MiniNTransformSet = m_MiniTTransformSet = INT_MAX;
         m_MaxiTransformSet = m_MaxiNTransformSet = m_MaxiTTransformSet = INT_MIN;

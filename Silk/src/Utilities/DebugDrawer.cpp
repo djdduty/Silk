@@ -27,6 +27,7 @@ namespace Silk
         Shdr->Destroy();
         
         m_Display = m_Renderer->CreateRenderObject(ROT_MESH);
+        m_Display->SetAlwaysVisible(true);
         Mesh* m = new Mesh();
         m_Display->SetMesh(m,m_Material);
         m->Destroy();

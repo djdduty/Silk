@@ -37,7 +37,7 @@ namespace Silk
     void Scene::AddRenderObject(RenderObject *Object)
     {
         if(!Object) return;
-            
+        
         Object->m_ListIndex = m_ObjectList->AddObject(Object);
         Object->m_List = m_ObjectList;
     }

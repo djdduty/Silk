@@ -43,7 +43,9 @@ namespace Silk
             const Mat4&   GetNormalTransform () { return m_Uniforms->GetNormalMatrix (); }
             const Mat4&   GetTextureTransform() { return m_Uniforms->GetTextureMatrix(); }
         
-            bool IsVisible() const { return !m_IsCulled; }
+            void SetAlwaysVisible(bool Flag) { m_AlwaysVisible = Flag; }
+            bool IsVisible() const { return m_AlwaysVisible ? true : !m_IsCulled; }
+            bool IsAlwaysVisible() const { return m_AlwaysVisible; }
         
             bool IsInstanced();
             i32 GetInstanceIndex() const { return m_InstanceIndex; }
@@ -81,6 +83,7 @@ namespace Silk
             RENDER_OBJECT_TYPE     m_Type           ;
             bool                   m_Enabled        ;
             bool                   m_IsCulled       ;
+            bool                   m_AlwaysVisible  ;
             Renderer*              m_Renderer       ;
             Material*              m_Material       ;
             Mesh*                  m_Mesh           ;

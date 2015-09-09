@@ -16,6 +16,8 @@ namespace Silk
         for(i32 i = 0;i < m_Count;i++)
         {
             RenderObject* Obj = m_Parent->GetScene()->GetObjectList()->GetMeshList()[m_StartIndex + i];
+            if(Obj->IsAlwaysVisible()) { m_VisibleObjects.push_back(Obj); continue; }
+            
             const Frustum* F = m_Parent->GetScene()->GetActiveCamera()->GetFrustum();
             
             //To do: More advanced culling code, not just testing object position
@@ -45,18 +47,6 @@ namespace Silk
         CullingResult* Result = new CullingResult();
         Result->m_VisibleObjects = new ObjectList();
         Result->m_VisibleObjects->SetIndexed(false);
-        
-        Camera c;
-        c.SetZClipPlanes(0.01f,100.0f);
-        static f32 a = 0.0f;
-        a += 0.01f;
-        c.SetPerspective(Vec2(40.0f,40.0f));
-        c.SetTransform(Translation(Vec3(0,0,sin(a) * 100.0f)));
-        c.GetProjection();
-        Camera* tmp = m_Scene->GetActiveCamera();
-        m_Scene->SetActiveCamera(&c);
-
-		m_Scene->GetRenderer()->GetDebugDrawer()->DrawCamera(&c,Vec4(1,0,1,1));
         
         ObjectList *l = m_Scene->GetObjectList();
         if(l->GetMeshList().size() > m_Scene->GetRenderer()->GetMinObjectCountForMultithreadedCulling())
@@ -107,6 +97,8 @@ namespace Silk
                 bool IsVisible = false;
                 
                 RenderObject* Obj = m_Scene->GetObjectList()->GetMeshList()[i];
+                if(Obj->IsAlwaysVisible()) { Result->m_VisibleObjects->AddObject(Obj); continue; }
+                
                 Mat4 t = Obj->GetTransform();
                 
                 if(ClipPlanes->ContainsPoint(Vec3(t.x.w,t.y.w,t.z.w))) IsVisible = true;
@@ -118,8 +110,6 @@ namespace Silk
             Result->m_RealDuration = tmr;
             Result->m_Efficiency = 0.0f;
         }
-        
-        m_Scene->SetActiveCamera(tmp);
         
         return Result;
     }
