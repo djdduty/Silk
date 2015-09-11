@@ -408,6 +408,82 @@ namespace Silk
         return -1;
     }
     
+    OpenGLFrameBuffer::OpenGLFrameBuffer(Renderer* r) : FrameBuffer(r), m_Buffer(0)
+    {
+    }
+    OpenGLFrameBuffer::~OpenGLFrameBuffer()
+    {
+        if(m_Buffer != -1) glDeleteFramebuffers(1,&m_Buffer);
+        if(m_DepthBuffer != -1) glDeleteRenderbuffers(1,&m_DepthBuffer);
+    }
+        
+    void OpenGLFrameBuffer::Initialize()
+    {
+        if(m_Attachments.size() == 0) return;
+        
+        if(m_Buffer != -1) glDeleteFramebuffers(1,&m_Buffer);
+        glGenFramebuffers(1,&m_Buffer);
+        glBindFramebuffer(GL_FRAMEBUFFER,m_Buffer);
+        
+        if(m_DepthBuffer != -1) glDeleteRenderbuffers(1,&m_DepthBuffer);
+        
+        if(m_UseDepthBuffer)
+        {
+            glGenRenderbuffers(1,&m_DepthBuffer);
+            
+            glBindRenderbuffer(GL_RENDERBUFFER,m_DepthBuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,m_Resolution.x,m_Resolution.y);
+                
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,m_DepthBuffer);
+        }
+        
+        m_DrawBuffers.clear();
+        for(i32 i = 0;i < GetAttachmentCount();i++)
+        {
+            Texture* Tex = GetAttachment(i);
+            
+            if(Tex)
+            {
+                m_DrawBuffers.push_back(GL_COLOR_ATTACHMENT0 + i);
+                glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0 + i,GL_TEXTURE_2D,((OpenGLTexture*)Tex)->GetTextureID(),0);
+            }
+            else
+            {
+                m_DrawBuffers.push_back(GL_NONE);
+            }
+        }
+        glDrawBuffers((i32)m_DrawBuffers.size(),&m_DrawBuffers[0]);
+        
+        GLenum r = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if(r != GL_FRAMEBUFFER_COMPLETE)
+        {
+            ERROR("Unable to create OpenGL framebuffer object (Status != complete) (0x%lX).\n",(intptr_t)this);
+            if(m_DepthBuffer != -1) glDeleteRenderbuffers(1,&m_DepthBuffer);
+            if(m_Buffer      != -1) glDeleteFramebuffers (1,&m_Buffer     );
+            m_DepthBuffer = m_Buffer = -1;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+    }
+    void OpenGLFrameBuffer::EnableTarget()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER,m_Buffer);
+        glViewport(0,0,m_Resolution.x,m_Resolution.y);
+        glClear(m_UseDepthBuffer ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_COLOR_BUFFER_BIT);
+        glDrawBuffers((i32)m_DrawBuffers.size(),&m_DrawBuffers[0]);
+    }
+    void OpenGLFrameBuffer::EnableTexture(Material* Mat)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+        for(i32 i = 0;i < m_Attachments.size();i++)
+        {
+            Mat->SetMap((Material::MAP_TYPE)(Material::MT_FRAG_COLOR + i),m_Attachments[i]);
+        }
+    }
+    void OpenGLFrameBuffer::Disable()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+    }
+    
     OpenGLUniformBuffer::~OpenGLUniformBuffer()
     {
         if(m_Buffer != 0) glDeleteBuffers(1,&m_Buffer);
@@ -572,9 +648,6 @@ namespace Silk
     {
         return m_SupportsInstanceTTrans;
     }
-    void OpenGLRasterizer::EnableFramebuffer()
-    {
-    }
 
     UniformBuffer* OpenGLRasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
     {
@@ -614,5 +687,9 @@ namespace Silk
     void OpenGLRasterizer::Destroy(RasterObject* O)
     {
         delete (OpenGLObject*)O;
+    }
+    void OpenGLRasterizer::Destroy(FrameBuffer* B)
+    {
+        delete (OpenGLFrameBuffer*)B;
     }
 };

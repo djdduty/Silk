@@ -24,7 +24,7 @@ using namespace std;
 #define BoneIndexAttribName                 "a_BoneIDs"
 #define InstanceTransformAttribName         "a_InstanceTransform"
 #define InstanceNormalTransformAttribName   "a_InstanceNormalTransform"
-#define InstanceTextureTransformAttribName   "a_InstanceTextureTransform"
+#define InstanceTextureTransformAttribName  "a_InstanceTextureTransform"
 
 #define PositionOutName   "o_Position"
 #define NormalOutName     "o_Normal"

@@ -3,6 +3,7 @@
 
 #include <Math/Math.h>
 #include <Renderer/Material.h>
+#include <Renderer/Texture.h>
 #include <Renderer/Light.h>
 #include <Renderer/ShaderSystem.h>
 #include <Renderer/RenderObject.h>
@@ -209,6 +210,35 @@ namespace Silk
             i32 m_ID;
     };
     
+    class FrameBuffer
+    {
+        public:
+            FrameBuffer(Renderer* r) : m_Renderer(r) { }
+            virtual ~FrameBuffer() { }
+        
+            void AddAttachment(i32 ID,Texture::PIXEL_TYPE Type,Texture* T = 0);
+            void RemoveAttachment(i32 ID);
+        
+            void SetResolution(const Vec2& Resolution);
+            void SetUseDepthBuffer(bool Flag);
+        
+            i32 GetAttachmentCount() const { return m_Attachments.size(); }
+            Texture::PIXEL_TYPE GetAttachmentType(i32 Idx) const { return m_Attachments[Idx]->GetPixelType(); }
+            Texture* GetAttachment(i32 Idx) const { return m_Attachments[Idx]; }
+        
+            virtual void Initialize() = 0;
+            virtual void EnableTarget() = 0;
+            virtual void EnableTexture(Material* Mat) = 0;
+            virtual void Disable() = 0;
+        
+            
+        protected:
+            vector<Texture*> m_Attachments;
+            Vec2 m_Resolution;
+            bool m_UseDepthBuffer;
+            Renderer* m_Renderer;
+    };
+    
     class Rasterizer
     {
         public:
@@ -227,20 +257,21 @@ namespace Silk
         
             void SetClearColor(const Vec4& c) { m_ClearColor = c; }
         
-            virtual void EnableFramebuffer() = 0;
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
 
             virtual UniformBuffer* CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type) = 0;
-            virtual RasterObject * CreateObject () = 0;
-            virtual RasterContext* CreateContext() = 0;
-            virtual Shader       * CreateShader () = 0;
-            virtual Texture      * CreateTexture() = 0;
+            virtual RasterObject * CreateObject     () = 0;
+            virtual RasterContext* CreateContext    () = 0;
+            virtual Shader       * CreateShader     () = 0;
+            virtual Texture      * CreateTexture    () = 0;
+            virtual FrameBuffer  * CreateFrameBuffer() = 0;
 
             virtual void Destroy(UniformBuffer* Buffer) = 0;
             virtual void Destroy(Shader       * S     ) = 0;
             virtual void Destroy(Texture      * T     ) = 0;
             virtual void Destroy(RasterObject * O     ) = 0;
+            virtual void Destroy(FrameBuffer  * Buffer) = 0;
         protected:
             Renderer* m_Renderer;
             RasterContext* m_GraphicsContext;

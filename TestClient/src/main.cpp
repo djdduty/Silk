@@ -12,6 +12,7 @@
 #include <ParallaxMappingTest.h>
 #include <CullingTest.h>
 #include <UITest.h>
+#include <RTTTest.h>
 
 #include <T4_Viewer.h>
 using namespace TestClient;
@@ -36,7 +37,8 @@ int main(int ArgC,char *ArgV[])
     //Test* Test = new ParallaxMappingTest();
     //Test* Test = new CullingTest();
     //Test* Test = new UITest();
-	Test* Test = new T4_Viewer(ArgC,ArgV);
+    Test* Test = new RTTTest();
+	//Test* Test = new T4_Viewer(ArgC,ArgV);
     
     Test->Init    ();
     Test->Run     ();

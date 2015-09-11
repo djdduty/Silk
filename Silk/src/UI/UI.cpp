@@ -1,12 +1,13 @@
 #include <UI/UI.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/UniformBufferTypes.h>
+#include <Raster/Raster.h>
 
 namespace Silk
 {
     UIManager::UIManager(Renderer* r) : m_Renderer(r), m_ViewScale(1.0f,1.0f), m_Resolution(0.0f,0.0f), m_ViewNeedsUpdate(true),
                                         m_Camera(0), m_View(0), m_DefaultShader(0), m_DefaultTextureShader(0), m_DefaultTextShader(0),
-                                        m_RenderUniforms(0), m_MouseLeftID(-1), m_MouseMiddleID(-1), m_MouseRightID(-1)
+                                        m_RenderUniforms(0)
     {
     }
     UIManager::~UIManager()
@@ -14,13 +15,14 @@ namespace Silk
         if(m_Camera) delete m_Camera;
     }
     
-    void UIManager::Initialize(i32 ButtonCount)
+    void UIManager::Initialize()
     {
         m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         Vec2 hRes = m_Resolution * 0.5f;
         m_Camera = new Camera(-hRes.x,hRes.x,-hRes.y,hRes.y,0.0f,1.0f);
         m_View = m_Renderer->GetRasterizer()->CreateTexture();
         m_View->CreateTexture(m_Resolution.x,m_Resolution.y);
+        m_View->UpdateTexture();
         
         ShaderGenerator* Gen = m_Renderer->GetShaderGenerator();
         Gen->Reset();
@@ -54,27 +56,6 @@ namespace Silk
         m_DefaultTextShader    = Gen->Generate();
         
         Gen->Reset();
-        
-        for(i32 i = 0;i < ButtonCount;i++) m_ButtonDurations.push_back(-1.0f);
-    }
-    void UIManager::OnButtonDown(i32 ButtonID)
-    {
-        m_ButtonDurations[ButtonID] = 0.0f;
-        
-        //Should something go here?
-        if(ButtonID == m_MouseLeftID)
-        {
-        }
-        else if(ButtonID == m_MouseRightID)
-        {
-        }
-        else if(ButtonID == m_MouseMiddleID)
-        {
-        }
-    }
-    void UIManager::OnButtonUp(i32 ButtonID)
-    {
-        m_ButtonDurations[ButtonID] = -1.0f;
     }
     void UIManager::SetCursorPosition(const Vec2& p)
     {
@@ -110,12 +91,6 @@ namespace Silk
     }
     void UIManager::Render(Scalar dt,PRIMITIVE_TYPE PrimType)
     {
-        //Update button times
-        for(i32 i = 0;i < m_ButtonDurations.size();i++)
-        {
-            if(m_ButtonDurations[i] != -1.0f) m_ButtonDurations[i] += dt;
-        }
-        
         //Update texture and projection if resolution changes
         Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();;
         if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
@@ -201,7 +176,7 @@ namespace Silk
         }
         
         //Render all UI to texture
-        m_View->EnableRTT();
+        m_View->EnableRTT(false);
         
         i32 ShaderCount = l.GetShaderCount();
         

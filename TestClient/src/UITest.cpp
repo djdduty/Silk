@@ -122,7 +122,7 @@ namespace TestClient
             
                 /* Movable thing */
                 Vec2 Pos = m_UIManager->GetCursorPosition();
-                if(m_UIManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
+                if(m_InputManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
                 {
                     if(m_UIElements[1]->GetArea().Contains(LastPos))
                     {

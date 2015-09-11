@@ -3,6 +3,7 @@
 #include <System/TaskManager.h>
 #include <ObjLoader.h>
 #include <Window.h>
+#include <InputManager.h>
 
 #define CAMERA_MOVE_SPEED 15.0f
 #define CAMERA_TURN_SPEED 0.6f
@@ -36,7 +37,8 @@ namespace TestClient
 			void InitDebugDisplay();
             void InitFlyCamera(const Vec3& InitPos = Vec3(0,5,0));
         
-            UIManager* GetUI() const { return m_UIManager; }
+            UIManager   * GetUI   () const { return m_UIManager   ; }
+            InputManager* GetInput() const { return m_InputManager; }
         
             Byte* Load(const char* File,i64 *OutSize = 0);
             bool  Save(const char* File,Byte* Data,i64 Size);
@@ -45,6 +47,7 @@ namespace TestClient
             i32 AddMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count = 1);
             Texture * LoadTexture(const char *Path);
             Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse = 0,const char* Normal = 0,const char* Parallax = 0);
+            Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,Texture* Diffuse,Texture* Normal,Texture* Parallax);
         
             void SetFPSPrintFrequency(Scalar Hz) { m_FramePrintInterval = 1.0f / Hz; }
             void SetTargetFrameRate  (Scalar Hz) { m_TargetFrameRate = Hz; m_TaskManager->GetTaskContainer()->SetTimestep(Hz); }
@@ -70,8 +73,9 @@ namespace TestClient
         
         protected:
             virtual void Initialize() = 0;
-            TaskManager* m_TaskManager;
-            UIManager  * m_UIManager  ;
+            TaskManager * m_TaskManager ;
+            UIManager   * m_UIManager   ;
+            InputManager* m_InputManager;
         
             Scalar m_ElapsedTime        ;
             Scalar m_LastElapsedTime    ;
@@ -96,6 +100,8 @@ namespace TestClient
             Material    * m_CursorMat;
             i32 m_CursorTexIndex;
             Ray m_CursorRay;
+        
+            i32 m_RTTIndex;
         
             ObjLoader* m_ObjLoader;
             vector<UIElement   *> m_UIElements ;

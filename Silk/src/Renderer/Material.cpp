@@ -2,6 +2,7 @@
 #include <Renderer/Texture.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/UniformBufferTypes.h>
+#include <Raster/Raster.h>
 
 namespace Silk
 {
@@ -23,6 +24,20 @@ namespace Silk
         "u_CustomMap5"     ,
         "u_CustomMap6"     ,
         "u_CustomMap7"     ,
+        "u_FragColor"      ,
+        "u_FragPosition"   ,
+        "u_FragNormal"     ,
+        "u_FragTangent"    ,
+        "u_FragMaterial0"  ,
+        "u_FragMaterial1"  ,
+        "u_FragCustom0"    ,
+        "u_FragCustom1"    ,
+        "u_FragCustom2"    ,
+        "u_FragCustom3"    ,
+        "u_FragCustom4"    ,
+        "u_FragCustom5"    ,
+        "u_FragCustom6"    ,
+        "u_FragCustom7"    ,
     };
     string GetShaderMapName(Material::MAP_TYPE Type)
     {

@@ -237,17 +237,94 @@ namespace Silk
         m_RefCount--;
         if(m_RefCount == 0)
         {
+            for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++)
+            {
+                if(m_FragmentOutputs[i]) m_Renderer->ReleaseFragmentOutput((ShaderGenerator::OUTPUT_FRAGMENT_TYPE)i);
+            }
             m_Renderer->GetRasterizer()->Destroy(this);
             return 0;
         }
         return m_RefCount;
     }
     
+    void FrameBuffer::AddAttachment(i32 ID,Texture::PIXEL_TYPE Type,Texture* T)
+    {
+        if(Type < 0 || Type >= Texture::PT_COUNT) { ERROR("Invalid pixel type.\n"); return; }
+        if(m_Attachments.size() > Material::MT_COUNT - Material::MT_FRAG_COLOR)
+        {
+            ERROR("Maximum number of framebuffer attachments reached (%d).\n",Material::MT_COUNT - Material::MT_FRAG_COLOR);
+            return;
+        }
+        
+        Vec2 Res = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
+        
+        if(m_Attachments.size() > ID)
+        {
+            if(m_Attachments[ID])
+            {
+                ERROR("Attachment with ID %d already exists in framebuffer (0x%lX).\n",ID,(intptr_t)this);
+                return;
+            }
+            
+            if(!T)
+            {
+                m_Attachments    [ID] = m_Renderer->GetRasterizer()->CreateTexture();
+                m_Attachments    [ID]->CreateTexture(Res.x,Res.y);
+            }
+            m_Attachments[ID] = T;
+        }
+        else
+        {
+            while(m_Attachments.size() <= ID) m_Attachments.push_back(0);
+            if(!T)
+            {
+                m_Attachments    [ID] = m_Renderer->GetRasterizer()->CreateTexture();
+                m_Attachments    [ID]->CreateTexture(Res.x,Res.y);
+            }
+            m_Attachments[ID] = T;
+        }
+        
+        Initialize();
+    }
+    void FrameBuffer::RemoveAttachment(i32 ID)
+    {
+        if(m_Attachments.size() > ID)
+        {
+            if(m_Attachments[ID])
+            {
+                m_Renderer->GetRasterizer()->Destroy(m_Attachments[ID]);
+                m_Attachments    [ID] = 0;
+                
+                Initialize();
+                return;
+            }
+        }
+        
+        ERROR("Attachment with ID %d does not exist in framebuffer (0x%lX).\n",ID,(intptr_t)this);
+    }
+    void FrameBuffer::SetResolution(const Vec2 &Resolution)
+    {
+        m_Resolution = Resolution;
+        for(i32 i = 0;i < m_Attachments.size();i++)
+        {
+            if(m_Attachments[i]) m_Attachments[i]->CreateTexture(m_Resolution.x,m_Resolution.y,m_Attachments[i]->GetPixelType());
+        }
+        
+        Initialize();
+    }
+    void FrameBuffer::SetUseDepthBuffer(bool Flag)
+    {
+        if(m_UseDepthBuffer != Flag)
+        {
+            m_UseDepthBuffer = Flag;
+            Initialize();
+        }
+    }
+    
     void RasterContext::SetResolution(const Vec2& Resolution) 
     {
         m_Resolution = Resolution;
-        if(m_Parent)
-            m_Parent->SetViewport(0,0,m_Resolution.x, m_Resolution.y);
+        if(m_Parent) m_Parent->SetViewport(0,0,m_Resolution.x,m_Resolution.y);
     }
 
     Rasterizer::Rasterizer()

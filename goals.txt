@@ -16,6 +16,9 @@ Debug Rendering
 Frustum Culling in Renderer Interface
     -Needs to be smarter
 
+Multithreading
+    -“LongTermProcess” class for multi-frame processes such as game saving, level chunk loading…
+
 After this the real fun starts
 Start Forward+ Implementation (Should probably rename Render Implementation to Lighting Implementation, since that’s the only thing we really want to abstract here?)
     -Light collection and shader uniform passing

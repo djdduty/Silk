@@ -1,6 +1,7 @@
 #include <Utilities/DebugDrawer.h>
 #include <Renderer/Renderer.h>
 #include <Renderer/Camera.h>
+#include <Raster/Raster.h>
 
 namespace Silk
 {
