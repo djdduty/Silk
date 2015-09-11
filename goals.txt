@@ -1,7 +1,3 @@
-RenderObject
-    -Wrap ObjectIdentifier and Mesh/Camera/Texture/Whatever
-    -Created only by the Renderer Interface(as a factory) with a pointer to said Renderer (to add itself to updated later and such)
-
 Renderer interface (The stuff that won’t get overridden from abstraction)
     -Will contain LightingImplementation (set this to your class that implements lighting implementation)
     -Will contain ShadowImplementation (we might not have to abstract this, could just use CSM(see below) ALL the time)

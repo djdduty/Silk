@@ -8,7 +8,7 @@ namespace TestClient
     void OnCursorMove(GLFWwindow* Win,f64 x,f64 y)
     {
         if(!g_Test) return;
-        g_Test->GetUI()->SetCursorPosition(Vec2(x,y));
+        //g_Test->GetUI()->SetCursorPosition(Vec2(x,y));
     }
     void OnClick(GLFWwindow* Win,i32 Button,i32 Action,i32 Mods)
     {
@@ -16,13 +16,13 @@ namespace TestClient
         
         if(Button == GLFW_MOUSE_BUTTON_LEFT)
         {
-                 if(Action == GLFW_PRESS  ) g_Test->GetUI()->OnButtonDown(BTN_LEFT_MOUSE);
-            else if(Action == GLFW_RELEASE) g_Test->GetUI()->OnButtonUp  (BTN_LEFT_MOUSE);
+            //     if(Action == GLFW_PRESS  ) g_Test->GetUI()->OnButtonDown(BTN_LEFT_MOUSE);
+            //else if(Action == GLFW_RELEASE) g_Test->GetUI()->OnButtonUp  (BTN_LEFT_MOUSE);
         }
         else if(Button == GLFW_MOUSE_BUTTON_RIGHT)
         {
-                 if(Action == GLFW_PRESS  ) g_Test->GetUI()->OnButtonDown(BTN_RIGHT_MOUSE);
-            else if(Action == GLFW_RELEASE) g_Test->GetUI()->OnButtonUp  (BTN_RIGHT_MOUSE);
+            //     if(Action == GLFW_PRESS  ) g_Test->GetUI()->OnButtonDown(BTN_RIGHT_MOUSE);
+            //else if(Action == GLFW_RELEASE) g_Test->GetUI()->OnButtonUp  (BTN_RIGHT_MOUSE);
         }
     }
     void OnKey(GLFWwindow* Win,i32 Key,i32 ScanCode,i32 Action,i32 Mods)
@@ -46,19 +46,19 @@ namespace TestClient
         
         if(Action == GLFW_PRESS)
         {
-                 if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_FORWARD );
-            else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_BACKWARD);
-            else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_LEFT    );
-            else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_RIGHT   );
-            else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonDown(BTN_QUIT         );
+            //     if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_FORWARD );
+            //else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_BACKWARD);
+            //else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_LEFT    );
+            //else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_RIGHT   );
+            //else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonDown(BTN_QUIT         );
         }
         else if(Action == GLFW_RELEASE)
         {
-                 if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_FORWARD );
-            else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_BACKWARD);
-            else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_LEFT    );
-            else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_RIGHT   );
-            else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonUp(BTN_QUIT         );
+            //     if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_FORWARD );
+            //else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_BACKWARD);
+            //else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_LEFT    );
+            //else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_RIGHT   );
+            //else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonUp(BTN_QUIT         );
         }
     }
     
@@ -165,64 +165,10 @@ namespace TestClient
         m_UIManager->GetCamera()->SetZClipPlanes(0.0f,200.0f);
         m_UIManager->GetCamera()->SetTransform(Translation(Vec3(0,0,-100)));
         
-        glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
+        //glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
         glfwSetMouseButtonCallback(m_Window->GetWindow(),OnClick     );
         glfwSetCursorPosCallback  (m_Window->GetWindow(),OnCursorMove);
         glfwSetKeyCallback        (m_Window->GetWindow(),OnKey       );
-    }
-    void Test::InitCursor()
-    {
-        if(!LoadTexture("Common/Cursor.png"))
-        {
-            ERROR("TestClient: Unable to initialize cursor. \"Common/Cursor.png\" not found.\n");
-        }
-        
-        m_CursorTexIndex = m_Textures.size() - 1;
-        
-        Mesh* m = new Mesh();
-        f32 s = 20.0f;
-        f32 v[18] =
-        {
-            0,0,0,
-            s,0,0,
-            0,s,0,
-            
-            0,s,0,
-            s,0,0,
-            s,s,0,
-        };
-        
-        s = 0.9f; //Avoid texture edge artifact that happens with filtering
-        f32 t[12] =
-        {
-            0,0,
-            s,0,
-            0,s,
-            
-            0,s,
-            s,0,
-            s,s
-        };
-        
-        m->SetVertexBuffer  (6,v);
-        m->SetTexCoordBuffer(6,t);
-        
-        m_Cursor    = new UIElement();
-        m_UIManager->AddElement(m_Cursor);
-        
-        m_CursorObj = m_Renderer ->CreateRenderObject(ROT_MESH);
-        m_CursorMat = m_Renderer ->CreateMaterial();
-        m_CursorMat->SetMap(Material::MT_DIFFUSE,m_Textures[m_CursorTexIndex]);
-        m_Textures[m_CursorTexIndex]->Destroy();
-        
-        m_CursorMat->SetShader   (m_UIManager->GetDefaultTextureShader());
-        m_CursorObj->SetMesh     (m,m_CursorMat);
-        m_Cursor   ->SetObject   (m_CursorObj);
-        m_Cursor   ->SetSize     (s,s);
-        
-        m_UIElements.push_back(m_Cursor   );
-        m_Meshes    .push_back(m_CursorObj);
-        m_Materials .push_back(m_CursorMat);
     }
     void Test::InitFlyCamera(const Vec3& InitPos)
     {
@@ -507,7 +453,7 @@ namespace TestClient
     {
         if(m_UIManager)
         {
-            if(m_UIManager->IsButtonDown(BTN_QUIT)) m_DoShutdown = true;
+            //if(m_UIManager->IsButtonDown(BTN_QUIT)) m_DoShutdown = true;
         }
         if(m_Renderer->GetRenderStatistics().FrameID > 0)
         {
@@ -527,7 +473,7 @@ namespace TestClient
         /* Start new frame */
         if(!m_Window->GetCloseRequested() && !m_DoShutdown)
         {
-            if(m_UIManager) m_UIManager->ResetCursorDelta();
+            //if(m_UIManager) m_UIManager->ResetCursorDelta();
             
             /* Prepare the task manager */
             m_TaskManager->BeginFrame();
@@ -545,7 +491,7 @@ namespace TestClient
             /* Transform camera */
             if(m_FlyCameraEnabled && m_UIManager)
             {
-                Vec2 CursorDelta = m_UIManager->GetUnBoundedCursorDelta() * 0.5f;
+                /*Vec2 CursorDelta = m_UIManager->GetUnBoundedCursorDelta() * 0.5f;
                 if(CursorDelta.Magnitude() > 0.01f)
                 {
                     m_xCamRot *= Quat(Vec3(0,1,0), CursorDelta.x * CAMERA_TURN_SPEED);
@@ -557,7 +503,7 @@ namespace TestClient
                 if(m_UIManager->IsButtonDown(BTN_MOVE_LEFT    )) m_CamPos += m_CamRot * Vec3(-CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
                 if(m_UIManager->IsButtonDown(BTN_MOVE_RIGHT   )) m_CamPos += m_CamRot * Vec3( CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
                 
-                m_Camera->SetTransform(Translation(m_CamPos) * m_CamRot.ToMat());
+                m_Camera->SetTransform(Translation(m_CamPos) * m_CamRot.ToMat());*/
             }
             
             /* Compute ray from cursor into world (could be useful) */
@@ -572,8 +518,8 @@ namespace TestClient
             /* Update cursor position */
             if(m_UIManager && m_CursorObj)
             {
-                Vec2 cPos = m_UIManager->GetCursorPosition();
-                m_CursorObj->SetTransform(Translation(Vec3(cPos.x,cPos.y,-99.0f)));
+                //Vec2 cPos = m_UIManager->GetCursorPosition();
+                //m_CursorObj->SetTransform(Translation(Vec3(cPos.x,cPos.y,-99.0f)));
             }
             
             /* Update UI */

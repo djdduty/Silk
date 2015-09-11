@@ -119,7 +119,7 @@ namespace Silk
         Scalar xOffset = 0;
         Scalar yOffset = 0;
         f32 GlyphSize = m_Font->GetGlyphSize();
-        Scalar zOffset = m_Render->GetTransform().GetTranslation().z;
+        Scalar zOffset = 0;//m_Render->GetTransform().GetTranslation().z;
         
         /*
          * vert layout
@@ -196,7 +196,7 @@ namespace Silk
         m->SetTexCoordBuffer(m_Text.length() * 6,&UVs   [0].x);
         m->SetColorBuffer   (m_Text.length() * 6,&Colors[0].x);
         
-        m_Render->SetMesh(m,m_Material);
+        //m_Render->SetMesh(m,m_Material);
         m->Destroy();
     }
 };

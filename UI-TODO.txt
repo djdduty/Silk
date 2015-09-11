@@ -1,0 +1,9 @@
+UIElement
+    Handle Content stuff
+
+UIRenderRectangle
+    Implement Border-Radius and other border properties
+
+UIManager
+    Re-add input setting functions and add an Input Manager to the Test class (input should NOT be in UIManager)
+    Make the RTT actually work so the view only updates when it has to.
