@@ -61,7 +61,9 @@ namespace Silk
             virtual ~Renderer();
         
             void SetUIManager(UIManager* Mgr) { m_UIManager = Mgr; }
+            UIManager* GetUIManager() const { return m_UIManager; }
             void SetDebugDrawer(DebugDrawer* Draw) { m_DebugDrawer = Draw; }
+            DebugDrawer* GetDebugDrawer() const { return m_DebugDrawer; }
         
             void Init();
             

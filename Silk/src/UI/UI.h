@@ -16,14 +16,7 @@ namespace Silk
             ~UIManager();
         
             void Initialize();
-        
-            void SetCursorPosition(const Vec2& p);
-            Vec2 GetCursorPosition() const { return m_CursorPosition; }
-            Vec2 GetCursorDelta   () const { return m_CursorPosition - m_LastCursorPosition; }
-            Vec2 GetUnBoundedCursorPosition() const { return m_UnBoundedCursorPosition; }
-            Vec2 GetUnBoundedCursorDelta   () const { return m_UnBoundedCursorPosition - m_LastUnBoundedCursorPosition; }
-            void ResetCursorDelta ()       { m_LastCursorPosition = m_CursorPosition; m_LastUnBoundedCursorPosition = m_UnBoundedCursorPosition; }
-        
+            
             void SetViewScale(Vec2 Sc) { m_ViewScale = Sc; m_ViewNeedsUpdate = true; }
         
             void Update(Scalar dt);
@@ -55,11 +48,5 @@ namespace Silk
             RenderUnformSet* m_RenderUniforms;
         
             vector<UIElement*> m_Elements;
-        
-            Vec2 m_LastUnBoundedCursorPosition;
-            Vec2 m_UnBoundedCursorPosition;
-            Vec2 m_LastCursorPosition;
-            Vec2 m_CursorPosition;
-            Vec2 m_RealCursorPosition;
     };
 };

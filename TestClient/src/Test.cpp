@@ -8,7 +8,7 @@ namespace TestClient
     void OnCursorMove(GLFWwindow* Win,f64 x,f64 y)
     {
         if(!g_Test) return;
-        g_Test->GetUI()->SetCursorPosition(Vec2(x,y));
+        g_Test->GetInput()->SetCursorPosition(Vec2(x,y));
     }
     void OnClick(GLFWwindow* Win,i32 Button,i32 Action,i32 Mods)
     {
@@ -112,13 +112,13 @@ namespace TestClient
         
             m_Window->PollEvents();
             
-            m_InputManager = new InputManager();
-            m_InputManager->Initialize(BTN_COUNT);
-            
             m_TaskManager = new TaskManager();
             m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
             m_Renderer->Init();
+            
+            m_InputManager = new InputManager(m_Renderer);
+            m_InputManager->Initialize(BTN_COUNT);
         
             m_ShaderGenerator = m_Renderer->GetShaderGenerator();
             
@@ -544,7 +544,7 @@ namespace TestClient
         /* Start new frame */
         if(!m_Window->GetCloseRequested() && !m_DoShutdown)
         {
-            if(m_UIManager) m_UIManager->ResetCursorDelta();
+            if(m_UIManager) m_InputManager->ResetCursorDelta();
             
             /* Prepare the task manager */
             m_TaskManager->BeginFrame();
@@ -562,7 +562,7 @@ namespace TestClient
             /* Transform camera */
             if(m_FlyCameraEnabled && m_UIManager)
             {
-                Vec2 CursorDelta = m_UIManager->GetUnBoundedCursorDelta() * 0.5f;
+                Vec2 CursorDelta = m_InputManager->GetUnBoundedCursorDelta() * 0.5f;
                 if(CursorDelta.Magnitude() > 0.01f)
                 {
                     m_xCamRot *= Quat(Vec3(0,1,0), CursorDelta.x * CAMERA_TURN_SPEED);
@@ -589,7 +589,7 @@ namespace TestClient
             /* Update cursor position */
             if(m_UIManager && m_CursorObj)
             {
-                Vec2 cPos = m_UIManager->GetCursorPosition();
+                Vec2 cPos = m_InputManager->GetCursorPosition();
                 m_CursorObj->SetTransform(Translation(Vec3(cPos.x,cPos.y,-99.0f)));
             }
             

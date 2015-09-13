@@ -57,34 +57,6 @@ namespace Silk
         
         Gen->Reset();
     }
-    void UIManager::SetCursorPosition(const Vec2& p)
-    {
-        m_RealCursorPosition = p;
-        
-        //Lock cursor to window
-        Vec2 Temp0 = m_RealCursorPosition;
-        Vec2 Temp1 = m_RealCursorPosition;
-        if(p.x < 0             ) Temp0.x = 0             ;
-        if(p.x > m_Resolution.x) Temp0.x = m_Resolution.x;
-        if(p.y < 0             ) Temp0.y = 0             ;
-        if(p.y > m_Resolution.y) Temp0.y = m_Resolution.y;
-        
-        //Transform to normalized window coordinates
-        if(Temp0.x != 0) Temp0.x /= m_Resolution.x;
-        if(Temp0.y != 0) Temp0.y /= m_Resolution.y;
-        if(Temp1.x != 0) Temp1.x /= m_Resolution.x;
-        if(Temp1.y != 0) Temp1.y /= m_Resolution.y;
-        
-        //Transform to "virtual" window coordinates
-        Vec4 Ortho  = m_Camera->GetOrthoRect();
-        Vec3 CamPos = m_Camera->GetTransform().GetTranslation();
-        
-        m_LastCursorPosition = m_CursorPosition;
-        m_CursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.zw() * Temp0);
-        
-        m_LastUnBoundedCursorPosition = m_UnBoundedCursorPosition;
-        m_UnBoundedCursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.xw() * Temp1);
-    }
     void UIManager::Update(Scalar dt)
     {
         for(i32 i = 0;i < m_Elements.size();i++) m_Elements[i]->_Update(dt);

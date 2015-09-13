@@ -121,7 +121,7 @@ namespace TestClient
                 m_UIManager->GetCamera()->SetTransform(Translation(Vec3(Res.x * 0.5f,Res.y * 0.5f,0.0f)));
             
                 /* Movable thing */
-                Vec2 Pos = m_UIManager->GetCursorPosition();
+                Vec2 Pos = m_InputManager->GetCursorPosition();
                 if(m_InputManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
                 {
                     if(m_UIElements[1]->GetArea().Contains(LastPos))
