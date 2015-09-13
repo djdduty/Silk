@@ -1,5 +1,7 @@
 #include <UI/UI.h>
 #include <Renderer/Renderer.h>
+#include <Renderer/UniformBufferTypes.h>
+#include <Raster/Raster.h>
 
 namespace Silk
 {
@@ -22,27 +24,23 @@ namespace Silk
     }
     
     
-    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(0), m_Parent(0), m_Content(std::vector<UIRenderContent*>()), m_Manager(0), m_MeshNeedsUpdate(true), 
-                             m_CurrentState(UIS_DEFAULT), m_TransformNeedsUpdate(true), m_MaterialNeedsUpdate(true),
-                             m_ContentNeedsUpdate(true)
+    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(-1), m_Parent(0), m_Manager(0), m_Bounds(new UIRect(0,0,0,0)), m_NeedsMeshUpdate(false), m_Render(0), m_Material(0)
     {
-        m_States[UIS_DEFAULT] = new UIElementStyle(this);
+
     }
     UIElement::~UIElement()
     {
-        for(i32 i = 0; i < UIS_COUNT; i++)
-        {
-            if(m_States[i])
-                delete m_States[i];
-        }
+        if(m_CID != -1 && m_Parent)
+            m_Parent->RemoveChild(this);
+        m_Manager->RemoveElement(this);
+        m_Manager->GetRenderer()->Destroy(m_Render);
+        m_Material->Destroy();
     }
-    
     i32 UIElement::Destroy()
     {
         m_RefCount--;
         if(m_RefCount == 0)
         {
-            m_Manager->RemoveElement(this);
             delete this;
             return 0;
         }
@@ -62,7 +60,7 @@ namespace Silk
         m_Parent->m_Children.pop_back();
         m_Parent = 0;
         m_CID    = 0;
-        m_Manager->m_ViewNeedsUpdate = true;
+        m_Parent->m_NeedsMeshUpdate = true;
     }
     void UIElement::AddChild(UIElement* E)
     {
@@ -71,97 +69,94 @@ namespace Silk
         m_Children.push_back(E);
         E->m_Parent = this;
         E->m_CID = m_Children.size() - 1;
-        m_Manager->m_ViewNeedsUpdate = true;
+        m_NeedsMeshUpdate = true;
+    }
+    void UIElement::RemoveChild(UIElement* E)
+    {
+        if(E->GetParent() != this) return;
+        m_Children.erase(m_Children.begin() + E->m_CID);
+        for(i32 i = E->m_CID;i < m_Children.size();i++)
+        {
+            m_Children[i]->m_CID--;
+        }
+        E->m_CID = -1;
+        m_NeedsMeshUpdate = true;
     }
     void UIElement::_Update(Scalar dt)
     {
-        if(m_ContentNeedsUpdate)
-            UpdateContent();
-        if(m_MeshNeedsUpdate)
-            UpdateMeshes();
-        if(m_MaterialNeedsUpdate)
-            UpdateMaterials();
-        if(m_TransformNeedsUpdate)
-            UpdateTransforms();
-        
         for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Update(dt);
         Update(dt);
     }
-    void UIElement::_Initialize()
-    {}
-    void UIElement::UpdateContent()
+    void UIElement::_Initialize(UIManager* Manager)
     {
-        OnUpdateContent();
-        m_ContentNeedsUpdate = false;
-        m_Manager->m_ViewNeedsUpdate = true;
-    }
-    void UIElement::UpdateTransforms()
-    {
-        OnUpdateTransforms();
-        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateTransform();
-        m_TransformNeedsUpdate = false;
-        m_Manager->m_ViewNeedsUpdate = true;
-    }
-    void UIElement::UpdateMaterials()
-    {
-        OnUpdateMaterials();
-        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateMaterial();
-        m_MaterialNeedsUpdate = false;
-        m_Manager->m_ViewNeedsUpdate = true;
-    }
-    void UIElement::UpdateMeshes()
-    {
-        OnUpdateMeshes();
-        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateMesh();
-        m_MeshNeedsUpdate = false;
-        m_Manager->m_ViewNeedsUpdate = true;
-    }
-    void UIElement::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
-    {
-        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->Render(PrimType, ObjectsRendered);
+        m_Manager  = Manager;
+        m_Render   = m_Manager->GetRenderer()->CreateRenderObject(ROT_MESH);
+        m_Render->SetTransform(Translation(Vec3(m_Bounds->GetPosition(), 0)));
+        m_Material = m_Manager->GetRenderer()->CreateMaterial();
+        m_Material->SetShader(m_Manager->GetDefaultShader());
+        OnInitialize();
     }
     void UIElement::_Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {
+        //TODO Setup Scissor
         Render(PrimType, ObjectsRendered);
         for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Render(PrimType, ObjectsRendered);
+        //TODO End Scissor
     }
-    void UIElement::AddContent(UIRenderContent* Content)
+    void UIElement::SetPosition(Vec3 Pos)
     {
-        m_Content.push_back(Content);
-        m_Manager->m_ViewNeedsUpdate = true;
+        if(m_Render)
+            m_Render->SetTransform(Translation(Pos));
+
+        m_Bounds->SetPosition(Pos.xy());
     }
-    void UIElement::RemoveContent(UIRenderContent* Content)
+    void UIElement::SetSize(Vec2 Size)
     {
-        for(i32 i = 0; i < m_Content.size(); i++)
-            if(m_Content[i] == Content) {
-                m_Content.erase(m_Content.begin() + i);
-                break;
+        m_Bounds->SetDimensions(Size);
+    }
+    void UIElement::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
+    {
+        if(!m_Render)
+            return;
+
+        Material* Mat = m_Render->GetMaterial();
+        Shader* Shader = Mat->GetShader();
+        Shader->Enable();
+        RenderObject* Obj = m_Render;
+        
+        if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
+        {
+            //Pass material uniforms
+            Material* Mat = Obj->GetMaterial();
+            Shader->UseMaterial(Mat);
+            
+            //Pass object uniforms
+            if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
+            {
+                Obj->UpdateUniforms();
+                Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
             }
-        m_Manager->m_ViewNeedsUpdate = true;
-    }
-
-
-    void UIElementStyle::BroadcastMeshChange()
-    {
-        if(m_Parent)
-            m_Parent->m_MeshNeedsUpdate = true;
-    }
-
-    void UIElementStyle::BroadcastTransformChange()
-    {
-        if(m_Parent)
-            m_Parent->m_TransformNeedsUpdate = true;
-    }
-
-    void UIElementStyle::BroadcastMaterialChange()
-    {
-        if(m_Parent)
-            m_Parent->m_MaterialNeedsUpdate = true;
-    }
-
-    void UIElementStyle::BroadcastContentChange()
-    {
-        if(m_Parent)
-            m_Parent->m_ContentNeedsUpdate = true;
+            
+            //To do: Batching
+            i32 Count = 0;
+            if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
+            else Count = Obj->m_Mesh->GetVertexCount();
+            
+            Obj->m_Object->Render(Obj,PrimType,0,Count);
+            
+            i32 vc = Obj->m_Mesh->GetVertexCount();
+            i32 tc = 0;
+            if(PrimType == PT_TRIANGLES     ) tc = vc / 3;
+            if(PrimType == PT_TRIANGLE_STRIP
+            || PrimType == PT_TRIANGLE_FAN  ) tc = vc - 2;
+            
+            m_Manager->GetRenderer()->m_Stats.VisibleObjects++;
+            m_Manager->GetRenderer()->m_Stats.VertexCount   += vc;
+            m_Manager->GetRenderer()->m_Stats.TriangleCount += tc;
+            m_Manager->GetRenderer()->m_Stats.DrawCalls     ++   ;
+            
+            ObjectsRendered->push_back(Obj);
+        }    
+        Shader->Disable();
     }
 };

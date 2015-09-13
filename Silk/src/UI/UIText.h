@@ -1,6 +1,5 @@
 #pragma once
 #include <Utilities/Font.h>
-#include <UI/UIContent.h>
 #include <UI/UI.h>
 
 namespace Silk
@@ -13,7 +12,7 @@ namespace Silk
      * - Proper vertical spacing (accounting for character scales)
      */
     
-    class UIText : public UIRenderContent
+    class UIText : public UIElement
     {
         public:
             struct CharacterMods
@@ -24,14 +23,12 @@ namespace Silk
                 Scalar Angle ;
             };
 
-            UIText(UIManager* Manager, UIElementStyle* Style);
+            UIText();
             ~UIText();
 
-            void UpdateMesh     ();
-            void UpdateMaterial ();
-            void UpdateTransform();
-            void OnRender(PRIMITIVE_TYPE PrimType);
-        
+            void Update(Scalar dt);
+            void OnInitialize();
+
             void  SetFont(Font* Fnt);
             Font* GetFont() const { return m_Font; }
 
@@ -74,8 +71,6 @@ namespace Silk
             vector<CharacterMods> m_CharMods;
             string                m_Text;
             Font*                 m_Font;
-            Material*             m_Material;
-            Vec2                  m_BoundSize;
     };
 };
 

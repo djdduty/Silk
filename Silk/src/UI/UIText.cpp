@@ -11,53 +11,30 @@
 
 namespace Silk
 {
-    UIText::UIText(UIManager* Manager, UIElementStyle* Style) : UIRenderContent(Manager, Style), m_Font(0), m_Color(Style->GetTextColor()), m_Scale(1.0f), m_TextChanged(false), m_BoundSize(Vec2(0,0))
+    UIText::UIText() : m_Font(0), m_Color(Vec4(1,1,1,1)), m_Scale(1.0f), m_TextChanged(false)
     {
-        m_Material = m_Manager->GetRenderer()->CreateMaterial();
-        m_Material->SetShader(m_Manager->GetDefaultTextShader());
-        if(m_Manager->GetFont())
-            SetFont(m_Manager->GetFont());
     }
     UIText::~UIText()
     {
     }
-
-    void UIText::OnRender(PRIMITIVE_TYPE PrimType)
-    {
-        if(!m_Font && m_Manager->GetFont())
-            SetFont(m_Manager->GetFont());
-
+    void UIText::Update(Scalar dt) 
+    { 
         if(m_TextChanged == true)
-            RebuildMesh();
-    }
-
-    void UIText::UpdateMaterial()
-    {
-        if(!m_Render)
-            UpdateMesh();
-
-        SetColor(m_Style->GetTextColor());
-        SetScale(m_Style->GetTextSize() / m_Font->GetGlyphSize());
-    }
-    void UIText::UpdateTransform()
-    {
-        if(!m_Render)
-            UpdateMesh();
-
-        m_Render->SetTransform(Translation(m_Style->GetPosition()));
-    }
-
-    void UIText::UpdateMesh()
-    {
-        if(m_Font)
             RebuildMesh();
     }
 
     void UIText::SetFont(Font* Fnt)
     {
         m_Font = Fnt;
-        m_Material->SetMap(Material::MT_DIFFUSE,m_Font->GetFontImage());
+        if(m_Material)
+            m_Material->SetMap(Material::MT_DIFFUSE,m_Font->GetFontImage());
         m_TextChanged = true;
+    }
+    void UIText::OnInitialize()
+    {
+        m_Material->SetShader(m_Manager->GetDefaultTextShader());
+        if(m_Font)
+            m_Material->SetMap(Material::MT_DIFFUSE, m_Font->GetFontImage());
     }
 
     void UIText::SetScale(Scalar s)
@@ -227,10 +204,12 @@ namespace Silk
             xOffset += g.xAdvance * m_Scale * m_CharMods[i].Scale.x;
             lastXSize = g.xAdvance * m_Scale * m_CharMods[i].Scale.x;
         }
-        m_BoundSize.y = yOffset + (GlyphSize * m_Scale);
+        Vec2 BoundSize = Vec2(0,0);
+        BoundSize.y = yOffset + (GlyphSize * m_Scale);
         f32 totalXSize = xOffset + lastXSize;
         if(totalXSize > biggestXOff) biggestXOff = totalXSize;
-        m_BoundSize.x = biggestXOff;
+        BoundSize.x = biggestXOff;
+        m_Bounds->SetDimensions(BoundSize);
         
         m->SetVertexBuffer  (m_Text.length() * 6,&Verts [0].x);
         m->SetTexCoordBuffer(m_Text.length() * 6,&UVs   [0].x);
@@ -238,15 +217,6 @@ namespace Silk
         
         m_Render->SetMesh(m,m_Material);
         m->Destroy();
-        m_Style->BroadcastTransformChange();
         m_TextChanged = false;
-    }
-
-    Vec2 UIText::GetSize()
-    {
-        if(!m_Render)
-            return Vec2(0,0);
-
-        return m_BoundSize;
     }
 };

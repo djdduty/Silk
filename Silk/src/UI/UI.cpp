@@ -131,7 +131,7 @@ namespace Silk
         Element->m_Manager = this;
         m_Elements.push_back(Element);
         Element->m_ID = m_Elements.size() - 1; //NOTE: Not an actual id, it's just the array index for use in removing
-        Element->_Initialize();
+        Element->_Initialize(this);
         m_ViewNeedsUpdate = true;
     }
     void UIManager::RemoveElement(UIElement *Element)

@@ -28,7 +28,7 @@ namespace Silk
             Shader * GetDefaultTextureShader() const { return m_DefaultTextureShader; }
             Shader * GetDefaultTextShader   () const { return m_DefaultTextShader   ; }
         
-            Camera* GetCamera() const { return m_Camera; }
+            Camera*   GetCamera  () const { return m_Camera; }
             Renderer* GetRenderer() { return m_Renderer; }
 
             void SetTransform(Mat4 Trans);
@@ -36,6 +36,15 @@ namespace Silk
 
             void SetFont(Font* Fnt) { m_Font = Fnt; }
             Font* GetFont() { return m_Font; }
+
+            void OnMouseMove() {}
+            void OnMouseOver() {}
+            void OnMouseDown() {}
+            void OnMouseOut()  {}
+            void OnMouseUp()   {}
+            void OnKeyDown()   {}
+            void OnKeyHeld()   {}
+            void OnKeyUp()     {}
         
         protected:
             friend class UIElement;

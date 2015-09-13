@@ -21,15 +21,15 @@ namespace TestClient
         Fnt->Load(fDat);
         Fnt->SetFontImage(LoadTexture("Common/Font.png"));
         m_UIManager->SetFont(Fnt);
-
-        UIElement* Slider = new SliderControl(0, 100);
-        Slider->GetCurrentStyle()->SetPosition(Vec3(100,20,0));
-        m_UIManager->AddElement(Slider);
         
+        UIText* Test = new UIText();
+        Test->SetFont(Fnt);
+        Test->SetText("Test Test Test");
+        m_UIManager->AddElement(Test);
+        m_UIElements.push_back(Test);
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
-        m_UIElements.push_back(Slider);
         
         ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_Rasterizer->SetClearColor(Vec4(0,0,0,1.0f));
