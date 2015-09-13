@@ -6,17 +6,39 @@ namespace TestClient
     {
         if(!m_Manager)
             return;
-        m_Background  = new UIRenderRectangle(m_Manager);
-        m_Slider      = new UIRenderRectangle(m_Manager);
         m_SliderStyle = new UIElementStyle(this);
+        m_Background  = new UIRenderRectangle(m_Manager, GetStyle(UIS_DEFAULT));
+        m_Slider      = new UIRenderRectangle(m_Manager, m_SliderStyle);
         GetCurrentStyle()->SetSize(Vec2(200, 5));
         GetCurrentStyle()->SetBackgroundColor(Vec4(0,0,1,1));
         m_SliderStyle->SetBackgroundColor(Vec4(0,1,0,1));
         m_SliderStyle->SetSize(Vec2(20,20));
+        AddContent(m_Background);
+        AddContent(m_Slider);
     }
 
-    void SliderControl::Update(Scalar dt) {}
+    void SliderControl::Update(Scalar dt) 
+    {
+    
+    }
+    void SliderControl::OnUpdateTransforms()
+    {
+        f32 Height     = GetCurrentStyle()->GetSize().y;
+        Vec2 SliderSize = m_SliderStyle->GetSize();
+        m_SliderStyle->SetPosition(GetCurrentStyle()->GetPosition() + Vec3(GetSliderPosition(), (Height/2)-(SliderSize.y/2), -1));
+    }
+    void SliderControl::OnUpdateMaterials()
+    {
 
+    }
+    void SliderControl::OnUpdateMeshes()
+    {
+
+    }
+    void SliderControl::OnUpdateContent()
+    {
+
+    }
     void SliderControl::SetValue(f32 val)
     {
         if(val < m_Min || val > m_Max)
@@ -32,33 +54,5 @@ namespace TestClient
         f32 offset = GetCurrentStyle()->GetSize().x * percent;
         offset -= (m_SliderStyle->GetSize().x*0.5);
         return offset;
-    }
-
-    void SliderControl::UpdateTransforms()
-    {
-        m_Background->UpdateTransform(GetCurrentStyle());
-        m_SliderStyle->SetPosition(GetCurrentStyle()->GetPosition()+Vec3(GetSliderPosition(), -7.5, -1));
-        m_Slider->UpdateTransform(m_SliderStyle);
-    }
-
-    void SliderControl::UpdateMaterials()
-    {
-        m_Background->UpdateMaterial(GetCurrentStyle());
-        m_Slider->UpdateMaterial(m_SliderStyle);
-    }
-
-    void SliderControl::UpdateMeshes()
-    {
-        m_Background->UpdateMesh(GetCurrentStyle());
-        m_Slider->UpdateMesh(m_SliderStyle);
-    }
-
-    void SliderControl::UpdateContent()
-    {}
-
-    void SliderControl::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
-    {
-        m_Slider->Render(PrimType, ObjectsRendered);
-        m_Background->Render(PrimType, ObjectsRendered);
     }
 }

@@ -6,6 +6,8 @@
 #include <Renderer/UniformBufferTypes.h>
 #include <Renderer/RenderObject.h>
 
+#include <UI/UIContent.h>
+
 #include <vector>
 using namespace std;
 
@@ -101,24 +103,6 @@ namespace Silk
             Vec2 m_Position;
             Vec2 m_Dimensions;
     };
-
-    class UIRenderRectangle
-    {
-        public:
-            UIRenderRectangle(UIManager* Manager);
-            ~UIRenderRectangle();
-
-            void UpdateMesh     (UIElementStyle* Style);
-            void UpdateMaterial (UIElementStyle* Style);
-            void UpdateTransform(UIElementStyle* Style);
-            RenderObject* GetRender() { return m_Render; }
-
-            void Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered);
-
-        protected:
-            RenderObject* m_Render;
-            UIManager*    m_Manager;
-    };
     
     class UIElement
     {
@@ -150,12 +134,21 @@ namespace Silk
                 return m_States[State];
             }
 
+            void AddContent(UIRenderContent* Content);
+            void RemoveContent(UIRenderContent* Content);
+
             virtual void Update(Scalar dt) { }
-            virtual void UpdateTransforms();
-            virtual void UpdateMaterials();
-            virtual void UpdateMeshes();
-            virtual void UpdateContent();
-            virtual void Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered);
+            void UpdateTransforms();
+            void UpdateMaterials();
+            void UpdateMeshes();
+            void UpdateContent();
+            
+            virtual void OnUpdateTransforms() {}
+            virtual void OnUpdateMaterials()  {}
+            virtual void OnUpdateMeshes()     {}
+            virtual void OnUpdateContent()    {}
+
+            void Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered);
         
         protected:
             friend class UIElementStyle;
@@ -170,14 +163,15 @@ namespace Silk
             UID                m_ID;
             UID                m_CID;
             UIElement*         m_Parent;
-            UIRenderRectangle* m_Background;
             bool               m_MeshNeedsUpdate;
             bool               m_TransformNeedsUpdate;
             bool               m_MaterialNeedsUpdate;
             bool               m_ContentNeedsUpdate;
 
-            UIStateType            m_CurrentState;
-            UIElementStyle*        m_States[UIS_COUNT];
+            std::vector<UIRenderContent*> m_Content;
+
+            UIStateType        m_CurrentState;
+            UIElementStyle*    m_States[UIS_COUNT];
         
             vector<UIElement*> m_Children;
             UIManager* m_Manager;

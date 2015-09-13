@@ -29,10 +29,11 @@ namespace Silk
             Shader * GetDefaultTextShader   () const { return m_DefaultTextShader   ; }
         
             Camera* GetCamera() const { return m_Camera; }
+            Renderer* GetRenderer() { return m_Renderer; }
         
         protected:
             friend class UIElement;
-            friend class UIRenderRectangle;
+            friend class UIRenderContent;
             
             Renderer* m_Renderer;
         
