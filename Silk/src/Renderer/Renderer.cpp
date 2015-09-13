@@ -22,7 +22,9 @@ namespace Silk
     Renderer::~Renderer() 
     {
         if(m_Scene) delete m_Scene;
-        m_DefaultTexture->Destroy();
+        if(m_DefaultTexture)
+            m_DefaultTexture->Destroy();
+
         m_DefaultFSQMaterial->GetShader()->Destroy();
         m_DefaultFSQMaterial->Destroy();
         m_Raster->Destroy(m_EngineUniforms);

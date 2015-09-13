@@ -10,12 +10,13 @@ namespace TestClient
         m_Background  = new UIRenderRectangle(m_Manager, GetStyle(UIS_DEFAULT));
         m_Slider      = new UIRenderRectangle(m_Manager, m_SliderStyle);
         GetCurrentStyle()->SetSize(Vec2(200, 5));
-        GetCurrentStyle()->SetBackgroundColor(Vec4(90,90,90,255).Normalized());
-        m_SliderStyle->SetBackgroundColor(Vec4(120,120,120,255).Normalized());
+        GetCurrentStyle()->SetBackgroundColor(Vec4(0.3,0.3,0.3,1));
+        m_SliderStyle->SetBackgroundColor(Vec4(0.6,0.6,0.6,1));
         m_SliderStyle->SetSize(Vec2(20,20));
         m_SliderTextStyle = new UIElementStyle(this);
         m_SliderLabel = new UIText(m_Manager, m_SliderTextStyle);
         m_SliderTextStyle->SetTextColor(Vec4(1,1,1,1));
+        m_SliderTextStyle->SetTextSize(24);
         m_SliderLabel->SetText("Test");
         AddContent(m_Background);
         AddContent(m_Slider);
