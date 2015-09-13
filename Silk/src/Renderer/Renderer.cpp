@@ -150,6 +150,7 @@ namespace Silk
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
         
         /* Render UI */
+        if(m_UIManager) m_UIManager->Update(dt);
         if(m_UIManager) m_UIManager->Render(dt,PrimType);
         
         /* Compute new averages */

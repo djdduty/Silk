@@ -167,8 +167,8 @@ namespace TestClient
         m_UIManager = new UIManager(m_Renderer);
         m_Renderer->SetUIManager(m_UIManager);
         m_UIManager->Initialize();
-        m_UIManager->GetCamera()->SetZClipPlanes(0.0f,200.0f);
-        m_UIManager->GetCamera()->SetTransform(Translation(Vec3(0,0,-100)));
+        m_UIManager->SetZClipPlanes(0.0f,200.0f);
+        m_UIManager->SetTransform(Translation(Vec3(0,0,-100)));
         
         glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
         glfwSetMouseButtonCallback(m_Window->GetWindow(),OnClick     );
@@ -541,7 +541,6 @@ namespace TestClient
             }
             
             /* Update UI */
-            if(m_UIManager) m_UIManager->Update(m_DeltaTime);
             m_InputManager->Update(m_DeltaTime);
             
             /* Render */

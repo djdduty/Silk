@@ -17,7 +17,7 @@ namespace TestClient
         InitGUI();
         
         UIElement* Slider = new SliderControl(0, 100);
-        Slider->GetCurrentStyle()->SetPosition(Vec3(300,20,0));
+        Slider->GetCurrentStyle()->SetPosition(Vec3(100,20,0));
         m_UIManager->AddElement(Slider);
         
         glEnable(GL_BLEND);
@@ -40,24 +40,8 @@ namespace TestClient
         while(IsRunning())
         {
             Vec2 Res = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
-            
-            if(m_UIManager)
-            {
-                Scalar tsc = Res.y / GetPreferredInitResolution().y;
-                m_UIManager->GetCamera()->SetTransform(Translation(Vec3(Res.x * 0.5f,Res.y * 0.5f,0.0f)));
-            
-                /*
-                Vec2 Pos = m_InputManager->GetCursorPosition();
-                if(m_InputManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
-                {
-                    if(m_UIElements[1]->GetArea().Contains(LastPos))
-                    {
-                        m_UIElements[1]->GetObject()->SetTransform(m_UIElements[1]->GetObject()->GetTransform() * Translation(Vec3(Pos.x - LastPos.x,Pos.y - LastPos.y,0.0f)));
-                    }
-                }
-                LastPos = Pos;
-                */
-            }
+            Scalar tsc = Res.y / GetPreferredInitResolution().y;
+            m_UIManager->SetTransform(Translation(Vec3(Res.x * 0.5f,Res.y * 0.5f,0.0f)));
         }
     }
     void UITest::Shutdown()

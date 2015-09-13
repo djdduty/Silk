@@ -23,7 +23,7 @@ namespace TestClient
     }
     void SliderControl::OnUpdateTransforms()
     {
-        f32 Height     = GetCurrentStyle()->GetSize().y;
+        f32 Height      = GetCurrentStyle()->GetSize().y;
         Vec2 SliderSize = m_SliderStyle->GetSize();
         m_SliderStyle->SetPosition(GetCurrentStyle()->GetPosition() + Vec3(GetSliderPosition(), (Height/2)-(SliderSize.y/2), -1));
     }

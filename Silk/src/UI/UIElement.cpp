@@ -62,6 +62,7 @@ namespace Silk
         m_Parent->m_Children.pop_back();
         m_Parent = 0;
         m_CID    = 0;
+        m_Manager->m_ViewNeedsUpdate = true;
     }
     void UIElement::AddChild(UIElement* E)
     {
@@ -70,6 +71,7 @@ namespace Silk
         m_Children.push_back(E);
         E->m_Parent = this;
         E->m_CID = m_Children.size() - 1;
+        m_Manager->m_ViewNeedsUpdate = true;
     }
     void UIElement::_Update(Scalar dt)
     {
@@ -91,24 +93,28 @@ namespace Silk
     {
         OnUpdateContent();
         m_ContentNeedsUpdate = false;
+        m_Manager->m_ViewNeedsUpdate = true;
     }
     void UIElement::UpdateTransforms()
     {
         OnUpdateTransforms();
         for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateTransform();
         m_TransformNeedsUpdate = false;
+        m_Manager->m_ViewNeedsUpdate = true;
     }
     void UIElement::UpdateMaterials()
     {
         OnUpdateMaterials();
         for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateMaterial();
         m_MaterialNeedsUpdate = false;
+        m_Manager->m_ViewNeedsUpdate = true;
     }
     void UIElement::UpdateMeshes()
     {
         OnUpdateMeshes();
         for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateMesh();
         m_MeshNeedsUpdate = false;
+        m_Manager->m_ViewNeedsUpdate = true;
     }
     void UIElement::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {
@@ -122,6 +128,7 @@ namespace Silk
     void UIElement::AddContent(UIRenderContent* Content)
     {
         m_Content.push_back(Content);
+        m_Manager->m_ViewNeedsUpdate = true;
     }
     void UIElement::RemoveContent(UIRenderContent* Content)
     {
@@ -130,6 +137,7 @@ namespace Silk
                 m_Content.erase(m_Content.begin() + i);
                 break;
             }
+        m_Manager->m_ViewNeedsUpdate = true;
     }
 
 

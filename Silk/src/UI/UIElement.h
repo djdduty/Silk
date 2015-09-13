@@ -28,9 +28,9 @@ namespace Silk
     class UIElementStyle
     {
         public:
-            UIElementStyle (UIElement* Parent) : m_Parent(Parent), m_Size(Vec2()), m_BackgroundOffset(Vec2()), m_BackgroundSize(Vec2(0,0)),
-                            m_BackgroundImage(0), m_BorderRadius(0), m_BorderWidth(0), m_BackgroundColor(Vec4()), m_BorderColor(Vec4()), 
-                            m_TextColor(Vec4()), m_TextSize(14), m_Position(Vec3()) {}
+            UIElementStyle (UIElement* Parent) : m_Parent(Parent), m_Size(Vec2(0,0)), m_BackgroundOffset(Vec2(0,0)), m_BackgroundSize(Vec2(0,0)),
+                            m_BackgroundImage(0), m_BorderRadius(0), m_BorderWidth(0), m_BackgroundColor(Vec4(0,0,0,0)), m_BorderColor(Vec4(0,0,0,0)), 
+                            m_TextColor(Vec4(0,0,0,0)), m_TextSize(14), m_Position(Vec3(0,0,0)) {}
             ~UIElementStyle() {}
 
             void BroadcastMeshChange();
@@ -50,17 +50,17 @@ namespace Silk
             void SetTextColor       (Vec4     Value) { m_TextColor        = Value; BroadcastMaterialChange();  }
             void SetTextSize        (f32      Value) { m_TextSize         = Value; BroadcastContentChange();   }
 
-            Vec3     GetPosition        () { return m_Position;         }
-            Vec2     GetSize            () { return m_Size;             }
-            Vec2     GetBackgroundOffset() { return m_BackgroundOffset; }
-            Vec2     GetBackgroundSize  () { return m_BackgroundSize;   }
-            Texture* GetBackgroundImage () { return m_BackgroundImage;  }
-            f32      GetBorderRadius    () { return m_BorderRadius;     }
-            f32      GetBorderWidth     () { return m_BorderWidth;      }
-            Vec4     GetBackgroundColor () { return m_BackgroundColor;  }
-            Vec4     GetBorderColor     () { return m_BorderColor;      }
-            Vec4     GetTextColor       () { return m_TextColor;        }
-            f32      GetTextSize        () { return m_TextSize;         }
+            Vec3     GetPosition        () const { return m_Position;         }
+            Vec2     GetSize            () const { return m_Size;             }
+            Vec2     GetBackgroundOffset() const { return m_BackgroundOffset; }
+            Vec2     GetBackgroundSize  () const { return m_BackgroundSize;   }
+            Texture* GetBackgroundImage () const { return m_BackgroundImage;  }
+            f32      GetBorderRadius    () const { return m_BorderRadius;     }
+            f32      GetBorderWidth     () const { return m_BorderWidth;      }
+            Vec4     GetBackgroundColor () const { return m_BackgroundColor;  }
+            Vec4     GetBorderColor     () const { return m_BorderColor;      }
+            Vec4     GetTextColor       () const { return m_TextColor;        }
+            f32      GetTextSize        () const { return m_TextSize;         }
 
         protected:
             //TODO(?): Parent Style, For a class-esque sort of implementation. The parent would override everything but our size and position
