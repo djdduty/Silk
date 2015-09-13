@@ -4,6 +4,7 @@
 
 namespace Silk
 {
+    class FrameBuffer;
     class OpenGLTexture : public Texture
     {
         public:
@@ -12,9 +13,6 @@ namespace Silk
         
             virtual void InitializeTexture();
             virtual void UpdateTexture();
-            
-            virtual void EnableRTT();
-            virtual void DisableRTT();
         
             GLuint GetTextureID() const { return m_TexID; }
         

@@ -2,11 +2,10 @@
 #define SILK_UI_CONTENT_H
 
 #include <Renderer/Renderer.h>
-#include <Renderer/UniformBufferTypes.h>
-#include <Renderer/RenderObject.h>
 
 namespace Silk
 {
+    class RendorObject;
     class UIElementStyle;
     class UIManager;
 

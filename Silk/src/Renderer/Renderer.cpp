@@ -16,6 +16,7 @@ namespace Silk
 {
 	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0)
     {
+        for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_UsedFragmentOutputs[i] = 0;
     }
 
     Renderer::~Renderer() 
@@ -59,7 +60,7 @@ namespace Silk
         
         m_ShaderGenerator = new ShaderGenerator(this);
         
-        m_Configuration = new Configuration();
+        m_Configuration   = new Configuration();
         
         m_Configuration->SetRootName("Forward Renderer");
         {
@@ -77,21 +78,42 @@ namespace Silk
         m_ShaderGenerator->SetShaderVersion(330);
         m_ShaderGenerator->SetAllowInstancing(false);
         m_ShaderGenerator->SetAllowInstancedTextureMatrix(false);
-        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_FLAT);
-        m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE,true);
+        m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_FLAT);
+        m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE,true);
         
-        m_ShaderGenerator->SetAttributeInput(ShaderGenerator::IAT_POSITION,true);
-        m_ShaderGenerator->SetUniformInput  (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
-        m_ShaderGenerator->SetUniformInput  (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
-        m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_COLOR   ,true);
+        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION,true);
+        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,true);
+        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
+        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
+        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
+        m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
         
-        m_ShaderGenerator->AddVertexModule  (const_cast<CString>("[SetGLPosition]gl_Position = vec4(a_Position,1.0);[/SetGLPosition]"),0);
-        m_ShaderGenerator->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = texture(u_DiffuseMap,gl_FragCoord.xy);[/SetColor]"),0);
+        m_ShaderGenerator->AddVertexModule   (const_cast<CString>("[SetTexCoords]o_TexCoord = a_TexCoord;[/SetTexCoords]"),0);
+        m_ShaderGenerator->AddVertexModule   (const_cast<CString>("[SetGLPosition]gl_Position = vec4(a_Position,1.0);[/SetGLPosition]"),1);
         
         m_DefaultFSQMaterial = CreateMaterial();
         Shader* Shdr = m_ShaderGenerator->Generate();
         m_DefaultFSQMaterial->SetShader(Shdr);
         Shdr->Destroy();
+        m_FSQ = CreateRenderObject(ROT_MESH);
+        Vec3 fsqverts[4] =
+        {
+            Vec3(-1.0f,-1.0f,0.0f),
+            Vec3( 1.0f,-1.0f,0.0f),
+            Vec3( 1.0f, 1.0f,0.0f),
+            Vec3(-1.0f, 1.0f,0.0f)
+        };
+        Vec2 fsqtcoords[4] =
+        {
+            Vec2(0.0f,0.0f),
+            Vec2(1.0f,0.0f),
+            Vec2(1.0f,1.0f),
+            Vec2(0.0f,1.0f)
+        };
+        Mesh* fsq = new Mesh();
+        fsq->SetVertexBuffer  (4,fsqverts  );
+        fsq->SetTexCoordBuffer(4,fsqtcoords);
+        m_FSQ->SetMesh(fsq,m_DefaultFSQMaterial);
     }
     
     Texture* Renderer::GetDefaultTexture()
@@ -302,11 +324,14 @@ namespace Silk
         Material* m = Effect ? Effect : m_DefaultFSQMaterial;
         Shader* s = m->GetShader();
         
+        m->SetMap(Material::MT_DIFFUSE,Tex);
+        
         s->Enable();
         s->UseMaterial(m);
         
         //Do full screen quad rendering here
-        
+        RasterObject* Obj = m_FSQ->GetObject();
+        Obj->Render(m_FSQ,PT_TRIANGLE_FAN,0,4);
         
         m_Stats.DrawCalls     += 1;
         m_Stats.VertexCount   += 4;
@@ -323,6 +348,28 @@ namespace Silk
     {
         //More here in the future
         return new Material(this);
+    }
+    void Renderer::RequireFragmentOutput(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type)
+    {
+        m_UsedFragmentOutputs[Type]++;
+        if(m_UsedFragmentOutputs[Type] == 1)
+        {
+            //Update framebuffer with new attachment for this output
+            //Regenerate post processing shaders
+        }
+    }
+    void Renderer::ReleaseFragmentOutput(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type)
+    {
+        m_UsedFragmentOutputs[Type]--;
+        if(m_UsedFragmentOutputs[Type] == 0)
+        {
+            //Update framebuffer to remove attachment for this output
+            //Regenerate post processing shaders
+        }
+        else if(m_UsedFragmentOutputs[Type] < 0)
+        {
+            ERROR("Over released fragment output (%d).\n",m_UsedFragmentOutputs[Type]);
+        }
     }
     void Renderer::Destroy(Material *Mat)
     {

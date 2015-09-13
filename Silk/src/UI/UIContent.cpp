@@ -1,5 +1,8 @@
 #include <UI/UIContent.h>
 #include <UI/UI.h>
+#include <Renderer/Renderer.h>
+#include <Renderer/UniformBufferTypes.h>
+#include <Raster/Raster.h>
 
 namespace Silk
 {

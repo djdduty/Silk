@@ -63,7 +63,7 @@ namespace TestClient
                         if(Data)
                         {
                             t = m_Renderer->GetRasterizer()->CreateTexture();
-                            t->CreateTexture(w,h,Data);
+                            t->CreateTextureb(w,h,Data);
                             for(int x = 0;x < w;x++)
                             {
                                 for(int y = 0;y < h;y++)
@@ -153,7 +153,7 @@ namespace TestClient
                                     if(Data)
                                     {
                                         t = m_Renderer->GetRasterizer()->CreateTexture();
-                                        t->CreateTexture(w,h,Data);
+                                        t->CreateTextureb(w,h,Data);
                                         for(int x = 0;x < w;x++)
                                         {
                                             for(int y = 0;y < h;y++)

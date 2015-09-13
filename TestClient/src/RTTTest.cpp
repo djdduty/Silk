@@ -1,4 +1,4 @@
-#include <CullingTest.h>
+#include <RTTTest.h>
 #include <LodePNG.h>
 #include <ObjLoader.h>
 #include <math.h>
@@ -9,14 +9,14 @@
 using namespace TestClient;
 namespace TestClient
 {
-    CullingTest::CullingTest()
+    RTTTest::RTTTest()
     {
     }
-    CullingTest::~CullingTest()
+    RTTTest::~RTTTest()
     {
     }
 
-    void CullingTest::Initialize()
+    void RTTTest::Initialize()
     {
         InitGUI();
         InitFlyCamera();
@@ -42,7 +42,7 @@ namespace TestClient
         
         SetFPSPrintFrequency(0.5f);
     }
-    void CullingTest::LoadLights()
+    void RTTTest::LoadLights()
     {
         Light* L = 0;
         
@@ -63,47 +63,54 @@ namespace TestClient
         L->m_Color                   = Vec4(0.9,0.8,0.6,1);
         L->m_Power                   = 0.5f;
     }
-    void CullingTest::LoadMeshes()
+    void RTTTest::LoadMeshes()
     {
-        AddMesh("CullingTest/Scene.object",m_Materials[0],Vec3(0,0,0));
-        i32 mid = AddMesh("CullingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
+        AddMesh("RTTTest/Scene.object",m_Materials[0],Vec3(0,0,0));
+        i32 mid = AddMesh("RTTTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
         
-        m_Meshes[AddMesh("CullingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,100))]->SetTransform(Translation(Vec3(0,0,-100)) * Scale(10.0f));
-
-		mid = AddMesh("CullingTest/CullObject.object",m_Materials[2],Vec3(0,2,0),NUM_OF_CULL_OBJECTS);
-		for(i32 i = 0;i < NUM_OF_CULL_OBJECTS;i++)
-		{
-			m_Meshes[mid + i]->SetTransform(Translation(Vec3(Random(-SPAWN_CUBE_SIZE,SPAWN_CUBE_SIZE) * 0.5f,Random(0,SPAWN_CUBE_SIZE * 0.5f),Random(-SPAWN_CUBE_SIZE,SPAWN_CUBE_SIZE) * 0.5f)) * Scale(CULL_OBJECT_SCALE));
-		}
+        mid = AddMesh("RTTTest/Scene.object",m_Materials[2],Vec3(0,0,0));
+        m_Meshes[mid]->SetTransform(Translation(Vec3(0,50, 50)) * Rotation(0,90,0));
+        m_Meshes[mid]->SetTextureTransform(Scale(Vec3(-1.0f,1.0f,1.0f)));
+        
+        mid = AddMesh("RTTTest/Scene.object",m_Materials[2],Vec3(0,0,0));
+        m_Meshes[mid]->SetTransform(Translation(Vec3(0,50,-50)) * Rotation(0,90,180));
+        m_Meshes[mid]->SetTextureTransform(Scale(Vec3(-1.0f,1.0f,1.0f)));
+        
+        mid = AddMesh("RTTTest/Scene.object",m_Materials[2],Vec3(0,0,0));
+        m_Meshes[mid]->SetTransform(Translation(Vec3( 50,50,0)) * Rotation(0,90,-90));
+        m_Meshes[mid]->SetTextureTransform(Scale(Vec3(-1.0f,1.0f,1.0f)));
+        
+        mid = AddMesh("RTTTest/Scene.object",m_Materials[2],Vec3(0,0,0));
+        m_Meshes[mid]->SetTransform(Translation(Vec3(-50,50,0)) * Rotation(0,90,90));
+        m_Meshes[mid]->SetTextureTransform(Scale(Vec3(-1.0f,1.0f,1.0f)));
         
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
     }
-    void CullingTest::LoadMaterial()
+    void RTTTest::LoadMaterial()
     {
         //For ground
-        Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
-                                                              "CullingTest/GroundNormal.png");
+        Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"RTTTest/GroundDiffuse.png",
+                                                              "RTTTest/GroundNormal.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));
         
-        Mat->SetMinParallaxLayers(MIN_PARALLAX_LAYERS);
-        Mat->SetMaxParallaxLayers(MAX_PARALLAX_LAYERS);
-        Mat->SetParallaxScale(0.01f);
-        
         //For light displays
-        AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png");
+        AddMaterial(ShaderGenerator::LM_FLAT,"RTTTest/GroundDiffuse.png");
         
-        //For cull objects
-        AddMaterial(ShaderGenerator::LM_FLAT,"CullingTest/GroundDiffuse.png"); //Use instancing
+        //For pillar thing
+        m_RTT = m_Renderer->GetRasterizer()->CreateTexture();
+        m_RTT->CreateTexture(GetPreferredInitResolution().x,GetPreferredInitResolution().y);
+        m_RTT->UpdateTexture();
+        m_RTTIndex = m_Textures.size();
+        m_Textures.push_back(m_RTT);
         
-        //AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
-        //                                      "CullingTest/GroundNormal.png" ); //Non-instanced
+        AddMaterial(ShaderGenerator::LM_FLAT,m_RTT,0,0);
     }
 
-    void CullingTest::Run()
+    void RTTTest::Run()
     {
         Mat4 t = Translation(Vec3(0,4,9)) * RotationX(20.0f);
         m_Camera->SetTransform(t);
@@ -140,10 +147,12 @@ namespace TestClient
             {
                 m_LightMeshes[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
             }
+            
+            m_Renderer->RenderTexture(m_Textures[m_RTTIndex]);
         }
     }
 
-    void CullingTest::Shutdown()
+    void RTTTest::Shutdown()
     {
     }
 };

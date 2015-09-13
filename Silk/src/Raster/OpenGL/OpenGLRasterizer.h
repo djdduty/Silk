@@ -80,6 +80,23 @@ namespace Silk
             vector<Mat4> m_InstanceTextureTransforms;
     };
     
+    class OpenGLFrameBuffer : public FrameBuffer
+    {
+        public:
+            OpenGLFrameBuffer(Renderer* r);
+            virtual ~OpenGLFrameBuffer();
+        
+            virtual void Initialize();
+            virtual void EnableTarget();
+            virtual void EnableTexture(Material* Mat);
+            virtual void Disable();
+        
+        protected:
+            GLuint m_Buffer;
+            GLuint m_DepthBuffer;
+            vector<GLuint> m_DrawBuffers;
+    };
+    
     class OpenGLUniformBuffer : public UniformBuffer
     {
         public:
@@ -114,21 +131,22 @@ namespace Silk
             void SetClearBuffers(GLuint Bitfield) { m_ClearBuffers = Bitfield; }
         
             /* Rasterizer functionality */
-            virtual void EnableFramebuffer();
             virtual void ClearActiveFramebuffer()               { glClearColor(m_ClearColor.x,m_ClearColor.y,m_ClearColor.z,m_ClearColor.w);
                                                                   glClear(m_ClearBuffers); }
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h)   { glViewport(x,y,w,h);     }
             virtual RasterContext* CreateContext()              { return new OpenGLRasterizerContext(this); }
 
-            virtual Shader                * CreateShader();
-            virtual Texture               * CreateTexture();
-            virtual UniformBuffer         * CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type);
-            virtual RasterObject          * CreateObject() { return new OpenGLObject(this); }
+            virtual Shader        * CreateShader();
+            virtual Texture       * CreateTexture();
+            virtual UniformBuffer * CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type);
+            virtual RasterObject  * CreateObject() { return new OpenGLObject(this); }
+            virtual FrameBuffer   * CreateFrameBuffer() { return new OpenGLFrameBuffer(m_Renderer); }
 
             virtual void Destroy(UniformBuffer* B);
             virtual void Destroy(Shader       * S);
             virtual void Destroy(Texture      * T);
             virtual void Destroy(RasterObject * O);
+            virtual void Destroy(FrameBuffer  * B);
         
         protected:
             GLuint m_ColorFormat;

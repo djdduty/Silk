@@ -16,13 +16,13 @@ namespace TestClient
         
         if(Button == GLFW_MOUSE_BUTTON_LEFT)
         {
-            //     if(Action == GLFW_PRESS  ) g_Test->GetUI()->OnButtonDown(BTN_LEFT_MOUSE);
-            //else if(Action == GLFW_RELEASE) g_Test->GetUI()->OnButtonUp  (BTN_LEFT_MOUSE);
+                 if(Action == GLFW_PRESS  ) g_Test->GetInput()->OnButtonDown(BTN_LEFT_MOUSE);
+            else if(Action == GLFW_RELEASE) g_Test->GetInput()->OnButtonUp  (BTN_LEFT_MOUSE);
         }
         else if(Button == GLFW_MOUSE_BUTTON_RIGHT)
         {
-            //     if(Action == GLFW_PRESS  ) g_Test->GetUI()->OnButtonDown(BTN_RIGHT_MOUSE);
-            //else if(Action == GLFW_RELEASE) g_Test->GetUI()->OnButtonUp  (BTN_RIGHT_MOUSE);
+                 if(Action == GLFW_PRESS  ) g_Test->GetInput()->OnButtonDown(BTN_RIGHT_MOUSE);
+            else if(Action == GLFW_RELEASE) g_Test->GetInput()->OnButtonUp  (BTN_RIGHT_MOUSE);
         }
     }
     void OnKey(GLFWwindow* Win,i32 Key,i32 ScanCode,i32 Action,i32 Mods)
@@ -46,19 +46,19 @@ namespace TestClient
         
         if(Action == GLFW_PRESS)
         {
-            //     if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_FORWARD );
-            //else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_BACKWARD);
-            //else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_LEFT    );
-            //else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonDown(BTN_MOVE_RIGHT   );
-            //else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonDown(BTN_QUIT         );
+                 if(Key == GLFW_KEY_W     ) g_Test->GetInput()->OnButtonDown(BTN_MOVE_FORWARD );
+            else if(Key == GLFW_KEY_S     ) g_Test->GetInput()->OnButtonDown(BTN_MOVE_BACKWARD);
+            else if(Key == GLFW_KEY_A     ) g_Test->GetInput()->OnButtonDown(BTN_MOVE_LEFT    );
+            else if(Key == GLFW_KEY_D     ) g_Test->GetInput()->OnButtonDown(BTN_MOVE_RIGHT   );
+            else if(Key == GLFW_KEY_ESCAPE) g_Test->GetInput()->OnButtonDown(BTN_QUIT         );
         }
         else if(Action == GLFW_RELEASE)
         {
-            //     if(Key == GLFW_KEY_W     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_FORWARD );
-            //else if(Key == GLFW_KEY_S     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_BACKWARD);
-            //else if(Key == GLFW_KEY_A     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_LEFT    );
-            //else if(Key == GLFW_KEY_D     ) g_Test->GetUI()->OnButtonUp(BTN_MOVE_RIGHT   );
-            //else if(Key == GLFW_KEY_ESCAPE) g_Test->GetUI()->OnButtonUp(BTN_QUIT         );
+                 if(Key == GLFW_KEY_W     ) g_Test->GetInput()->OnButtonUp(BTN_MOVE_FORWARD );
+            else if(Key == GLFW_KEY_S     ) g_Test->GetInput()->OnButtonUp(BTN_MOVE_BACKWARD);
+            else if(Key == GLFW_KEY_A     ) g_Test->GetInput()->OnButtonUp(BTN_MOVE_LEFT    );
+            else if(Key == GLFW_KEY_D     ) g_Test->GetInput()->OnButtonUp(BTN_MOVE_RIGHT   );
+            else if(Key == GLFW_KEY_ESCAPE) g_Test->GetInput()->OnButtonUp(BTN_QUIT         );
         }
     }
     
@@ -111,7 +111,10 @@ namespace TestClient
             ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
             m_Window->PollEvents();
-
+            
+            m_InputManager = new InputManager();
+            m_InputManager->Initialize(BTN_COUNT);
+            
             m_TaskManager = new TaskManager();
             m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
@@ -144,6 +147,8 @@ namespace TestClient
             m_Cursor    = 0;
             m_CursorMat = 0;
             m_CursorObj = 0;
+            
+            m_RTTIndex = -1;
         }
         else
         {
@@ -161,7 +166,7 @@ namespace TestClient
     {
         m_UIManager = new UIManager(m_Renderer);
         m_Renderer->SetUIManager(m_UIManager);
-        m_UIManager->Initialize(BTN_COUNT);
+        m_UIManager->Initialize();
         m_UIManager->GetCamera()->SetZClipPlanes(0.0f,200.0f);
         m_UIManager->GetCamera()->SetTransform(Translation(Vec3(0,0,-100)));
         
@@ -300,14 +305,25 @@ namespace TestClient
     }
     Material* Test::AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse,const char* Normal,const char* Parallax)
     {
-        Material* Mat = m_Renderer->CreateMaterial();
         Texture* D = LoadTexture(Diffuse );
         Texture* N = LoadTexture(Normal  );
         Texture* P = LoadTexture(Parallax);
         
-        if(D) { Mat->SetMap(Material::MT_DIFFUSE ,D); D->Destroy(); }
-        if(N) { Mat->SetMap(Material::MT_NORMAL  ,N); N->Destroy(); }
-        if(P) { Mat->SetMap(Material::MT_PARALLAX,P); P->Destroy(); }
+        Material* Mat = AddMaterial(LightingMode,D,N,P);
+        
+        if(D) D->Destroy();
+        if(N) N->Destroy();
+        if(P) P->Destroy();
+        
+        return Mat;
+    }
+    Material* Test::AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,Texture* Diffuse,Texture* Normal,Texture* Parallax)
+    {
+        Material* Mat = m_Renderer->CreateMaterial();
+        
+        Mat->SetMap(Material::MT_DIFFUSE ,Diffuse );
+        Mat->SetMap(Material::MT_NORMAL  ,Normal  );
+        Mat->SetMap(Material::MT_PARALLAX,Parallax);
         
         if(LightingMode != ShaderGenerator::LM_FLAT)
         {
@@ -348,9 +364,9 @@ namespace TestClient
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,false);
         }
         
-        m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE ,D != 0);
-        m_ShaderGenerator->SetTextureInput(Material::MT_NORMAL  ,N != 0);
-        m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,P != 0);
+        m_ShaderGenerator->SetTextureInput(Material::MT_DIFFUSE ,Diffuse  != 0);
+        m_ShaderGenerator->SetTextureInput(Material::MT_NORMAL  ,Normal   != 0);
+        m_ShaderGenerator->SetTextureInput(Material::MT_PARALLAX,Parallax != 0);
         m_ShaderGenerator->SetLightingMode(LightingMode);
 
         Shader* Shdr = m_ShaderGenerator->Generate();
@@ -453,8 +469,9 @@ namespace TestClient
     {
         if(m_UIManager)
         {
-            //if(m_UIManager->IsButtonDown(BTN_QUIT)) m_DoShutdown = true;
+            if(m_InputManager->IsButtonDown(BTN_QUIT)) m_DoShutdown = true;
         }
+        
         if(m_Renderer->GetRenderStatistics().FrameID > 0)
         {
             /* End previous frame */
@@ -498,10 +515,10 @@ namespace TestClient
                     m_yCamRot *= Quat(Vec3(1,0,0),-CursorDelta.y * CAMERA_TURN_SPEED);
                     m_CamRot = m_xCamRot * m_yCamRot;
                 }
-                if(m_UIManager->IsButtonDown(BTN_MOVE_FORWARD )) m_CamPos += m_CamRot * Vec3(0,0,-CAMERA_MOVE_SPEED) * GetDeltaTime();
-                if(m_UIManager->IsButtonDown(BTN_MOVE_BACKWARD)) m_CamPos += m_CamRot * Vec3(0,0, CAMERA_MOVE_SPEED) * GetDeltaTime();
-                if(m_UIManager->IsButtonDown(BTN_MOVE_LEFT    )) m_CamPos += m_CamRot * Vec3(-CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
-                if(m_UIManager->IsButtonDown(BTN_MOVE_RIGHT   )) m_CamPos += m_CamRot * Vec3( CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_FORWARD )) m_CamPos += m_CamRot * Vec3(0,0,-CAMERA_MOVE_SPEED) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_BACKWARD)) m_CamPos += m_CamRot * Vec3(0,0, CAMERA_MOVE_SPEED) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_LEFT    )) m_CamPos += m_CamRot * Vec3(-CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_RIGHT   )) m_CamPos += m_CamRot * Vec3( CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
                 
                 m_Camera->SetTransform(Translation(m_CamPos) * m_CamRot.ToMat());*/
             }
@@ -524,9 +541,12 @@ namespace TestClient
             
             /* Update UI */
             if(m_UIManager) m_UIManager->Update(m_DeltaTime);
+            m_InputManager->Update(m_DeltaTime);
             
             /* Render */
+            if(m_RTTIndex != -1) m_Textures[m_RTTIndex]->EnableRTT(true);
             m_Renderer->Render(m_DeltaTime,PT_TRIANGLES);
+            if(m_RTTIndex != -1) m_Textures[m_RTTIndex]->DisableRTT();
             
             m_FramePrintTime += m_DeltaTime;
             if(m_FramePrintTime > m_FramePrintInterval)

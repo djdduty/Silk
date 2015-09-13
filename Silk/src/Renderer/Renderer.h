@@ -76,6 +76,11 @@ namespace Silk
         
             RenderObject* CreateRenderObject(RENDER_OBJECT_TYPE Rot);
             Material    * CreateMaterial();
+        
+            /* Call these only from the ShaderGenerator and Shader classes, respectively */
+            void RequireFragmentOutput(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type);
+            void ReleaseFragmentOutput(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type);
+        
             void Destroy(Material    * Mat);
             void Destroy(RenderObject* Obj);
         
@@ -130,7 +135,11 @@ namespace Silk
         
             //For rendering textures to the screen
             Material* m_DefaultFSQMaterial;
-            Mesh    * m_FSQ;
+            RenderObject* m_FSQ;
+        
+            //For determining framebuffer attachments
+            i32 m_UsedFragmentOutputs[ShaderGenerator::OFT_COUNT];
+            //vector<UserFragmentOutput*> m_UserFragmentOutputs;
         
             TaskManager     * m_TaskManager     ;
             UIManager       * m_UIManager       ;

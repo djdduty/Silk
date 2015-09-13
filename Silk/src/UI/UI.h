@@ -1,20 +1,21 @@
 #pragma once
+
 #include <UI/UIElement.h>
+#include <Renderer/RenderObject.h>
 
 namespace Silk
-{
+{   
     class Camera;
     class Shader;
     class Renderer;
     class RenderUnformSet;
-    
     class UIManager
     {
         public:
             UIManager(Renderer* r);
             ~UIManager();
         
-            void Initialize(i32 ButtonCount);
+            void Initialize();
         
             void SetViewScale(Vec2 Sc) { m_ViewScale = Sc; m_ViewNeedsUpdate = true; }
         

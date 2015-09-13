@@ -34,7 +34,24 @@ namespace Silk
                 MT_CUSTOM5     ,
                 MT_CUSTOM6     ,
                 MT_CUSTOM7     ,
-                MT_COUNT       ,
+                
+                //Use these only for gbuffer attachments
+                MT_FRAG_COLOR    ,
+                MT_FRAG_POSITION ,
+                MT_FRAG_NORMAL   ,
+                MT_FRAG_TANGENT  ,
+                MT_FRAG_MATERIAL0,
+                MT_FRAG_MATERIAL1,
+                MT_FRAG_CUSTOM0  ,
+                MT_FRAG_CUSTOM1  ,
+                MT_FRAG_CUSTOM2  ,
+                MT_FRAG_CUSTOM3  ,
+                MT_FRAG_CUSTOM4  ,
+                MT_FRAG_CUSTOM5  ,
+                MT_FRAG_CUSTOM6  ,
+                MT_FRAG_CUSTOM7  ,
+                
+                MT_COUNT         ,
             };
         
             i32 AddRef() { m_RefCount++; return m_RefCount; }
@@ -54,7 +71,7 @@ namespace Silk
             f32 GetShininess() const;
             
             void SetDiffuse (const Vec4& Color);
-            Vec4 GetDiffuse() const;
+            Vec4 GetDiffuse () const;
             void SetSpecular(const Vec4& Color);
             Vec4 GetSpecular() const;
             void SetEmissive(const Vec4& Color);

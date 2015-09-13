@@ -1,5 +1,9 @@
 #include <UI/UI.h>
 
+#include <Renderer/Renderer.h>
+#include <Renderer/UniformBufferTypes.h>
+#include <Raster/Raster.h>
+
 namespace Silk
 {
     UIManager::UIManager(Renderer* r) : m_Renderer(r), m_ViewScale(1.0f,1.0f), m_Resolution(0.0f,0.0f), m_ViewNeedsUpdate(true),
@@ -12,13 +16,14 @@ namespace Silk
         if(m_Camera) delete m_Camera;
     }
     
-    void UIManager::Initialize(i32 ButtonCount)
+    void UIManager::Initialize()
     {
         m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         Vec2 hRes = m_Resolution * 0.5f;
         m_Camera = new Camera(-hRes.x,hRes.x,-hRes.y,hRes.y,0.0f,1.0f);
         m_View = m_Renderer->GetRasterizer()->CreateTexture();
         m_View->CreateTexture(m_Resolution.x,m_Resolution.y);
+        m_View->UpdateTexture();
         
         ShaderGenerator* Gen = m_Renderer->GetShaderGenerator();
         Gen->Reset();
@@ -78,8 +83,6 @@ namespace Silk
     }
     void UIManager::Render(Scalar dt,PRIMITIVE_TYPE PrimType)
     {
-        //Update button times
-        
         //Update texture and projection if resolution changes
         Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();;
         if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
@@ -98,16 +101,13 @@ namespace Silk
         Camera* Cam = m_Renderer->GetScene()->GetActiveCamera();
         m_Renderer->GetScene()->SetActiveCamera(m_Camera);
         m_Renderer->UpdateUniforms();
-        
-        //UI culling
-        ObjectList l;
-        l.SetIndexed(false);
 
         //TODO: Depth Sorting
 
         //Render all UI to texture
+        //m_View->EnableRTT(false);
+        
         SilkObjectVector MeshesRendered;
-        m_View->EnableRTT();
         for(i32 i = m_Elements.size() - 1; i >= 0; i--)
         {
             m_Elements[i]->_Render(PrimType, &MeshesRendered);
@@ -118,7 +118,7 @@ namespace Silk
             MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
         }
         
-        m_View->DisableRTT();
+        //m_View->DisableRTT();
         
         m_Renderer->GetScene()->SetActiveCamera(Cam);
         

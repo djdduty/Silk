@@ -1,5 +1,6 @@
 #include <Raster/OpenGL/OpenGLTexture.h>
 #include <Raster/OpenGL/PlatformSpecificOpenGL.h>
+#include <Raster/Raster.h>
 
 namespace Silk
 {
@@ -23,7 +24,6 @@ namespace Silk
     }
     void OpenGLTexture::UpdateTexture()
     {
-        if(!m_Pixels) return;
         if(m_TexID == 0 || m_LastWidth != m_Width || m_LastHeight != m_Height) InitializeTexture();
         
         glBindTexture(GL_TEXTURE_2D,m_TexID);
@@ -32,12 +32,5 @@ namespace Silk
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         glBindTexture(GL_TEXTURE_2D,0);
-    }
-    void OpenGLTexture::EnableRTT()
-    {
-    }
-    void OpenGLTexture::DisableRTT()
-    {
-        m_Rasterizer->EnableFramebuffer();
     }
 };
