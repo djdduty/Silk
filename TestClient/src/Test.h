@@ -33,7 +33,6 @@ namespace TestClient
         
             void Init();
             void InitGUI();
-            void InitCursor();
 			void InitDebugDisplay();
             void InitFlyCamera(const Vec3& InitPos = Vec3(0,5,0));
         

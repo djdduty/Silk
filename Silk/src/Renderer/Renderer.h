@@ -124,6 +124,8 @@ namespace Silk
         
         protected:
             friend class UIManager;
+            friend class UIRenderContent;
+
             RenderPreferences m_Prefs;
             RenderStats m_Stats;
             bool m_DoRecompileAllShaders;

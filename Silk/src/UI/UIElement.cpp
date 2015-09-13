@@ -22,11 +22,19 @@ namespace Silk
     }
     
     
-    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(0), m_Parent(0), m_Render(0), m_Manager(0)
+    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(0), m_Parent(0), m_Content(std::vector<UIRenderContent*>()), m_Manager(0), m_MeshNeedsUpdate(true), 
+                             m_CurrentState(UIS_DEFAULT), m_TransformNeedsUpdate(true), m_MaterialNeedsUpdate(true),
+                             m_ContentNeedsUpdate(true)
     {
+        m_States[UIS_DEFAULT] = new UIElementStyle(this);
     }
     UIElement::~UIElement()
     {
+        for(i32 i = 0; i < UIS_COUNT; i++)
+        {
+            if(m_States[i])
+                delete m_States[i];
+        }
     }
     
     i32 UIElement::Destroy()
@@ -63,20 +71,89 @@ namespace Silk
         E->m_Parent = this;
         E->m_CID = m_Children.size() - 1;
     }
-    void UIElement::SetObject(RenderObject *o)
-    {
-        if(m_Render) m_Manager->m_Renderer->Destroy(m_Render);
-        m_Render = o;
-    }
-    UIRect UIElement::GetArea() const
-    {
-        UIRect r;
-        r.Set(m_Render->GetTransform().GetTranslation().xy(),m_Dimensions);
-        return r;
-    }
     void UIElement::_Update(Scalar dt)
     {
+        if(m_ContentNeedsUpdate)
+            UpdateContent();
+        if(m_MeshNeedsUpdate)
+            UpdateMeshes();
+        if(m_MaterialNeedsUpdate)
+            UpdateMaterials();
+        if(m_TransformNeedsUpdate)
+            UpdateTransforms();
+        
         for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Update(dt);
         Update(dt);
+    }
+    void UIElement::_Initialize()
+    {}
+    void UIElement::UpdateContent()
+    {
+        OnUpdateContent();
+        m_ContentNeedsUpdate = false;
+    }
+    void UIElement::UpdateTransforms()
+    {
+        OnUpdateTransforms();
+        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateTransform();
+        m_TransformNeedsUpdate = false;
+    }
+    void UIElement::UpdateMaterials()
+    {
+        OnUpdateMaterials();
+        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateMaterial();
+        m_MaterialNeedsUpdate = false;
+    }
+    void UIElement::UpdateMeshes()
+    {
+        OnUpdateMeshes();
+        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->UpdateMesh();
+        m_MeshNeedsUpdate = false;
+    }
+    void UIElement::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
+    {
+        for(i32 i = 0; i < m_Content.size(); i++) m_Content[i]->Render(PrimType, ObjectsRendered);
+    }
+    void UIElement::_Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
+    {
+        Render(PrimType, ObjectsRendered);
+        for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Render(PrimType, ObjectsRendered);
+    }
+    void UIElement::AddContent(UIRenderContent* Content)
+    {
+        m_Content.push_back(Content);
+    }
+    void UIElement::RemoveContent(UIRenderContent* Content)
+    {
+        for(i32 i = 0; i < m_Content.size(); i++)
+            if(m_Content[i] == Content) {
+                m_Content.erase(m_Content.begin() + i);
+                break;
+            }
+    }
+
+
+    void UIElementStyle::BroadcastMeshChange()
+    {
+        if(m_Parent)
+            m_Parent->m_MeshNeedsUpdate = true;
+    }
+
+    void UIElementStyle::BroadcastTransformChange()
+    {
+        if(m_Parent)
+            m_Parent->m_TransformNeedsUpdate = true;
+    }
+
+    void UIElementStyle::BroadcastMaterialChange()
+    {
+        if(m_Parent)
+            m_Parent->m_MaterialNeedsUpdate = true;
+    }
+
+    void UIElementStyle::BroadcastContentChange()
+    {
+        if(m_Parent)
+            m_Parent->m_ContentNeedsUpdate = true;
     }
 };

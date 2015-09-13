@@ -72,6 +72,7 @@ namespace Silk
             friend class Scene;
             friend class Renderer;
             friend class UIManager;
+            friend class UIRenderContent;
             friend class ObjectList;
             friend class RasterObject;
             friend class ModelUniformSet;

@@ -1,8 +1,6 @@
 #pragma once
 #include <Test.h>
 
-#define BUTTON_COLOR 0.5,0.5,0.5,1.0
-
 namespace TestClient
 {
     class UITest : public Test

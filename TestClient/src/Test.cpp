@@ -175,60 +175,6 @@ namespace TestClient
         glfwSetCursorPosCallback  (m_Window->GetWindow(),OnCursorMove);
         glfwSetKeyCallback        (m_Window->GetWindow(),OnKey       );
     }
-    void Test::InitCursor()
-    {
-        if(!LoadTexture("Common/Cursor.png"))
-        {
-            ERROR("TestClient: Unable to initialize cursor. \"Common/Cursor.png\" not found.\n");
-        }
-        
-        m_CursorTexIndex = m_Textures.size() - 1;
-        
-        Mesh* m = new Mesh();
-        f32 s = 20.0f;
-        f32 v[18] =
-        {
-            0,0,0,
-            s,0,0,
-            0,s,0,
-            
-            0,s,0,
-            s,0,0,
-            s,s,0,
-        };
-        
-        s = 0.9f; //Avoid texture edge artifact that happens with filtering
-        f32 t[12] =
-        {
-            0,0,
-            s,0,
-            0,s,
-            
-            0,s,
-            s,0,
-            s,s
-        };
-        
-        m->SetVertexBuffer  (6,v);
-        m->SetTexCoordBuffer(6,t);
-        
-        m_Cursor    = new UIElement();
-        m_UIManager->AddElement(m_Cursor);
-        
-        m_CursorObj = m_Renderer ->CreateRenderObject(ROT_MESH);
-        m_CursorMat = m_Renderer ->CreateMaterial();
-        m_CursorMat->SetMap(Material::MT_DIFFUSE,m_Textures[m_CursorTexIndex]);
-        m_Textures[m_CursorTexIndex]->Destroy();
-        
-        m_CursorMat->SetShader   (m_UIManager->GetDefaultTextureShader());
-        m_CursorObj->SetMesh     (m,m_CursorMat);
-        m_Cursor   ->SetObject   (m_CursorObj);
-        m_Cursor   ->SetSize     (s,s);
-        
-        m_UIElements.push_back(m_Cursor   );
-        m_Meshes    .push_back(m_CursorObj);
-        m_Materials .push_back(m_CursorMat);
-    }
     void Test::InitFlyCamera(const Vec3& InitPos)
     {
         m_CamPos = InitPos;
@@ -563,6 +509,7 @@ namespace TestClient
             if(m_FlyCameraEnabled && m_UIManager)
             {
                 Vec2 CursorDelta = m_InputManager->GetUnBoundedCursorDelta() * 0.5f;
+                
                 if(CursorDelta.Magnitude() > 0.01f)
                 {
                     m_xCamRot *= Quat(Vec3(0,1,0), CursorDelta.x * CAMERA_TURN_SPEED);

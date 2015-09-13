@@ -1,4 +1,5 @@
 #include <UI/UI.h>
+
 #include <Renderer/Renderer.h>
 #include <Renderer/UniformBufferTypes.h>
 #include <Raster/Raster.h>
@@ -44,8 +45,27 @@ namespace Silk
         Gen->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
         
         Gen->SetLightingMode(ShaderGenerator::LM_FLAT);
-        
+        Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = u_Diffuse;[/SetColor]"),2);
         m_DefaultShader = Gen->Generate();
+        Gen->Reset();
+
+        Gen->SetShaderVersion(330);
+        Gen->SetAllowInstancing(false);
+        Gen->SetAllowInstancedTextureMatrix(false);
+        
+        Gen->SetUniformInput(ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
+        Gen->SetUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
+        Gen->SetUniformInput(ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
+
+        Gen->SetAttributeInput (ShaderGenerator::IAT_POSITION,true);
+        Gen->SetAttributeInput (ShaderGenerator::IAT_COLOR   ,true);
+        Gen->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,true);
+        
+        Gen->SetAttributeOutput(ShaderGenerator::IAT_COLOR   ,true);
+        Gen->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
+        Gen->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
+        
+        Gen->SetLightingMode(ShaderGenerator::LM_FLAT);
         
         Gen->SetTextureInput(Material::MT_DIFFUSE,true);
         m_DefaultTextureShader = Gen->Generate();
@@ -81,127 +101,16 @@ namespace Silk
         Camera* Cam = m_Renderer->GetScene()->GetActiveCamera();
         m_Renderer->GetScene()->SetActiveCamera(m_Camera);
         m_Renderer->UpdateUniforms();
-        
-        //UI culling
-        ObjectList l;
-        l.SetIndexed(false);
-        
-        //Depth sorting
-        vector<UIElement*> DepthSorted;
-        vector<UIElement*> Temp(m_Elements);
-        while(DepthSorted.size() != m_Elements.size())
-        {
-            for(i32 i = 0;i < Temp.size();i++)
-            {
-                Scalar Tz = Temp[i]->m_Render->GetTransform().GetTranslation().z;
-                if(DepthSorted.size() == 0)
-                {
-                    DepthSorted.push_back(Temp[i]);
-                    Temp.erase(Temp.begin() + i);
-                    break;
-                }
-                
-                for(i32 j = 0;j < DepthSorted.size();j++)
-                {
-                    Scalar Dz = DepthSorted[j]->m_Render->GetTransform().GetTranslation().z;
-                    if(Tz > Dz)
-                    {
-                        if(j < DepthSorted.size() - 1)
-                        {
-                            if(Tz < Dz)
-                            {
-                                DepthSorted.insert(DepthSorted.begin() + j,Temp[i]);
-                                Temp.erase(Temp.begin() + i);
-                                break;
-                            }
-                            else continue;
-                        }
-                        else
-                        {
-                            DepthSorted.push_back(Temp[i]);
-                            Temp.erase(Temp.begin() + i);
-                            break;
-                        }
-                    }
-                    else if(Tz < Dz)
-                    {
-                        if(j != 0) DepthSorted.insert(DepthSorted.begin() + (j - 1),Temp[i]);
-                        else DepthSorted.insert(DepthSorted.begin(),Temp[i]);
-                        Temp.erase(Temp.begin() + i);
-                        break;
-                    }
-                    else
-                    {
-                        DepthSorted.insert(DepthSorted.begin() + j,Temp[i]);
-                        Temp.erase(Temp.begin() + i);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        //for(i32 i = 0;i < DepthSorted.size();i++)
-        for(i32 i = DepthSorted.size() - 1;i >= 0;i--)
-        {
-            //To do: culling
-            l.AddObject(DepthSorted[i]->m_Render);
-        }
-        
+
+        //TODO: Depth Sorting
+
         //Render all UI to texture
-        m_View->EnableRTT(false);
-        
-        i32 ShaderCount = l.GetShaderCount();
+        //m_View->EnableRTT(false);
         
         SilkObjectVector MeshesRendered;
-        for(i32 i = 0;i < ShaderCount;i++)
+        for(i32 i = m_Elements.size() - 1; i >= 0; i--)
         {
-            Shader* Shader = l.GetShader(i);
-            if(!Shader) continue;
-            
-            Shader->Enable();
-            
-            SilkObjectVector Meshes = l.GetShaderMeshList(i);
-            for(i32 m = 0;m < Meshes.size();m++)
-            {
-                RenderObject* Obj = Meshes[m];
-            
-                if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
-                {
-                    //Pass material uniforms
-                    Material* Mat = Obj->GetMaterial();
-                    Shader->UseMaterial(Mat);
-                    
-                    //Pass object uniforms
-                    if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
-                    {
-                        Obj->UpdateUniforms();
-                        Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
-                    }
-                    
-                    //To do: Batching
-                    i32 Count = 0;
-                    if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
-                    else Count = Obj->m_Mesh->GetVertexCount();
-                    
-                    Obj->m_Object->Render(Obj,PrimType,0,Count);
-                    
-                    
-                    i32 vc = Obj->m_Mesh->GetVertexCount();
-                    i32 tc = 0;
-                    if(PrimType == PT_TRIANGLES     ) tc = vc / 3;
-                    if(PrimType == PT_TRIANGLE_STRIP
-                    || PrimType == PT_TRIANGLE_FAN  ) tc = vc - 2;
-                    
-                    m_Renderer->m_Stats.VisibleObjects++;
-                    m_Renderer->m_Stats.VertexCount   += vc;
-                    m_Renderer->m_Stats.TriangleCount += tc;
-                    m_Renderer->m_Stats.DrawCalls     ++   ;
-                    
-                    MeshesRendered.push_back(Obj);
-                }
-            }
-            
-            Shader->Disable();
+            m_Elements[i]->_Render(PrimType, &MeshesRendered);
         }
         
         for(i32 i = 0;i < MeshesRendered.size();i++)
@@ -209,7 +118,7 @@ namespace Silk
             MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
         }
         
-        m_View->DisableRTT();
+        //m_View->DisableRTT();
         
         m_Renderer->GetScene()->SetActiveCamera(Cam);
         
@@ -219,7 +128,8 @@ namespace Silk
     {
         Element->m_Manager = this;
         m_Elements.push_back(Element);
-        Element->m_ID = m_Elements.size() - 1;
+        Element->m_ID = m_Elements.size() - 1; //NOTE: Not an actual id, it's just the array index for use in removing
+        Element->_Initialize();
     }
     void UIManager::RemoveElement(UIElement *Element)
     {
