@@ -28,7 +28,7 @@ namespace Silk
             Shader * GetDefaultTextureShader() const { return m_DefaultTextureShader; }
             Shader * GetDefaultTextShader   () const { return m_DefaultTextShader   ; }
         
-            //Camera* GetCamera() const { return m_Camera; }
+            Camera* GetCamera() const { return m_Camera; }
             Renderer* GetRenderer() { return m_Renderer; }
 
             void SetTransform(Mat4 Trans);
@@ -37,7 +37,7 @@ namespace Silk
         protected:
             friend class UIElement;
             friend class UIRenderContent;
-            
+
             Renderer* m_Renderer;
         
             Vec2 m_ViewScale;
