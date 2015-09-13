@@ -8,12 +8,13 @@ namespace Silk
 {
     UIManager::UIManager(Renderer* r) : m_Renderer(r), m_ViewScale(1.0f,1.0f), m_Resolution(0.0f,0.0f), m_ViewNeedsUpdate(true),
                                         m_Camera(0), m_View(0), m_DefaultShader(0), m_DefaultTextureShader(0), m_DefaultTextShader(0),
-                                        m_RenderUniforms(0)
+                                        m_RenderUniforms(0), m_Font(0)
     {
     }
     UIManager::~UIManager()
     {
         if(m_Camera) delete m_Camera;
+        if(m_Font) delete m_Font;
     }
     
     void UIManager::Initialize()

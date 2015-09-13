@@ -4,22 +4,59 @@
  *
  *  Created by Michael DeCicco on 8/10/15.
  *
+ *  I like this.... this is mine now. - DJD 9/12/2015 ;)
  */
 
 #include "UIText.h"
 
 namespace Silk
 {
-    UIText::UIText() : m_Font(0), m_Color(Vec4(1,1,1,1)), m_Scale(1.0f), m_TextChanged(false)
+    UIText::UIText(UIManager* Manager, UIElementStyle* Style) : UIRenderContent(Manager, Style), m_Font(0), m_Color(Style->GetTextColor()), m_Scale(1.0f), m_TextChanged(false), m_BoundSize(Vec2(0,0))
     {
+        m_Material = m_Manager->GetRenderer()->CreateMaterial();
+        m_Material->SetShader(m_Manager->GetDefaultTextShader());
+        if(m_Manager->GetFont())
+            SetFont(m_Manager->GetFont());
     }
     UIText::~UIText()
     {
     }
 
+    void UIText::OnRender(PRIMITIVE_TYPE PrimType)
+    {
+        if(!m_Font && m_Manager->GetFont())
+            SetFont(m_Manager->GetFont());
+
+        if(m_TextChanged == true)
+            RebuildMesh();
+    }
+
+    void UIText::UpdateMaterial()
+    {
+        if(!m_Render)
+            UpdateMesh();
+
+        SetColor(m_Style->GetTextColor());
+        SetScale(m_Style->GetTextSize() / m_Font->GetGlyphSize());
+    }
+    void UIText::UpdateTransform()
+    {
+        if(!m_Render)
+            UpdateMesh();
+
+        m_Render->SetTransform(Translation(m_Style->GetPosition()));
+    }
+
+    void UIText::UpdateMesh()
+    {
+        if(m_Font)
+            RebuildMesh();
+    }
+
     void UIText::SetFont(Font* Fnt)
     {
         m_Font = Fnt;
+        m_Material->SetMap(Material::MT_DIFFUSE,m_Font->GetFontImage());
         m_TextChanged = true;
     }
 
@@ -99,18 +136,13 @@ namespace Silk
             }
         }
     }
-    void UIText::Update(Scalar dt)
-    {
-        if(m_TextChanged)
-        {
-            RebuildMesh();
-            m_TextChanged = false;
-        }
-    }
 
     void UIText::RebuildMesh()
     {
         Mesh* m = new Mesh();
+
+        if(!m_Render)
+            m_Render = m_Manager->GetRenderer()->CreateRenderObject(ROT_MESH);
         
         vector<Vec3> Verts ;
         vector<Vec2> UVs   ;
@@ -129,11 +161,14 @@ namespace Silk
          *  3___2
          */
         
+        f32 biggestXOff = 0.0;
+        f32 lastXSize = 0.0;
         for(i32 i = 0;i < m_Text.length();i++)
         {
             if(m_Text[i] == '\n')
             {
                 yOffset += GlyphSize * m_Scale;
+                if(xOffset > biggestXOff) biggestXOff = xOffset;
                 xOffset  = 0.0f;
                 continue;
             }
@@ -190,13 +225,28 @@ namespace Silk
             Colors.push_back(m_CharMods[i].Color);
             
             xOffset += g.xAdvance * m_Scale * m_CharMods[i].Scale.x;
+            lastXSize = g.xAdvance * m_Scale * m_CharMods[i].Scale.x;
         }
+        m_BoundSize.y = yOffset + (GlyphSize * m_Scale);
+        f32 totalXSize = xOffset + lastXSize;
+        if(totalXSize > biggestXOff) biggestXOff = totalXSize;
+        m_BoundSize.x = biggestXOff;
         
         m->SetVertexBuffer  (m_Text.length() * 6,&Verts [0].x);
         m->SetTexCoordBuffer(m_Text.length() * 6,&UVs   [0].x);
         m->SetColorBuffer   (m_Text.length() * 6,&Colors[0].x);
         
-        //m_Render->SetMesh(m,m_Material);
+        m_Render->SetMesh(m,m_Material);
         m->Destroy();
+        m_Style->BroadcastTransformChange();
+        m_TextChanged = false;
+    }
+
+    Vec2 UIText::GetSize()
+    {
+        if(!m_Render)
+            return Vec2(0,0);
+
+        return m_BoundSize;
     }
 };

@@ -2,6 +2,7 @@
 #define SILK_SLIDERCONTROL_H
 
 #include <UI/UIElement.h>
+#include <UI/UIText.h>
 
 using namespace Silk;
 namespace TestClient
@@ -10,7 +11,7 @@ namespace TestClient
     {
         public:
             SliderControl(f32 min, f32 max) : m_Min(min), m_Max(max), m_Value((max*0.5)+(min*0.5)) {}
-            ~SliderControl() { delete m_Background; delete m_Slider; delete m_SliderStyle; }
+            ~SliderControl() { delete m_Background; delete m_Slider; delete m_SliderStyle; delete m_SliderLabel; delete m_SliderTextStyle; }
 
             void SetValue(f32 Val);
             UIElementStyle* GetSliderStyle() { return m_SliderStyle; }
@@ -26,7 +27,9 @@ namespace TestClient
 
             UIRenderRectangle* m_Slider;
             UIRenderRectangle* m_Background;
+            UIText*         m_SliderLabel;
             UIElementStyle* m_SliderStyle;
+            UIElementStyle* m_SliderTextStyle;
 
             void _Initialize();
 

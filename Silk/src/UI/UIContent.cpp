@@ -22,6 +22,8 @@ namespace Silk
         if(!m_Render)
             return;
 
+        OnRender(PrimType);
+
         Material* Mat = m_Render->GetMaterial();
         Shader* Shader = Mat->GetShader();
         Shader->Enable();

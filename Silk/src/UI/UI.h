@@ -33,6 +33,9 @@ namespace Silk
 
             void SetTransform(Mat4 Trans);
             void SetZClipPlanes(f32 n, f32 f);
+
+            void SetFont(Font* Fnt) { m_Font = Fnt; }
+            Font* GetFont() { return m_Font; }
         
         protected:
             friend class UIElement;
@@ -40,9 +43,10 @@ namespace Silk
 
             Renderer* m_Renderer;
         
-            Vec2 m_ViewScale;
-            Vec2 m_Resolution;
-            bool m_ViewNeedsUpdate;
+            Font* m_Font;
+            Vec2  m_ViewScale;
+            Vec2  m_Resolution;
+            bool  m_ViewNeedsUpdate;
             Camera  * m_Camera;
             Texture * m_View;
             Shader* m_DefaultShader;

@@ -23,6 +23,7 @@ namespace Silk
             UIElementStyle* GetStyle()       { return m_Style;  }
 
             virtual void Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered);
+            virtual void OnRender(PRIMITIVE_TYPE PrimType) {}
 
         protected:
             RenderObject*   m_Render;

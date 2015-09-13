@@ -30,7 +30,7 @@ namespace Silk
         public:
             UIElementStyle (UIElement* Parent) : m_Parent(Parent), m_Size(Vec2(0,0)), m_BackgroundOffset(Vec2(0,0)), m_BackgroundSize(Vec2(0,0)),
                             m_BackgroundImage(0), m_BorderRadius(0), m_BorderWidth(0), m_BackgroundColor(Vec4(0,0,0,0)), m_BorderColor(Vec4(0,0,0,0)), 
-                            m_TextColor(Vec4(0,0,0,0)), m_TextSize(14), m_Position(Vec3(0,0,0)) {}
+                            m_TextColor(Vec4(0,0,0,0)), m_TextSize(18), m_Position(Vec3(0,0,0)) {}
             ~UIElementStyle() {}
 
             void BroadcastMeshChange();
