@@ -9,6 +9,7 @@
 #include <Renderer/UniformBufferTypes.h>
 #include <Renderer/CullingAlgorithms/NullCullingAlgorithm.h>
 #include <Renderer/CullingAlgorithms/BruteForceCullingAlgorithm.h>
+#include <Renderer/PostProcessingEffect.h>
 
 #include <System/TaskManager.h>
 #include <Utilities/Utilities.h>
@@ -86,6 +87,12 @@ namespace Silk
             void Destroy(Material    * Mat);
             void Destroy(RenderObject* Obj);
         
+            /* Post processing */
+            FrameBuffer* GetSceneOutput() const { return m_SceneOutput; }
+            void SetUsePostProcessing(bool Flag);
+            i32 AddPostProcessingEffect(PostProcessingEffect* Effect);
+            
+        
             void UpdateUniforms();
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
             void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
@@ -138,6 +145,11 @@ namespace Silk
             //For rendering textures to the screen
             Material* m_DefaultFSQMaterial;
             RenderObject* m_FSQ;
+        
+            //Post processing
+            bool m_UsePostProcessing;
+            FrameBuffer* m_SceneOutput;
+            vector<PostProcessingEffect*> m_Effects;
         
             //For determining framebuffer attachments
             i32 m_UsedFragmentOutputs[ShaderGenerator::OFT_COUNT];

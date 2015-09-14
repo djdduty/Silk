@@ -292,7 +292,7 @@ namespace Silk
         {
             if(m_Attachments[ID])
             {
-                m_Renderer->GetRasterizer()->Destroy(m_Attachments[ID]);
+                m_Attachments[ID]->Destroy();
                 m_Attachments    [ID] = 0;
                 
                 Initialize();

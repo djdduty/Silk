@@ -91,6 +91,11 @@ namespace Silk
         m_ShaderGenerator->AddVertexModule   (const_cast<CString>("[SetTexCoords]o_TexCoord = a_TexCoord;[/SetTexCoords]"),0);
         m_ShaderGenerator->AddVertexModule   (const_cast<CString>("[SetGLPosition]gl_Position = vec4(a_Position,1.0);[/SetGLPosition]"),1);
         
+        m_SceneOutput = m_Raster->CreateFrameBuffer();
+        m_SceneOutput->SetUseDepthBuffer(true);
+        /* TO DO: UPDATE THIS AUTOMATICALLY ON WINDOW RESIZE */
+        m_SceneOutput->SetResolution(m_Raster->GetContext()->GetResolution());
+        
         m_DefaultFSQMaterial = CreateMaterial();
         Shader* Shdr = m_ShaderGenerator->Generate();
         m_DefaultFSQMaterial->SetShader(Shdr);
@@ -142,12 +147,25 @@ namespace Silk
         /* Culling */
         CullingResult* CullResult = m_Scene->PerformCulling();
         
-        /* artificial light selection (no light culling yet) */
+        /* Artificial light selection (no light culling yet) */
         SilkObjectVector Lights = m_Scene->GetObjectList()->GetLightList();
         for(i32 i = 0;i < Lights.size();i++) CullResult->m_VisibleObjects->AddObject(Lights[i]);
         
+        /* Enable custom framebuffer if using post effects */
+        if(m_UsePostProcessing && m_Effects.size() > 0) m_SceneOutput->EnableTarget();
+        
         /* Render objects */
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
+        
+        /* Do post processing */
+        if(m_UsePostProcessing)
+        {
+            m_SceneOutput->Disable();
+            for(i32 i = 0;i < m_Effects.size();i++)
+            {
+                m_Effects[i]->Execute();
+            }
+        }
         
         /* Render UI */
         if(m_UIManager) m_UIManager->Render(dt,PrimType);
@@ -324,7 +342,7 @@ namespace Silk
         Material* m = Effect ? Effect : m_DefaultFSQMaterial;
         Shader* s = m->GetShader();
         
-        m->SetMap(Material::MT_DIFFUSE,Tex);
+        if(Tex != 0) m->SetMap(Material::MT_DIFFUSE,Tex);
         
         s->Enable();
         s->UseMaterial(m);
@@ -354,8 +372,17 @@ namespace Silk
         m_UsedFragmentOutputs[Type]++;
         if(m_UsedFragmentOutputs[Type] == 1)
         {
+            Texture::PIXEL_TYPE pType = Texture::PT_UNSIGNED_BYTE;
+            if(Type == ShaderGenerator::OFT_POSITION
+            || Type == ShaderGenerator::OFT_NORMAL
+            || Type == ShaderGenerator::OFT_TANGENT) pType = Texture::PT_FLOAT;
+            
             //Update framebuffer with new attachment for this output
-            //Regenerate post processing shaders
+            Texture* Buffer = m_Raster->CreateTexture();
+            Buffer->CreateTexture(m_Raster->GetContext()->GetResolution().x,m_Raster->GetContext()->GetResolution().y,pType);
+            Buffer->UpdateTexture();
+            
+            m_SceneOutput->AddAttachment(GetFragmentOutputIndex(Type),pType,Buffer);
         }
     }
     void Renderer::ReleaseFragmentOutput(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type)
@@ -364,11 +391,11 @@ namespace Silk
         if(m_UsedFragmentOutputs[Type] == 0)
         {
             //Update framebuffer to remove attachment for this output
-            //Regenerate post processing shaders
+            m_SceneOutput->RemoveAttachment(Type);
         }
         else if(m_UsedFragmentOutputs[Type] < 0)
         {
-            ERROR("Over released fragment output (%d).\n",m_UsedFragmentOutputs[Type]);
+            ERROR("Over released fragment output (%d).\n",m_UsedFragmentOutputs[GetFragmentOutputIndex(Type)]);
         }
     }
     void Renderer::Destroy(Material *Mat)
@@ -379,6 +406,15 @@ namespace Silk
     {
         m_Scene->RemoveRenderObject(Obj);
         delete Obj;
+    }
+    void Renderer::SetUsePostProcessing(bool Flag)
+    {
+        m_UsePostProcessing = Flag;
+    }
+    i32 Renderer::AddPostProcessingEffect(Silk::PostProcessingEffect *Effect)
+    {
+        m_Effects.push_back(Effect);
+        return m_Effects.size() - 1;
     }
     
     void Renderer::UpdateDefaultTexture()

@@ -3,6 +3,7 @@
 #include <Math/Math.h>
 
 #include <string>
+#include <vector>
 using namespace std;
 
 namespace Silk
@@ -35,7 +36,7 @@ namespace Silk
                 MT_CUSTOM6     ,
                 MT_CUSTOM7     ,
                 
-                //Use these only for gbuffer attachments
+                //Use these only for gbuffer attachments (MUST BE SAME AS OUTPUT_FRAGMENT_TYPE)
                 MT_FRAG_COLOR    ,
                 MT_FRAG_POSITION ,
                 MT_FRAG_NORMAL   ,
@@ -59,6 +60,8 @@ namespace Silk
         
             void SetMap(MAP_TYPE Type,Texture* Map);
             Texture* GetMap(MAP_TYPE Type) const { return m_Maps[Type]; }
+        
+            bool LoadMaterial(char* Data,i32* Offset = 0);
         
             void SetShader(Shader* Shdr);
             Shader* GetShader() const { return m_Shader; }
@@ -95,10 +98,15 @@ namespace Silk
         
             i32 m_RefCount;
             MaterialUniformSet* m_Uniforms;
+            UniformBuffer* m_UserUniforms;
             Texture* m_Maps[MT_COUNT];
             Shader* m_Shader;
             Renderer* m_Renderer;
             bool m_HasUpdated;
+        
+            vector<string>VertShaderFuncs;
+            vector<string>GeomShaderFuncs;
+            vector<string>FragShaderFuncs;
     };
     string GetShaderMapName(Material::MAP_TYPE Type);
 };

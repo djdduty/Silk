@@ -18,6 +18,67 @@ namespace Silk
     {
         return BlockNames[Type];
     }
+    static const string AttribNames[ShaderGenerator::IAT_COUNT] =
+    {
+        PositionAttribName                ,
+        NormalAttribName                  ,
+        TangentAttribName                 ,
+        ColorAttribName                   ,
+        TexCoordAttribName                ,
+        BoneWeightAttribName              ,
+        BoneIndexAttribName               ,
+        InstanceTransformAttribName       ,
+        InstanceNormalTransformAttribName ,
+        InstanceTextureTransformAttribName,
+    };
+    string GetAttributeTypeName(ShaderGenerator::INPUT_ATTRIBUTE_TYPE Type)
+    {
+        return AttribNames[Type];
+    }
+    static const string FragOutNames[ShaderGenerator::OFT_COUNT] =
+    {
+        FragmentColorOutputName    ,
+        FragmentPositionOutputName ,
+        FragmentNormalOutputName   ,
+        FragmentTangentOutputName  ,
+        FragmentMaterial0OutputName,
+        FragmentMaterial1OutputName,
+        FragmentCustom0OutputName  ,
+        FragmentCustom1OutputName  ,
+        FragmentCustom2OutputName  ,
+        FragmentCustom3OutputName  ,
+        FragmentCustom4OutputName  ,
+        FragmentCustom5OutputName  ,
+        FragmentCustom6OutputName  ,
+        FragmentCustom7OutputName  ,
+    };
+    
+    string GetFragmentOutputTypeName(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type)
+    {
+        return FragOutNames[Type];
+    }
+    static const i32 FragOutIndices[ShaderGenerator::OFT_COUNT] =
+    {
+        FragmentColorOutputIndex    ,
+        FragmentPositionOutputIndex ,
+        FragmentNormalOutputIndex   ,
+        FragmentTangentOutputIndex  ,
+        FragmentMaterial0OutputIndex,
+        FragmentMaterial1OutputIndex,
+        FragmentCustom0OutputIndex  ,
+        FragmentCustom1OutputIndex  ,
+        FragmentCustom2OutputIndex  ,
+        FragmentCustom3OutputIndex  ,
+        FragmentCustom4OutputIndex  ,
+        FragmentCustom5OutputIndex  ,
+        FragmentCustom6OutputIndex  ,
+        FragmentCustom7OutputIndex  ,
+    };
+    
+    i32 GetFragmentOutputIndex    (ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type)
+    {
+        return FragOutIndices[Type];
+    }
     
     ShaderGenerator::ShaderGenerator(Renderer* r) : m_Renderer(r), m_ShadersGenerated(0)
     {
@@ -90,7 +151,7 @@ namespace Silk
             for(i32 i = 0;i < OFT_COUNT;i++)
             {
                 S->m_FragmentOutputs[i] = m_FragmentOutputsUsed[i];
-                m_Renderer->RequireFragmentOutput((OUTPUT_FRAGMENT_TYPE)i);
+                if(S->m_FragmentOutputs[i]) m_Renderer->RequireFragmentOutput((OUTPUT_FRAGMENT_TYPE)i);
             }
             for(i32 i = 0;i < IUT_COUNT;i++) S->m_UniformInputs  [i] = m_UniformInputsUsed  [i];
             S->m_ID = m_ShadersGenerated;
@@ -141,15 +202,20 @@ namespace Silk
         {
             if(m_FragmentBlocks[i].ID == "Lighting") { CustomLightingBlock = i; break; }
         }
-        
-        if(CustomLightingBlock == -1 && !SetColor)
-        {
-            if(m_LightingMode == LM_FLAT) SetAttributeInput(IAT_COLOR,true);
-        }
 
         string VertexShader;
         VertexShader += FormatString("#version %d\n",m_ShaderVersion);
         
+        /*
+         * Automatic attribute output setting
+         */
+        if(m_FragmentOutputsUsed[OFT_POSITION ]) m_AttributeOutputsUsed[IAT_POSITION] = true;
+        if(m_FragmentOutputsUsed[OFT_NORMAL   ]) m_AttributeOutputsUsed[IAT_NORMAL  ] = true;
+        if(m_FragmentOutputsUsed[OFT_TANGENT  ]) m_AttributeOutputsUsed[IAT_TANGENT ] = true;
+        
+        //Not necessarily...
+        //if(m_FragmentOutputsUsed[OFT_COLOR    ]) m_AttributeOutputsUsed[IAT_COLOR   ] = true;
+    
         /*
          * Attribute inputs
          */

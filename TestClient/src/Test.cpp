@@ -67,6 +67,7 @@ namespace TestClient
     }
     Test::~Test()
     {
+        exit(0);
         for(i32 i = 0;i < m_Lights.size();i++)
         {
             delete m_Lights[i]->GetLight();

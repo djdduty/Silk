@@ -38,13 +38,29 @@ using namespace std;
 #define FragmentTangentOutputIndex   3
 #define FragmentMaterial0OutputIndex 4
 #define FragmentMaterial1OutputIndex 5
+#define FragmentCustom0OutputIndex   6
+#define FragmentCustom1OutputIndex   7
+#define FragmentCustom2OutputIndex   8
+#define FragmentCustom3OutputIndex   9
+#define FragmentCustom4OutputIndex   10
+#define FragmentCustom5OutputIndex   11
+#define FragmentCustom6OutputIndex   12
+#define FragmentCustom7OutputIndex   13
 
-#define FragmentPositionOutputName  "f_Position"
 #define FragmentColorOutputName     "f_Color"
+#define FragmentPositionOutputName  "f_Position"
 #define FragmentNormalOutputName    "f_Normal"
 #define FragmentTangentOutputName   "f_Tangent"
 #define FragmentMaterial0OutputName "f_Material0"
 #define FragmentMaterial1OutputName "f_Material1"
+#define FragmentCustom0OutputName   "f_Custom0"
+#define FragmentCustom1OutputName   "f_Custom1"
+#define FragmentCustom2OutputName   "f_Custom2"
+#define FragmentCustom3OutputName   "f_Custom3"
+#define FragmentCustom4OutputName   "f_Custom4"
+#define FragmentCustom5OutputName   "f_Custom5"
+#define FragmentCustom6OutputName   "f_Custom6"
+#define FragmentCustom7OutputName   "f_Custom7"
 
 namespace Silk
 {
@@ -89,6 +105,14 @@ namespace Silk
                 OFT_TANGENT,
                 OFT_MATERIAL0,
                 OFT_MATERIAL1,
+                OFT_CUSTOM0,
+                OFT_CUSTOM1,
+                OFT_CUSTOM2,
+                OFT_CUSTOM3,
+                OFT_CUSTOM4,
+                OFT_CUSTOM5,
+                OFT_CUSTOM6,
+                OFT_CUSTOM7,
                 OFT_COUNT,
             };
             enum LIGHTING_MODES
@@ -170,6 +194,9 @@ namespace Silk
             Renderer* m_Renderer;
             i32 m_ShadersGenerated;
     };
-    string GetUniformBlockTypeName(ShaderGenerator::INPUT_UNIFORM_TYPE Type);
+    string GetUniformBlockTypeName  (ShaderGenerator::INPUT_UNIFORM_TYPE   Type);
+    string GetAttributeTypeName     (ShaderGenerator::INPUT_ATTRIBUTE_TYPE Type);
+    string GetFragmentOutputTypeName(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type);
+    i32    GetFragmentOutputIndex   (ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type);
 };
 

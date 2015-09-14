@@ -83,6 +83,8 @@ namespace Silk
     }
     void UIManager::Render(Scalar dt,PRIMITIVE_TYPE PrimType)
     {
+        if(m_Elements.size() == 0) return;
+        
         //Update texture and projection if resolution changes
         Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();;
         if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
@@ -105,7 +107,7 @@ namespace Silk
         //TODO: Depth Sorting
 
         //Render all UI to texture
-        //m_View->EnableRTT(false);
+        m_View->EnableRTT(false);
         
         SilkObjectVector MeshesRendered;
         for(i32 i = m_Elements.size() - 1; i >= 0; i--)
@@ -118,9 +120,10 @@ namespace Silk
             MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
         }
         
-        //m_View->DisableRTT();
+        m_View->DisableRTT();
         
         m_Renderer->GetScene()->SetActiveCamera(Cam);
+        m_Renderer->RenderTexture(m_View);
         
         //Do some other stuff with the view
     }
