@@ -3,20 +3,26 @@
 
 namespace Silk
 {
-    UIPanel::UIPanel(Vec2 Size) : UIElement(), m_MeshNeedsUpdate(true)
+    UIPanel::UIPanel(Vec2 Size) : UIElement()
     {
         SetSize(Size);
-        m_ChildOffset.x = -10;
+        SetChildOffset(Vec2(-10,0));
         EnableScissor(true);
     }
     UIPanel::~UIPanel()
     {
 
     }
+    void UIPanel::OnInitialize()
+    {
+    }
     void UIPanel::Update(Scalar dt) 
     {
         if(m_MeshNeedsUpdate)
             GenerateMesh();
+
+        UpdateOuterBounds();
+        f32 ScrollAvailable = m_Bounds->GetDimensions().x - m_OuterBounds->GetDimensions().x;
     }
     void UIPanel::GenerateMesh()
     {

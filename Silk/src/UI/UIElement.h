@@ -79,12 +79,15 @@ namespace Silk
             virtual void OnKeyUp()     {}
 
             void SetPosition(Vec3 Pos);
+            void SetSize(Vec2 Size);
             Vec3 GetPosition() { return m_Render->GetTransform().GetTranslation(); };
             UIRect* GetBounds()   const { return m_Bounds; }
             Vec2 GetChildOffset() const { return m_ChildOffset; }
 
-            virtual void SetSize(Vec2 Size);
-            void EnableScissor(bool Enable) { m_ScissorEnabled = Enable; }
+            void    EnableScissor(bool Enable) { m_ScissorEnabled = Enable; }
+            void    UpdateOuterBounds();
+            UIRect* GetOuterBounds() const { return m_OuterBounds; }
+            void    SetChildOffset(Vec2 Off);
 
         protected:
             friend class UIManager;
@@ -100,12 +103,13 @@ namespace Silk
             i32                m_RefCount;
             UID                m_ID;
             UID                m_CID;
-            bool               m_NeedsMeshUpdate;
             UIRect*            m_Bounds;
+            UIRect*            m_OuterBounds;
             RenderObject*      m_Render;
             Material*          m_Material;
             Vec2               m_ChildOffset;
             bool               m_ScissorEnabled;
+            bool               m_MeshNeedsUpdate;
         
             vector<UIElement*> m_Children;
             UIElement*         m_Parent;

@@ -12,21 +12,13 @@ namespace Silk
             ~UIPanel();
 
             void Update(Scalar dt);
-            void SetSize(Vec2 Size) { m_Bounds->SetDimensions(Size); m_MeshNeedsUpdate = true; }
-
-            void OnMouseMove() {}
-            void OnMouseOver() {}
-            void OnMouseDown() {}
-            void OnMouseOut()  {}
-            void OnMouseUp()   {}
+            void OnInitialize();
 
             Vec4 GetBackgroundColor() { return m_BackgroundColor; }
             void SetBackgroundColor(Vec4 v) { m_BackgroundColor = v; if(m_Material) m_Material->SetDiffuse(v); }
 
         protected:
             void GenerateMesh();
-            
-            bool m_MeshNeedsUpdate;
             Vec4 m_BackgroundColor;
     };
 };

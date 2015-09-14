@@ -31,7 +31,7 @@ namespace TestClient
 
         UIText* Test = new UIText();
         Test->SetFont(Fnt);
-        Test->SetText("Test Test Test");
+        Test->SetText("Hello, my name is jordan and I like chocolate pudding pie... it's pretty good.");
         Test->SetTextSize(20);
         Test->SetPosition(Vec3(0,0,0));
         PTest->AddChild(Test);

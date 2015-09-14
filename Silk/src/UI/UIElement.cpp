@@ -25,8 +25,8 @@ namespace Silk
     }
     
     
-    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(-1), m_Parent(0), m_Manager(0), m_Bounds(new UIRect(0,0,0,0)), m_NeedsMeshUpdate(false),
-                        m_Render(0), m_Material(0), m_Initialized(false), m_ChildOffset(Vec2(0,0)), m_ScissorEnabled(false)
+    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(-1), m_Parent(0), m_Manager(0), m_Bounds(new UIRect(0,0,0,0)), m_MeshNeedsUpdate(true),
+                        m_Render(0), m_Material(0), m_Initialized(false), m_ChildOffset(Vec2(0,0)), m_ScissorEnabled(false), m_OuterBounds(new UIRect(0,0,0,0))
     {
 
     }
@@ -62,7 +62,7 @@ namespace Silk
         m_Parent->m_Children.pop_back();
         m_Parent = 0;
         m_CID    = 0;
-        m_Parent->m_NeedsMeshUpdate = true;
+        m_Parent->UpdateOuterBounds();
     }
     void UIElement::AddChild(UIElement* E)
     {
@@ -72,8 +72,8 @@ namespace Silk
         E->m_Parent = this;
         E->m_CID = m_Children.size() - 1;
         E->_Initialize(m_Manager);
-        E->SetPosition(Vec3(E->GetBounds()->GetPosition() + m_ChildOffset, 0));
-        m_NeedsMeshUpdate = true;
+        E->SetPosition(E->GetPosition());
+        UpdateOuterBounds();
     }
     void UIElement::RemoveChild(UIElement* E)
     {
@@ -84,7 +84,7 @@ namespace Silk
             m_Children[i]->m_CID--;
         }
         E->m_CID = -1;
-        m_NeedsMeshUpdate = true;
+        UpdateOuterBounds();
     }
     void UIElement::_Update(Scalar dt)
     {
@@ -152,6 +152,8 @@ namespace Silk
     void UIElement::SetSize(Vec2 Size)
     {
         m_Bounds->SetDimensions(Size);
+        UpdateOuterBounds();
+        m_MeshNeedsUpdate = true;
     }
     void UIElement::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {
@@ -197,5 +199,37 @@ namespace Silk
             ObjectsRendered->push_back(Obj);
         }    
         Shader->Disable();
+    }
+    void UIElement::UpdateOuterBounds()
+    {
+        Vec2 OuterMin = Vec2(m_Bounds->GetPosition());
+        if(m_Parent)
+            OuterMin -= m_Parent->GetChildOffset();
+        Vec2 OuterMax = OuterMin + Vec2(m_Bounds->GetDimensions());
+        for(i32 i = 0; i < m_Children.size(); i++)
+        {
+            Vec2 COuterPos  = m_Children[i]->GetOuterBounds()->GetPosition();
+            Vec2 COuterSize = m_Children[i]->GetOuterBounds()->GetDimensions();
+
+            if(COuterPos.x < OuterMin.x) OuterMin.x = COuterPos.x;
+            if(COuterPos.y < OuterMin.y) OuterMin.y = COuterPos.y;
+
+            if(COuterSize.x+COuterPos.x > OuterMax.x) OuterMin.x = COuterSize.x+COuterPos.x;
+            if(COuterSize.y+COuterPos.y > OuterMax.y) OuterMax.y = COuterSize.y+COuterPos.y;
+        }
+        m_OuterBounds->Set(OuterMin, OuterMax - OuterMin);
+        if(m_Parent)
+                m_Parent->UpdateOuterBounds();
+    }
+    void UIElement::SetChildOffset(Vec2 Off)
+    {
+        Vec2 Diff = m_ChildOffset - Off;
+        for(i32 i = 0; i < m_Children.size(); i++)
+        {
+            UIElement* Child = m_Children[i];
+            Vec3 ChildPos = Child->GetPosition();
+            Child->SetPosition(ChildPos + Vec3(Diff, 0));
+        }
+        m_ChildOffset = Off;
     }
 };

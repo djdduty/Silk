@@ -210,6 +210,7 @@ namespace Silk
         if(totalXSize > biggestXOff) biggestXOff = totalXSize;
         BoundSize.x = biggestXOff;
         m_Bounds->SetDimensions(BoundSize);
+        UpdateOuterBounds();
         
         m->SetVertexBuffer  (m_Text.length() * 6,&Verts [0].x);
         m->SetTexCoordBuffer(m_Text.length() * 6,&UVs   [0].x);
