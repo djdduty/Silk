@@ -43,7 +43,7 @@ namespace TestClient
         SetFPSPrintFrequency(0.5f);
         
         PostProcessingEffect* Effect = new PostProcessingEffect(m_Renderer);
-        Effect->LoadEffect(Load("Common/FXAA.ppe"));
+        Effect->LoadEffect(Load("Common/NormalDisplay.ppe"));
         m_Renderer->SetUsePostProcessing(true);
         m_Renderer->AddPostProcessingEffect(Effect);
     }

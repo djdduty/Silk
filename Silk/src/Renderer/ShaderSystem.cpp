@@ -554,9 +554,9 @@ namespace Silk
             }
         }
         
-        if(m_FragmentOutputsUsed[OFT_NORMAL   ]) FragmentShader += string(FragmentNormalOutputName   ) + " = sNormal   ;\n";
-        if(m_FragmentOutputsUsed[OFT_TANGENT  ]) FragmentShader += string(FragmentTangentOutputName  ) + " = sTangent  ;\n";
-        if(m_FragmentOutputsUsed[OFT_POSITION ]) FragmentShader += string(FragmentPositionOutputName ) + " = sPosition ;\n";
+        if(m_FragmentOutputsUsed[OFT_NORMAL   ]) FragmentShader += string(FragmentNormalOutputName   ) + " = vec4(sNormal  ,1.0);\n";
+        if(m_FragmentOutputsUsed[OFT_TANGENT  ]) FragmentShader += string(FragmentTangentOutputName  ) + " = vec4(sTangent ,1.0);\n";
+        if(m_FragmentOutputsUsed[OFT_POSITION ]) FragmentShader += string(FragmentPositionOutputName ) + " = vec4(sPosition,1.0);\n";
         if(m_FragmentOutputsUsed[OFT_MATERIAL0]) FragmentShader += string(FragmentMaterial0OutputName) + " = sMaterial0;\n";
         if(m_FragmentOutputsUsed[OFT_MATERIAL1]) FragmentShader += string(FragmentMaterial1OutputName) + " = sMaterial1;\n";
         if(m_FragmentOutputsUsed[OFT_COLOR    ] && m_LightingMode == LM_FLAT) FragmentShader += string("\t") + FragmentColorOutputName + " = sColor;\n";
