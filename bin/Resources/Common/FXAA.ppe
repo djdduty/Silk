@@ -43,7 +43,7 @@ Effect "FXAA"
                     float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * (1.0/8.0)),(1.0/128.0));
                     
                     float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
-                    dir = vec2(min(vec2(8.0,8.0), max(vec2(-8.0, -8.0), dir * rcpDirMin)) * InverseRes);
+                    dir = vec2(min(vec2(4.0,4.0), max(vec2(-4.0, -4.0), dir * rcpDirMin)) * InverseRes);
                     
                     vec3 rgbA = 0.5 * (
                         texture(u_FragColor, o_TexCoord + dir * (1.0 / 3.0 - 0.5)).xyz +
