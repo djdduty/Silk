@@ -208,6 +208,7 @@ namespace Silk
     }
     void OpenGLObject::UpdateInstanceData()
     {
+		if(m_InstanceTransforms.size() == 0) return;
         if(m_InstanceCountChanged)
         {
             glBindVertexArray(m_VAO);

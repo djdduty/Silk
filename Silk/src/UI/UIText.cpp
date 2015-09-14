@@ -4,6 +4,7 @@
  *
  *  Created by Michael DeCicco on 8/10/15.
  *
+ *  I like this.... this is mine now. - DJD 9/12/2015 ;)
  */
 
 #include "UIText.h"
@@ -16,11 +17,24 @@ namespace Silk
     UIText::~UIText()
     {
     }
+    void UIText::Update(Scalar dt) 
+    { 
+        if(m_TextChanged == true)
+            RebuildMesh();
+    }
 
     void UIText::SetFont(Font* Fnt)
     {
         m_Font = Fnt;
+        if(m_Material)
+            m_Material->SetMap(Material::MT_DIFFUSE,m_Font->GetFontImage());
         m_TextChanged = true;
+    }
+    void UIText::OnInitialize()
+    {
+        m_Material->SetShader(m_Manager->GetDefaultTextShader());
+        if(m_Font)
+            m_Material->SetMap(Material::MT_DIFFUSE, m_Font->GetFontImage());
     }
 
     void UIText::SetScale(Scalar s)
@@ -99,18 +113,13 @@ namespace Silk
             }
         }
     }
-    void UIText::Update(Scalar dt)
-    {
-        if(m_TextChanged)
-        {
-            RebuildMesh();
-            m_TextChanged = false;
-        }
-    }
 
     void UIText::RebuildMesh()
     {
         Mesh* m = new Mesh();
+
+        if(!m_Render)
+            m_Render = m_Manager->GetRenderer()->CreateRenderObject(ROT_MESH);
         
         vector<Vec3> Verts ;
         vector<Vec2> UVs   ;
@@ -129,11 +138,14 @@ namespace Silk
          *  3___2
          */
         
+        f32 biggestXOff = 0.0;
+        f32 lastXSize = 0.0;
         for(i32 i = 0;i < m_Text.length();i++)
         {
             if(m_Text[i] == '\n')
             {
                 yOffset += GlyphSize * m_Scale;
+                if(xOffset > biggestXOff) biggestXOff = xOffset;
                 xOffset  = 0.0f;
                 continue;
             }
@@ -190,13 +202,28 @@ namespace Silk
             Colors.push_back(m_CharMods[i].Color);
             
             xOffset += g.xAdvance * m_Scale * m_CharMods[i].Scale.x;
+            lastXSize = g.xAdvance * m_Scale * m_CharMods[i].Scale.x;
         }
+        Vec2 BoundSize = Vec2(0,0);
+        BoundSize.y = yOffset + (GlyphSize * m_Scale);
+        f32 totalXSize = xOffset + lastXSize;
+        if(totalXSize > biggestXOff) biggestXOff = totalXSize;
+        BoundSize.x = biggestXOff;
+        m_Bounds->SetDimensions(BoundSize);
+        UpdateOuterBounds();
         
         m->SetVertexBuffer  (m_Text.length() * 6,&Verts [0].x);
         m->SetTexCoordBuffer(m_Text.length() * 6,&UVs   [0].x);
         m->SetColorBuffer   (m_Text.length() * 6,&Colors[0].x);
         
-        //m_Render->SetMesh(m,m_Material);
+        m_Render->SetMesh(m,m_Material);
         m->Destroy();
+        m_TextChanged = false;
+    }
+    void UIText::SetTextSize(f32 Size)
+    {
+        if(!m_Font)
+            return;
+        m_Scale = Size / m_Font->GetGlyphSize();
     }
 };

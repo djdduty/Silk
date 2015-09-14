@@ -22,10 +22,13 @@ namespace Silk
                 Vec2   Offset;
                 Scalar Angle ;
             };
-        
+
             UIText();
             ~UIText();
-        
+
+            void Update(Scalar dt);
+            void OnInitialize();
+
             void  SetFont(Font* Fnt);
             Font* GetFont() const { return m_Font; }
 
@@ -53,22 +56,22 @@ namespace Silk
             void   SetText(const string& Text);
             string GetText() const { return m_Text; }
         
-            void SetMaterial(Material* Mat) { m_Material = Mat; }
+            void      SetMaterial(Material* Mat) { m_Material = Mat; }
             Material* GetMaterial() const { return m_Material; }
-        
-            virtual void Update(Scalar dt);
+
+            void SetTextSize(f32 Size);
+            Vec2 GetSize();
         
         protected:
             void RebuildMesh();
             void RebuildCharacter(i32 Idx);
         
-            Vec4 m_Color;
-            Scalar m_Scale;
-            bool m_TextChanged;
+            Vec4                  m_Color;
+            Scalar                m_Scale;
+            bool                  m_TextChanged;
             vector<CharacterMods> m_CharMods;
-            string m_Text;
-            Font* m_Font;
-            Material* m_Material;
+            string                m_Text;
+            Font*                 m_Font;
     };
 };
 

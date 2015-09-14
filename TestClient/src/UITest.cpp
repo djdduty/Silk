@@ -1,5 +1,6 @@
 #include <UITest.h>
 #include <UI/UIText.h>
+#include <UI/UIPanel.h>
 
 #include <UIElements/SliderControl.h>
 
@@ -16,22 +17,32 @@ namespace TestClient
     {
         InitGUI();
         
-        UIElement* Slider = new SliderControl(0, 100);
-        Slider->GetCurrentStyle()->SetPosition(Vec3(300,20,0));
-        m_UIManager->AddElement(Slider);
-        
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
-        m_UIElements.push_back(Slider);
-        
         Byte* fDat = Load("Common/Font.fnt");
         Font* Fnt = new Font();
         Fnt->Load(fDat);
+        Fnt->SetFontImage(LoadTexture("Common/Font.png"));
+        m_UIManager->SetFont(Fnt);
 
+        UIPanel* PTest = new UIPanel(Vec2(400,300));
+        m_UIManager->AddElement(PTest);
+        PTest->SetBackgroundColor(Vec4(0,0,0,0.75));
+        PTest->SetPosition(Vec3(100,100,0));
+        m_UIElements.push_back(PTest);
+
+        UIText* Test = new UIText();
+        Test->SetFont(Fnt);
+        Test->SetText("Hello, my name is jordan and I like chocolate pudding pie... it's pretty good.");
+        Test->SetTextSize(20);
+        Test->SetPosition(Vec3(0,0,0));
+        PTest->AddChild(Test);
+        m_UIElements.push_back(Test);
+        
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         
         ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_Rasterizer->SetClearColor(Vec4(0,0,0,1.0f));
+        m_Rasterizer->SetClearColor(Vec4(0,0,1.0f,1.0f));
     }
     void UITest::Run()
     {
@@ -39,25 +50,6 @@ namespace TestClient
         
         while(IsRunning())
         {
-            Vec2 Res = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
-            
-            if(m_UIManager)
-            {
-                Scalar tsc = Res.y / GetPreferredInitResolution().y;
-                m_UIManager->GetCamera()->SetTransform(Translation(Vec3(Res.x * 0.5f,Res.y * 0.5f,0.0f)));
-            
-                /*
-                Vec2 Pos = m_InputManager->GetCursorPosition();
-                if(m_InputManager->GetButtonDownDuration(BTN_LEFT_MOUSE) > 0.1)
-                {
-                    if(m_UIElements[1]->GetArea().Contains(LastPos))
-                    {
-                        m_UIElements[1]->GetObject()->SetTransform(m_UIElements[1]->GetObject()->GetTransform() * Translation(Vec3(Pos.x - LastPos.x,Pos.y - LastPos.y,0.0f)));
-                    }
-                }
-                LastPos = Pos;
-                */
-            }
         }
     }
     void UITest::Shutdown()

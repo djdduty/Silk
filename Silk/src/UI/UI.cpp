@@ -8,19 +8,19 @@ namespace Silk
 {
     UIManager::UIManager(Renderer* r) : m_Renderer(r), m_ViewScale(1.0f,1.0f), m_Resolution(0.0f,0.0f), m_ViewNeedsUpdate(true),
                                         m_Camera(0), m_View(0), m_DefaultShader(0), m_DefaultTextureShader(0), m_DefaultTextShader(0),
-                                        m_RenderUniforms(0)
+                                        m_RenderUniforms(0), m_Font(0)
     {
     }
     UIManager::~UIManager()
     {
         if(m_Camera) delete m_Camera;
+        if(m_Font) delete m_Font;
     }
     
     void UIManager::Initialize()
     {
         m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
-        Vec2 hRes = m_Resolution * 0.5f;
-        m_Camera = new Camera(-hRes.x,hRes.x,-hRes.y,hRes.y,0.0f,1.0f);
+        m_Camera = new Camera(-m_Resolution.x/2,m_Resolution.x/2,-m_Resolution.y/2,m_Resolution.y/2,0.0f,1.0f);
         m_View = m_Renderer->GetRasterizer()->CreateTexture();
         m_View->CreateTexture(m_Resolution.x,m_Resolution.y);
         m_View->UpdateTexture();
@@ -73,9 +73,10 @@ namespace Silk
         Gen->AddFragmentModule(const_cast<CString>("[Alpha]float Alpha = smoothstep(0.5 - 0.25,0.5 + 0.25,texture(u_DiffuseMap,sTexCoord).a) * o_Color.a;[/Alpha]"),0);
         Gen->AddFragmentModule(const_cast<CString>("[AlphaTest]if(Alpha < 0.0001) discard;[/AlphaTest]"),1);
         Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(o_Color.rgb,Alpha);[/SetColor]"),2);
-        m_DefaultTextShader    = Gen->Generate();
+        m_DefaultTextShader = Gen->Generate();
         
         Gen->Reset();
+        SetTransform(Translation(Vec3(m_Resolution.x * 0.5f,m_Resolution.y * 0.5f,0.0f)));
     }
     void UIManager::Update(Scalar dt)
     {
@@ -88,41 +89,48 @@ namespace Silk
         //Update texture and projection if resolution changes
         Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();;
         if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
+        if(m_ViewNeedsUpdate == true)
         {
-            m_Resolution = cRes;
-            m_Camera->SetOrthographic(m_Resolution);
-            m_ViewNeedsUpdate = true;
-            m_View->CreateTexture(m_Resolution.x,m_Resolution.y);
-            m_View->UpdateTexture();
-        }
+            //Update texture and projection if resolution changes
+            Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
+            if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
+            {
+                m_Resolution = cRes;
+                m_Camera->SetOrthographic(0, m_Resolution.x, 0, m_Resolution.y, 0.0f, 1.0f);
+                m_View->CreateTexture(m_Resolution.x,m_Resolution.y);
+                m_View->UpdateTexture();
+                SetTransform(Translation(Vec3(m_Resolution.x * 0.5f,m_Resolution.y * 0.5f,0.0f)));
+            }
         
-        if(!m_ViewNeedsUpdate) return;
-        //m_ViewNeedsUpdate = false;
-        
-        //Set active camera
-        Camera* Cam = m_Renderer->GetScene()->GetActiveCamera();
-        m_Renderer->GetScene()->SetActiveCamera(m_Camera);
-        m_Renderer->UpdateUniforms();
+            //Set active camera
+            Camera* Cam = m_Renderer->GetScene()->GetActiveCamera();
+            m_Renderer->GetScene()->SetActiveCamera(m_Camera);
+            m_Renderer->UpdateUniforms();
 
-        //TODO: Depth Sorting
+            //TODO: Depth Sorting
 
-        //Render all UI to texture
-        m_View->EnableRTT(false);
+            //Render all UI to texture
+            m_View->EnableRTT(false);
         
-        SilkObjectVector MeshesRendered;
-        for(i32 i = m_Elements.size() - 1; i >= 0; i--)
-        {
-            m_Elements[i]->_Render(PrimType, &MeshesRendered);
+            SilkObjectVector MeshesRendered;
+            for(i32 i = m_Elements.size() - 1; i >= 0; i--)
+            {
+                m_Elements[i]->_Render(PrimType, &MeshesRendered);
+            }
+        
+            for(i32 i = 0;i < MeshesRendered.size();i++)
+            {
+                MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
+            }
+        
+            m_View->DisableRTT();
+        
+            m_Renderer->GetScene()->SetActiveCamera(Cam);
+            m_View->DisableRTT();
+        
+            m_Renderer->GetScene()->SetActiveCamera(Cam);
+            m_ViewNeedsUpdate = false;
         }
-        
-        for(i32 i = 0;i < MeshesRendered.size();i++)
-        {
-            MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
-        }
-        
-        m_View->DisableRTT();
-        
-        m_Renderer->GetScene()->SetActiveCamera(Cam);
         m_Renderer->RenderTexture(m_View);
         
         //Do some other stuff with the view
@@ -132,7 +140,8 @@ namespace Silk
         Element->m_Manager = this;
         m_Elements.push_back(Element);
         Element->m_ID = m_Elements.size() - 1; //NOTE: Not an actual id, it's just the array index for use in removing
-        Element->_Initialize();
+        Element->_Initialize(this);
+        m_ViewNeedsUpdate = true;
     }
     void UIManager::RemoveElement(UIElement *Element)
     {
@@ -143,5 +152,16 @@ namespace Silk
             m_Elements[i]->m_ID--;
         }
         Element->m_ID = -1;
+        m_ViewNeedsUpdate = true;
+    }
+    void UIManager::SetTransform(Mat4 M)
+    {
+        m_Camera->SetTransform(M);
+        m_ViewNeedsUpdate = true;
+    }
+    void UIManager::SetZClipPlanes(f32 n, f32 f)
+    {
+        m_Camera->SetZClipPlanes(n, f);
+        m_ViewNeedsUpdate = true;
     }
 };

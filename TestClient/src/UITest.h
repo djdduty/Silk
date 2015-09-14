@@ -14,7 +14,7 @@ namespace TestClient
             virtual void Shutdown();
         
             virtual const char* GetTestName() const { return "User Interface Test"; }
-            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1100,120); }
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1200,700); }
         
         protected:
     };

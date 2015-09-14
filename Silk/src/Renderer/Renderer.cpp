@@ -22,7 +22,9 @@ namespace Silk
     Renderer::~Renderer() 
     {
         if(m_Scene) delete m_Scene;
-        m_DefaultTexture->Destroy();
+        if(m_DefaultTexture)
+            m_DefaultTexture->Destroy();
+
         m_DefaultFSQMaterial->GetShader()->Destroy();
         m_DefaultFSQMaterial->Destroy();
         m_Raster->Destroy(m_EngineUniforms);
@@ -168,6 +170,7 @@ namespace Silk
         }
         
         /* Render UI */
+        if(m_UIManager) m_UIManager->Update(dt);
         if(m_UIManager) m_UIManager->Render(dt,PrimType);
         
         /* Compute new averages */

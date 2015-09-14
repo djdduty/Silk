@@ -131,7 +131,7 @@ namespace Silk
         
         protected:
             friend class UIManager;
-            friend class UIRenderContent;
+            friend class UIElement;
 
             RenderPreferences m_Prefs;
             RenderStats m_Stats;
