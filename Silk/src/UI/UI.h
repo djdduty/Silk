@@ -21,14 +21,15 @@ namespace Silk
             void Update(Scalar dt);
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
         
-            void       AddElement(UIElement* Element);
-            void       RemoveElement(UIElement* Element);
+            void     AddElement(UIElement* Element);
+            void     RemoveElement(UIElement* Element);
         
             Shader * GetDefaultShader       () const { return m_DefaultShader       ; }
             Shader * GetDefaultTextureShader() const { return m_DefaultTextureShader; }
             Shader * GetDefaultTextShader   () const { return m_DefaultTextShader   ; }
         
             Camera*   GetCamera  () const { return m_Camera; }
+            Vec2      GetResolution() { return m_Resolution; }
             Renderer* GetRenderer() { return m_Renderer; }
 
             void SetTransform(Mat4 Trans);

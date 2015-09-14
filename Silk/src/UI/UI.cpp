@@ -20,8 +20,7 @@ namespace Silk
     void UIManager::Initialize()
     {
         m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
-        Vec2 hRes = m_Resolution * 0.5f;
-        m_Camera = new Camera(-hRes.x,hRes.x,-hRes.y,hRes.y,0.0f,1.0f);
+        m_Camera = new Camera(-m_Resolution.x/2,m_Resolution.x/2,-m_Resolution.y/2,m_Resolution.y/2,0.0f,1.0f);
         m_View = m_Renderer->GetRasterizer()->CreateTexture();
         m_View->CreateTexture(m_Resolution.x,m_Resolution.y);
         m_View->UpdateTexture();
@@ -74,9 +73,10 @@ namespace Silk
         Gen->AddFragmentModule(const_cast<CString>("[Alpha]float Alpha = smoothstep(0.5 - 0.25,0.5 + 0.25,texture(u_DiffuseMap,sTexCoord).a) * o_Color.a;[/Alpha]"),0);
         Gen->AddFragmentModule(const_cast<CString>("[AlphaTest]if(Alpha < 0.0001) discard;[/AlphaTest]"),1);
         Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(o_Color.rgb,Alpha);[/SetColor]"),2);
-        m_DefaultTextShader    = Gen->Generate();
+        m_DefaultTextShader = Gen->Generate();
         
         Gen->Reset();
+        SetTransform(Translation(Vec3(m_Resolution.x * 0.5f,m_Resolution.y * 0.5f,0.0f)));
     }
     void UIManager::Update(Scalar dt)
     {
@@ -87,13 +87,14 @@ namespace Silk
         if(m_ViewNeedsUpdate == true)
         {
             //Update texture and projection if resolution changes
-            Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();;
+            Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
             if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
             {
                 m_Resolution = cRes;
-                m_Camera->SetOrthographic(m_Resolution);
+                m_Camera->SetOrthographic(0, m_Resolution.x, 0, m_Resolution.y, 0.0f, 1.0f);
                 m_View->CreateTexture(m_Resolution.x,m_Resolution.y);
                 m_View->UpdateTexture();
+                SetTransform(Translation(Vec3(m_Resolution.x * 0.5f,m_Resolution.y * 0.5f,0.0f)));
             }
         
             //Set active camera

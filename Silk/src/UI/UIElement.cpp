@@ -2,6 +2,7 @@
 #include <Renderer/Renderer.h>
 #include <Renderer/UniformBufferTypes.h>
 #include <Raster/Raster.h>
+#include <Raster/OpenGL/OpenGLRasterizer.h>
 
 namespace Silk
 {
@@ -24,7 +25,8 @@ namespace Silk
     }
     
     
-    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(-1), m_Parent(0), m_Manager(0), m_Bounds(new UIRect(0,0,0,0)), m_NeedsMeshUpdate(false), m_Render(0), m_Material(0)
+    UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(-1), m_Parent(0), m_Manager(0), m_Bounds(new UIRect(0,0,0,0)), m_NeedsMeshUpdate(false),
+                        m_Render(0), m_Material(0), m_Initialized(false), m_ChildOffset(Vec2(0,0)), m_ScissorEnabled(false)
     {
 
     }
@@ -69,6 +71,8 @@ namespace Silk
         m_Children.push_back(E);
         E->m_Parent = this;
         E->m_CID = m_Children.size() - 1;
+        E->_Initialize(m_Manager);
+        E->SetPosition(Vec3(E->GetBounds()->GetPosition() + m_ChildOffset, 0));
         m_NeedsMeshUpdate = true;
     }
     void UIElement::RemoveChild(UIElement* E)
@@ -89,26 +93,61 @@ namespace Silk
     }
     void UIElement::_Initialize(UIManager* Manager)
     {
+        if(m_Initialized == true)
+            return;
         m_Manager  = Manager;
         m_Render   = m_Manager->GetRenderer()->CreateRenderObject(ROT_MESH);
         m_Render->SetTransform(Translation(Vec3(m_Bounds->GetPosition(), 0)));
         m_Material = m_Manager->GetRenderer()->CreateMaterial();
         m_Material->SetShader(m_Manager->GetDefaultShader());
         OnInitialize();
+        m_Initialized = true;
+    }
+    void UIElement::_PreRender()
+    {
+        if(m_ScissorEnabled)
+        {
+            glEnable(GL_SCISSOR_TEST); // TODO: Abstract this
+
+            Vec2 Resolution = m_Manager->GetResolution();
+            Vec2 CamTrans = m_Manager->GetCamera()->GetTransform().GetTranslation().xy();
+            Vec2 HalfRes = Resolution * 0.5;
+            Vec3 Position = Vec3(m_Bounds->GetPosition(), 0);
+            Vec2 Size = m_Bounds->GetDimensions();
+            Vec3 SSPosition = Vec3(Position.x + HalfRes.x - CamTrans.x, Resolution.y - HalfRes.y - Position.y - Size.y + CamTrans.y, Position.z);
+        
+            glScissor(SSPosition.x, SSPosition.y, Size.x, Size.y); // TODO: Abstract this
+        }
+        PreRender();
     }
     void UIElement::_Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {
         //TODO Setup Scissor
+        _PreRender();
         Render(PrimType, ObjectsRendered);
         for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Render(PrimType, ObjectsRendered);
+        _PostRender();
         //TODO End Scissor
+    }
+    void UIElement::_PostRender()
+    {
+        if(m_ScissorEnabled)
+            glDisable(GL_SCISSOR_TEST); // TODO: Abstract this
+        PostRender();
     }
     void UIElement::SetPosition(Vec3 Pos)
     {
-        if(m_Render)
-            m_Render->SetTransform(Translation(Pos));
+        Vec3 Position = Pos;
+        if(m_Parent)
+        {
+            Vec3 ParentPosition = m_Parent->GetPosition();
+            Position += Vec3(ParentPosition.xy() + m_Parent->GetChildOffset(), ParentPosition.z);
+        }
 
-        m_Bounds->SetPosition(Pos.xy());
+        if(m_Render)
+            m_Render->SetTransform(Translation(Position));
+
+        m_Bounds->SetPosition(Position.xy());
     }
     void UIElement::SetSize(Vec2 Size)
     {

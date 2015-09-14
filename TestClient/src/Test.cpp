@@ -168,7 +168,6 @@ namespace TestClient
         m_Renderer->SetUIManager(m_UIManager);
         m_UIManager->Initialize();
         m_UIManager->SetZClipPlanes(0.0f,200.0f);
-        m_UIManager->SetTransform(Translation(Vec3(0,0,-100)));
         
         glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
         glfwSetMouseButtonCallback(m_Window->GetWindow(),OnClick     );

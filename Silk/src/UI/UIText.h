@@ -59,6 +59,7 @@ namespace Silk
             void      SetMaterial(Material* Mat) { m_Material = Mat; }
             Material* GetMaterial() const { return m_Material; }
 
+            void SetTextSize(f32 Size);
             Vec2 GetSize();
         
         protected:

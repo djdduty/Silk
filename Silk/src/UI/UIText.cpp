@@ -219,4 +219,10 @@ namespace Silk
         m->Destroy();
         m_TextChanged = false;
     }
+    void UIText::SetTextSize(f32 Size)
+    {
+        if(!m_Font)
+            return;
+        m_Scale = Size / m_Font->GetGlyphSize();
+    }
 };

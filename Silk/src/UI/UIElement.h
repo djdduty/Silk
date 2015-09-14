@@ -63,7 +63,11 @@ namespace Silk
             UIElement* GetParent() { return m_Parent; }
 
             virtual void Update(Scalar dt) { }
+            void _PreRender();
+            virtual void PreRender() {}
             virtual void Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered);
+            void _PostRender();
+            virtual void PostRender() {}
             
             virtual void OnMouseMove() {}
             virtual void OnMouseOver() {}
@@ -75,7 +79,12 @@ namespace Silk
             virtual void OnKeyUp()     {}
 
             void SetPosition(Vec3 Pos);
-            void SetSize(Vec2 Size);
+            Vec3 GetPosition() { return m_Render->GetTransform().GetTranslation(); };
+            UIRect* GetBounds()   const { return m_Bounds; }
+            Vec2 GetChildOffset() const { return m_ChildOffset; }
+
+            virtual void SetSize(Vec2 Size);
+            void EnableScissor(bool Enable) { m_ScissorEnabled = Enable; }
 
         protected:
             friend class UIManager;
@@ -95,10 +104,13 @@ namespace Silk
             UIRect*            m_Bounds;
             RenderObject*      m_Render;
             Material*          m_Material;
+            Vec2               m_ChildOffset;
+            bool               m_ScissorEnabled;
         
             vector<UIElement*> m_Children;
             UIElement*         m_Parent;
             UIManager*         m_Manager;
+            bool               m_Initialized;
     };
 };
 
