@@ -52,6 +52,16 @@ namespace Silk
                                 
                                 gen->AddVertexModule(const_cast<CString>((string("[") + BlockID + "]" + Code + "[/" + BlockID + "]").c_str()),Idx);
                             }
+                            else if(Word == "VertexFunction")
+                            {
+                                i32 Idx = ReadNextInt32(&Sh[0],ShIdx);
+                                
+                                if(!ReadUntil(&Sh[0],"{",ShIdx     )) { ERROR("Unexpected end-of-file while searching for '{' for \"VertexFunction\".\n"); return false; }
+                                string Code;
+                                if(!ReadUntil(&Sh[0],"}",ShIdx,Code)) { ERROR("Unexpected end-of-file while searching for '}' for \"VertexFunction\".\n"); return false; }
+                                
+                                gen->AddVertexFunction(const_cast<CString>(Code.c_str()),Idx);
+                            }
                             else if(Word == "GeometryModule")
                             {
                                 string BlockID = ReadNextString(&Sh[0],ShIdx);
@@ -63,6 +73,16 @@ namespace Silk
                                 
                                 gen->AddGeometryModule(const_cast<CString>((string("[") + BlockID + "]" + Code + "[/" + BlockID + "]").c_str()),Idx);
                             }
+                            else if(Word == "GeometryFunction")
+                            {
+                                i32 Idx = ReadNextInt32(&Sh[0],ShIdx);
+                                
+                                if(!ReadUntil(&Sh[0],"{",ShIdx     )) { ERROR("Unexpected end-of-file while searching for '{' for \"GeometryFunction\".\n"); return false; }
+                                string Code;
+                                if(!ReadUntil(&Sh[0],"}",ShIdx,Code)) { ERROR("Unexpected end-of-file while searching for '}' for \"GeometryFunction\".\n"); return false; }
+                                
+                                gen->AddGeometryFunction(const_cast<CString>(Code.c_str()),Idx);
+                            }
                             else if(Word == "FragmentModule")
                             {
                                 string BlockID = ReadNextString(&Sh[0],ShIdx);
@@ -73,6 +93,16 @@ namespace Silk
                                 if(!ReadUntil(&Sh[0],"}",ShIdx,Code)) { ERROR("Unexpected end-of-file while searching for '}' for \"FragmentModule\".\n"); return false; }
                                 
                                 gen->AddFragmentModule(const_cast<CString>((string("[") + BlockID + "]" + Code + "[/" + BlockID + "]").c_str()),Idx);
+                            }
+                            else if(Word == "FragmentFunction")
+                            {
+                                i32 Idx = ReadNextInt32(&Sh[0],ShIdx);
+                                
+                                if(!ReadUntil(&Sh[0],"{",ShIdx     )) { ERROR("Unexpected end-of-file while searching for '{' for \"FragmentFunction\".\n"); return false; }
+                                string Code;
+                                if(!ReadUntil(&Sh[0],"}",ShIdx,Code)) { ERROR("Unexpected end-of-file while searching for '}' for \"FragmentFunction\".\n"); return false; }
+                                
+                                gen->AddFragmentFunction(const_cast<CString>(Code.c_str()),Idx);
                             }
                             else if(Word == "Uniforms")
                             {
@@ -156,8 +186,8 @@ namespace Silk
                                             {
                                                 string v = UserUniforms[un][u];
                                                 i32 vIdx = 0;
-                                                string Type = ReadNextWord(&v[0],"",vIdx);
-                                                string Name = ReadNextWord(&v[0],"_",vIdx);
+                                                string Type = ReadNextWord(&v[0],"1234567890",vIdx);
+                                                string Name = ReadNextWord(&v[0],"_1234567890",vIdx);
                                                 bool HasInitializer = ReadUntil(&v[0],"=",vIdx);
                                                 
                                                 if(Type == "int")

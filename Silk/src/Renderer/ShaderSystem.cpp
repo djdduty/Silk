@@ -112,6 +112,10 @@ namespace Silk
         m_VertexBlocks  .clear();
         m_GeometryBlocks.clear();
         m_FragmentBlocks.clear();
+        
+        m_VertexFuncs  .clear();
+        m_GeometryFuncs.clear();
+        m_FragmentFuncs.clear();
     }
     
     void ShaderGenerator::AddVertexModule(CString Code,i32 Index)
@@ -125,6 +129,30 @@ namespace Silk
     void ShaderGenerator::AddFragmentModule(CString Code,i32 Index)
     {
         if(ReadBlocks(Code,Index,2) < 0) ERROR("Invalid shader module, no code blocks found.\n");
+    }
+    void ShaderGenerator::AddVertexFunction  (CString Code,i32 Index)
+    {
+        CodeBlock b;
+        b.Code = Code;
+        b.ID = "";
+        b.Index = Index;
+        m_VertexFuncs.push_back(b);
+    }
+    void ShaderGenerator::AddGeometryFunction(CString Code,i32 Index)
+    {
+        CodeBlock b;
+        b.Code = Code;
+        b.ID = "";
+        b.Index = Index;
+        m_GeometryFuncs.push_back(b);
+    }
+    void ShaderGenerator::AddFragmentFunction(CString Code,i32 Index)
+    {
+        CodeBlock b;
+        b.Code = Code;
+        b.ID = "";
+        b.Index = Index;
+        m_FragmentFuncs.push_back(b);
     }
     void ShaderGenerator::SetAllowInstancing(bool Flag)
     {
@@ -257,6 +285,28 @@ namespace Silk
         if(m_AttributeOutputsUsed[IAT_COLOR      ]) VertexShader += string("out vec4 ") + ColorOutName      + ";\n";
         if(m_AttributeOutputsUsed[IAT_TEXCOORD   ]) VertexShader += string("out vec2 ") + TexCoordOutName   + ";\n";
         if(m_MapTypesUsed[Material::MT_NORMAL    ]) VertexShader += string("out mat3 TBN;\n");
+        
+        /*
+         * Functions
+         */
+        vector<i32> UnsortedFuncIndices;
+        for(i32 i = 0;i < m_VertexFuncs.size();i++) UnsortedFuncIndices.push_back(i);
+        
+        while(UnsortedFuncIndices.size() != 0)
+        {
+            i32 MinPlacementIndexIndex = UnsortedFuncIndices[0];
+            i32 FuncIndexIndex = 0;
+            for(i32 i = 0;i < UnsortedFuncIndices.size();i++)
+            {
+                if(m_VertexFuncs[UnsortedFuncIndices[i]].Index < m_VertexFuncs[MinPlacementIndexIndex].Index)
+                {
+                    MinPlacementIndexIndex = UnsortedFuncIndices[i];
+                    FuncIndexIndex = i;
+                }
+            }
+            UnsortedFuncIndices.erase(UnsortedFuncIndices.begin() + FuncIndexIndex);
+            VertexShader += m_VertexFuncs[MinPlacementIndexIndex].Code + "\n";
+        }
         
         /*
          * main
@@ -434,6 +484,29 @@ namespace Silk
                 default          : { ERROR("Invalid parallax function.\n")          ; break; }
             }
 			if(m_UseParallaxShadows) FragmentShader += ParallaxMappingShadowMultiplier;
+        }
+        
+        
+        /*
+         * Functions
+         */
+        vector<i32> UnsortedFuncIndices;
+        for(i32 i = 0;i < m_FragmentFuncs.size();i++) UnsortedFuncIndices.push_back(i);
+        
+        while(UnsortedFuncIndices.size() != 0)
+        {
+            i32 MinPlacementIndexIndex = UnsortedFuncIndices[0];
+            i32 FuncIndexIndex = 0;
+            for(i32 i = 0;i < UnsortedFuncIndices.size();i++)
+            {
+                if(m_FragmentFuncs[UnsortedFuncIndices[i]].Index < m_FragmentFuncs[MinPlacementIndexIndex].Index)
+                {
+                    MinPlacementIndexIndex = UnsortedFuncIndices[i];
+                    FuncIndexIndex = i;
+                }
+            }
+            UnsortedFuncIndices.erase(UnsortedFuncIndices.begin() + FuncIndexIndex);
+            FragmentShader += m_FragmentFuncs[MinPlacementIndexIndex].Code + "\n";
         }
         
         /*

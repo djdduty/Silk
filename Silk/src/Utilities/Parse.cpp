@@ -73,6 +73,7 @@ namespace Silk
                             ERROR("Unexpected '.' in integer.\n");
                             return (IsNeg ? -1 : 1) * atoi(Val.c_str());
                         }
+                        else if(c == '.') DecimalCount++;
                         
                         Val += c;
                     }
@@ -106,9 +107,11 @@ namespace Silk
                             ERROR("Unexpected '.' in integer.\n");
                             return (IsNeg ? -1 : 1) * atol(Val.c_str());;
                         }
+                        else if(c == '.') DecimalCount++;
                         
                         Val += c;
                     }
+                    else break;
                 }
                 return (IsNeg ? -1 : 1) * atol(Val.c_str());;
             }
@@ -138,9 +141,11 @@ namespace Silk
                             ERROR("Unexpected '.' in float32.\n");
                             return (IsNeg ? -1 : 1) * atof(Val.c_str());
                         }
+                        else if(c == '.') DecimalCount++;
                         
                         Val += c;
                     }
+                    else break;
                 }
                 return (IsNeg ? -1 : 1) * atof(Val.c_str());
             }
@@ -170,9 +175,11 @@ namespace Silk
                             ERROR("Unexpected '.' in float64.\n");
                             return (IsNeg ? -1 : 1) * atof(Val.c_str());
                         }
+                        else if(c == '.') DecimalCount++;
                         
                         Val += c;
                     }
+                    else break;
                 }
                 return (IsNeg ? -1 : 1) * atof(Val.c_str());
             }

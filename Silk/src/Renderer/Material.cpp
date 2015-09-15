@@ -24,6 +24,7 @@ namespace Silk
         "u_CustomMap5"     ,
         "u_CustomMap6"     ,
         "u_CustomMap7"     ,
+        "u_PostProcessOut" ,
         "u_FragColor"      ,
         "u_FragPosition"   ,
         "u_FragNormal"     ,

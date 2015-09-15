@@ -36,6 +36,9 @@ namespace Silk
                 MT_CUSTOM6     ,
                 MT_CUSTOM7     ,
                 
+                //Use these only for post processing
+                MT_POST_PROCESSING_OUTPUT,
+                
                 //Use these only for gbuffer attachments (MUST BE SAME AS OUTPUT_FRAGMENT_TYPE)
                 MT_FRAG_COLOR    ,
                 MT_FRAG_POSITION ,
@@ -88,6 +91,7 @@ namespace Silk
             f32 GetParallaxScale    () const;
         
             UniformBuffer* GetUniforms();
+            UniformBuffer* GetUserUniforms() const { return m_UserUniforms; }
             bool HasUpdated() const { return m_HasUpdated; }
             void UpdateUniforms();
         

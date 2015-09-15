@@ -14,7 +14,8 @@
 
 namespace Silk
 {
-	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0)
+	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0),
+                                                                  m_UsePostProcessing(false), m_SceneOutput(0)
     {
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_UsedFragmentOutputs[i] = 0;
     }

@@ -138,9 +138,13 @@ namespace Silk
         
             void Reset();
         
-            void AddVertexModule(CString Code,i32 Index);
+            void AddVertexModule  (CString Code,i32 Index);
             void AddGeometryModule(CString Code,i32 Index);
             void AddFragmentModule(CString Code,i32 Index);
+        
+            void AddVertexFunction  (CString Code,i32 Index);
+            void AddGeometryFunction(CString Code,i32 Index);
+            void AddFragmentFunction(CString Code,i32 Index);
         
             void SetAllowInstancing(bool Flag);
             void SetAllowInstancedTextureMatrix(bool Flag) { m_AllowInstancedTextureMatrix = Flag; }
@@ -172,6 +176,10 @@ namespace Silk
             vector<CodeBlock>   m_VertexBlocks;
             vector<CodeBlock>   m_GeometryBlocks;
             vector<CodeBlock>   m_FragmentBlocks;
+        
+            vector<CodeBlock>   m_VertexFuncs;
+            vector<CodeBlock>   m_GeometryFuncs;
+            vector<CodeBlock>   m_FragmentFuncs;
             
             i32                 m_ShaderVersion;
 

@@ -14,70 +14,74 @@ Effect "FXAA"
                 {
                     o_TexCoord = a_TexCoord;
                 }
+                FragmentFunction 0
+                {
+                    vec4 FXAA(float Radius)
+                    {
+                        vec4 Color = texture(u_FragColor,o_TexCoord);
+                        vec4 sColor;
+                        
+                        vec2 InverseRes = vec2(1.0 / u_Resolution.x,1.0 / u_Resolution.y);
+                        
+                        vec3 rgbNW = texture(u_FragColor,o_TexCoord + (vec2(0,1) * InverseRes)).xyz;
+                        vec3 rgbNE = texture(u_FragColor,o_TexCoord + (vec2(1,1) * InverseRes)).xyz;
+                        vec3 rgbSW = texture(u_FragColor,o_TexCoord + (vec2(0,0) * InverseRes)).xyz;
+                        vec3 rgbSE = texture(u_FragColor,o_TexCoord + (vec2(1,0) * InverseRes)).xyz;
+                        vec3 rgbM  = Color.xyz;
+                        
+                        vec3 luma = vec3(0.299, 0.587, 0.114);
+                        float lumaNW = dot(rgbNW, luma);
+                        float lumaNE = dot(rgbNE, luma);
+                        float lumaSW = dot(rgbSW, luma);
+                        float lumaSE = dot(rgbSE, luma);
+                        float lumaM  = dot(rgbM,  luma);
+                        float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+                        float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+                        
+                        mediump vec2 dir;
+                        dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
+                        dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+                        
+                        float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * ReduceMul),ReduceMin);
+                        
+                        float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
+                        dir = vec2(min(vec2(Radius,Radius), max(vec2(-Radius,-Radius), dir * rcpDirMin)) * InverseRes);
+                        
+                        vec3 rgbA = 0.5 * (
+                            texture(u_FragColor, o_TexCoord + dir * (1.0 / 3.0 - 0.5)).xyz +
+                            texture(u_FragColor, o_TexCoord + dir * (2.0 / 3.0 - 0.5)).xyz);
+                        vec3 rgbB = rgbA * 0.5 + 0.25 * (
+                            texture(u_FragColor, o_TexCoord + dir * -0.5).xyz +
+                            texture(u_FragColor, o_TexCoord + dir * 0.5).xyz);
+
+                        float lumaB = dot(rgbB, luma);
+                        if ((lumaB < lumaMin) || (lumaB > lumaMax)) sColor = vec4(rgbA, Color.a);
+                        else sColor = vec4(rgbB,Color.a);
+                        
+                        return sColor;
+                    }
+                }
                 FragmentModule "SetColor" 0
                 {
-                    vec4 Color = texture(u_FragColor,o_TexCoord);
-                    vec4 sColor;
-                    
-                    vec2 InverseRes = vec2(1.0 / u_Resolution.x,1.0 / u_Resolution.y);
-                    
-                    vec3 rgbNW = texture(u_FragColor,o_TexCoord + (vec2(0,1) * InverseRes)).xyz;
-                    vec3 rgbNE = texture(u_FragColor,o_TexCoord + (vec2(1,1) * InverseRes)).xyz;
-                    vec3 rgbSW = texture(u_FragColor,o_TexCoord + (vec2(0,0) * InverseRes)).xyz;
-                    vec3 rgbSE = texture(u_FragColor,o_TexCoord + (vec2(1,0) * InverseRes)).xyz;
-                    vec3 rgbM  = Color.xyz;
-                    
-                    vec3 luma = vec3(0.299, 0.587, 0.114);
-                    float lumaNW = dot(rgbNW, luma);
-                    float lumaNE = dot(rgbNE, luma);
-                    float lumaSW = dot(rgbSW, luma);
-                    float lumaSE = dot(rgbSE, luma);
-                    float lumaM  = dot(rgbM,  luma);
-                    float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
-                    float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
-                    
-                    mediump vec2 dir;
-                    dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
-                    dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
-                    
-                    float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * (1.0/8.0)),(1.0/128.0));
-                    
-                    float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
-                    dir = vec2(min(vec2(4.0,4.0), max(vec2(-4.0, -4.0), dir * rcpDirMin)) * InverseRes);
-                    
-                    vec3 rgbA = 0.5 * (
-                        texture(u_FragColor, o_TexCoord + dir * (1.0 / 3.0 - 0.5)).xyz +
-                        texture(u_FragColor, o_TexCoord + dir * (2.0 / 3.0 - 0.5)).xyz);
-                    vec3 rgbB = rgbA * 0.5 + 0.25 * (
-                        texture(u_FragColor, o_TexCoord + dir * -0.5).xyz +
-                        texture(u_FragColor, o_TexCoord + dir * 0.5).xyz);
-
-                    float lumaB = dot(rgbB, luma);
-                    if ((lumaB < lumaMin) || (lumaB > lumaMax)) sColor = vec4(rgbA, Color.a);
-                    else sColor = vec4(rgbB,Color.a);
+                    vec4 sColor = vec4(0,0,0,0);
+                    float StepSize = MaxRadius / float(Iterations);
+                    for(int i = 0;i < Iterations;i++)
+                    {
+                        sColor += FXAA(StepSize * float(i + 1));
+                    }
+                    sColor /= float(Iterations);
                 }
-                Uniforms "Low"
+                Uniforms "Params"
                 {
                     float ReduceMin  = 0.0078125
                     float ReduceMul  = 0.125
-                    float Radius     = 3.0
-                }
-                Uniforms "Medium"
-                {
-                    float ReduceMin  = 0.0078125
-                    float ReduceMul  = 0.125
-                    float Radius     = 3.0
-                }
-                Uniforms "High"
-                {
-                    float ReduceMin  = 0.0078125
-                    float ReduceMul  = 0.125
-                    float Radius     = 3.0
+                    float MaxRadius  = 10.0
+                    int   Iterations = 5
                 }
                 Requires
                 {
                     //Uniforms
-                    Low
+                    Params
                     RenderData
                     
                     //Attributes

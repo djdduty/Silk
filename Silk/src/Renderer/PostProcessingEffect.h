@@ -53,7 +53,7 @@ namespace Silk
         
             bool LoadEffect(char* Data);
         
-            void AddStage(PostProcessingStage* Stage,i32 Iterations = 1) { m_Stages.push_back(Stage); m_StageIterations.push_back(Iterations); }
+            void AddStage(PostProcessingStage* Stage,i32 Iterations = 1);
             void Execute();
         
         protected:
