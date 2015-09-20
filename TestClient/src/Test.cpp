@@ -364,7 +364,7 @@ namespace TestClient
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
             m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION,true);
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,false);
-            
+
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
             m_ShaderGenerator->SetAllowInstancing(true);
         }

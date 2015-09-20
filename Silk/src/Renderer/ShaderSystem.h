@@ -122,6 +122,7 @@ namespace Silk
             {
                 LM_PHONG,
                 LM_FLAT,
+                LM_PASS
             };
             enum PARALLAX_FUNCTION
             {

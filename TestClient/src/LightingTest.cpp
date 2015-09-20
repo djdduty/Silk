@@ -62,7 +62,7 @@ namespace TestClient
     void LightingTest::LoadMesh()
     {
         AddMesh("PostProcessingTest/Scene.object",m_Materials[0],Vec3(0,0,0));
-        i32 mid = AddMesh("PostProcessingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
+        i32 mid = AddMesh("PostProcessingTest/LightDisplay.object",m_Materials[0],Vec3(0,0,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
 
         mid = AddMesh("RTTTest/Scene.object",m_Materials[0],Vec3(0,0,0));
@@ -83,18 +83,8 @@ namespace TestClient
     }
     void LightingTest::LoadMaterial()
     {
-        //For ground
-        //m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_COLOR,true);
-        //m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_NORMAL,true);
-        //m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_POSITION,true);
-
-        Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"PostProcessingTest/GroundDiffuse.png",
-                                                              "PostProcessingTest/GroundNormal.png");
-        Mat->SetShininess(1.0f);
-        Mat->SetSpecular(Vec4(1,1,1,0));
-
-        //For light displays
-        AddMaterial(ShaderGenerator::LM_FLAT,"PostProcessingTest/GroundDiffuse.png");
+        //For All
+        AddMaterial(ShaderGenerator::LM_PHONG,"PostProcessingTest/GroundDiffuse.png");
     }
 
     void LightingTest::Run()

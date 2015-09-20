@@ -166,13 +166,4 @@ namespace Silk
             Rasterizer      * m_Raster          ;
             Configuration   * m_Configuration   ;
     };
-
-    class DeferredRenderer : public Renderer
-    {
-        public:
-            DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr) : Renderer(Raster, TaskMgr) { m_OverrideUsePostProcessing = true; }
-            virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
-
-        private:
-    };
 };
