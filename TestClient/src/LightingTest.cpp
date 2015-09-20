@@ -84,11 +84,7 @@ namespace TestClient
     void LightingTest::LoadMaterial()
     {
         //For ground
-        //m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_COLOR,true);
-        //m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_NORMAL,true);
-        //m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_POSITION,true);
-
-        Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"PostProcessingTest/GroundDiffuse.png",
+        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"PostProcessingTest/GroundDiffuse.png",
                                                               "PostProcessingTest/GroundNormal.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));

@@ -163,18 +163,42 @@ namespace Silk
         m_AttributeInputsUsed[IAT_INSTANCE_NORMAL_TRANSFORM ] =
         m_AttributeInputsUsed[IAT_INSTANCE_TEXTURE_TRANSFORM] = Flag;
     }
+    string FixWhitespace(const string& Code)
+    {
+        vector<string>Lines;
+        string l;
+        for(i32 i = 0;i < Code.length();i++)
+        {
+            if(Code[i] != '\t') l += Code[i];
+            if(Code[i] == '\n') { Lines.push_back(l); l.clear(); }
+        }
+        
+        string r;
+        i32 Level = 0;
+        for(i32 i = 0;i < Lines.size();i++)
+        {
+            for(i32 t = Lines[i][0] == '}' ? 1 : 0;t < Level;t++) Lines[i].insert(0,"\t");
+            for(i32 c = 0;c < Lines[i].length();c++)
+            {
+                if(Lines[i][c] == '{') Level++;
+                else if(Lines[i][c] == '}') Level--;
+            }
+            r += Lines[i];
+        }
+        return r;
+    }
     Shader* ShaderGenerator::Generate()
     {
-        string VertexShader   = GenerateVertexShader  ();
-        string GeometryShader = GenerateGeometryShader();
-        string FragmentShader = GenerateFragmentShader();
+        string VertexShader   = FixWhitespace(GenerateVertexShader  ());
+        string GeometryShader = FixWhitespace(GenerateGeometryShader());
+        string FragmentShader = FixWhitespace(GenerateFragmentShader());
         
         Shader* S = m_Renderer->GetRasterizer()->CreateShader();
+        printf("Vertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
         if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
         {
             m_Renderer->GetRasterizer()->Destroy(S);
             S = 0;
-            printf("Vertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
         }
         else
         {
@@ -620,6 +644,10 @@ namespace Silk
                     FragmentShader += DefaultFragmentShaderBase_3;
                     break;
                 }
+                case LM_PASS:
+                {
+                    break;
+                }
                 case LM_FLAT:
                 {
                     //Done by default code now, but I'll leave it here just in case something changes
@@ -628,14 +656,40 @@ namespace Silk
                 }
             }
         }
-        
-        if(m_FragmentOutputsUsed[OFT_NORMAL   ]) FragmentShader += string(FragmentNormalOutputName   ) + " = vec4(sNormal  ,1.0);\n";
-        if(m_FragmentOutputsUsed[OFT_TANGENT  ]) FragmentShader += string(FragmentTangentOutputName  ) + " = vec4(sTangent ,1.0);\n";
-        if(m_FragmentOutputsUsed[OFT_POSITION ]) FragmentShader += string(FragmentPositionOutputName ) + " = vec4(sPosition,1.0);\n";
-        if(m_FragmentOutputsUsed[OFT_MATERIAL0]) FragmentShader += string(FragmentMaterial0OutputName) + " = sMaterial0;\n";
-        if(m_FragmentOutputsUsed[OFT_MATERIAL1]) FragmentShader += string(FragmentMaterial1OutputName) + " = sMaterial1;\n";
-        if(m_FragmentOutputsUsed[OFT_COLOR    ] && m_LightingMode == LM_FLAT) FragmentShader += string("\t") + FragmentColorOutputName + " = sColor;\n";
-        
+        static string AttribVarName[OFT_COUNT] =
+        {
+            "sColor"    ,
+            "sPosition" ,
+            "sNormal"   ,
+            "sTangent"  ,
+            "sMaterial0",
+            "sMaterial1",
+            "sCustom0"  ,
+            "sCustom1"  ,
+            "sCustom2"  ,
+            "sCustom3"  ,
+            "sCustom4"  ,
+            "sCustom5"  ,
+            "sCustom6"  ,
+            "sCustom7"  ,
+            "sLighting" ,
+        };
+        FragmentShader += "\n";
+        for(i32 i = 0;i < OFT_COUNT;i++)
+        {
+            if(m_FragmentOutputsUsed[i])
+            {
+                FragmentShader += string("\t\t\t") + GetFragmentOutputTypeName((ShaderGenerator::OUTPUT_FRAGMENT_TYPE)i) + " = ";
+                if(i >= OFT_POSITION && i <= OFT_TANGENT)
+                {
+                    FragmentShader += "vec4(" + AttribVarName[i] + ",1.0);\n";
+                }
+                else
+                {
+                    FragmentShader += AttribVarName[i] + ";\n";
+                }
+            }
+        }
         FragmentShader += "}\n";
         
         return FragmentShader;

@@ -343,6 +343,7 @@ namespace TestClient
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_POSITION,true);
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_NORMAL  ,true);
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
+            m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_TANGENT ,true);
             m_ShaderGenerator->SetAllowInstancing(false);
             
             if(Normal || Parallax)

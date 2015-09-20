@@ -120,8 +120,14 @@ namespace Silk
             };
             enum LIGHTING_MODES
             {
+                //Basic phong lighting
                 LM_PHONG,
+                
+                //Don't calculate lighting
                 LM_FLAT,
+                
+                //Pass surface attributes to output color buffers
+                LM_PASS,
             };
             enum PARALLAX_FUNCTION
             {

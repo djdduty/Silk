@@ -564,6 +564,6 @@ namespace Silk
         m_Stats.TriangleCount  += TriangleCount;
 
         m_SceneOutput->Disable();
-        RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OUTPUT_FRAGMENT_TYPE::OFT_COLOR));
+        RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OUTPUT_FRAGMENT_TYPE::OFT_NORMAL));
     }
 };
