@@ -39,6 +39,7 @@ namespace Silk
         "u_FragCustom5"    ,
         "u_FragCustom6"    ,
         "u_FragCustom7"    ,
+        "u_FragLightAccum" ,
     };
     string GetShaderMapName(Material::MAP_TYPE Type)
     {
