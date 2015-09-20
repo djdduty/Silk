@@ -61,21 +61,10 @@ namespace TestClient
     }
     void LightingTest::LoadMesh()
     {
-        AddMesh("PostProcessingTest/Scene.object",m_Materials[0],Vec3(0,0,0));
-        i32 mid = AddMesh("PostProcessingTest/LightDisplay.object",m_Materials[1],Vec3(0,0,0),m_Lights.size());
+        m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
+        
+        i32 mid = AddMesh("LightingTest/LightDisplay.object",m_Materials[0],Vec3(0,0,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
-
-        mid = AddMesh("RTTTest/Scene.object",m_Materials[0],Vec3(0,0,0));
-        m_Meshes[mid]->SetTransform(Translation(Vec3(0,50, 50)) * Rotation(0,90,0));
-
-        mid = AddMesh("RTTTest/Scene.object",m_Materials[0],Vec3(0,0,0));
-        m_Meshes[mid]->SetTransform(Translation(Vec3(0,50,-50)) * Rotation(0,90,180));
-
-        mid = AddMesh("RTTTest/Scene.object",m_Materials[0],Vec3(0,0,0));
-        m_Meshes[mid]->SetTransform(Translation(Vec3( 50,50,0)) * Rotation(0,90,-90));
-
-        mid = AddMesh("RTTTest/Scene.object",m_Materials[0],Vec3(0,0,0));
-        m_Meshes[mid]->SetTransform(Translation(Vec3(-50,50,0)) * Rotation(0,90,90));
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -84,13 +73,16 @@ namespace TestClient
     void LightingTest::LoadMaterial()
     {
         //For ground
-        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"PostProcessingTest/GroundDiffuse.png",
-                                                              "PostProcessingTest/GroundNormal.png");
+        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png",
+                                                             "Common/GroundNormal.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(Vec4(1,1,1,0));
 
         //For light displays
-        AddMaterial(ShaderGenerator::LM_FLAT,"PostProcessingTest/GroundDiffuse.png");
+        AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
+        
+        //For All
+        AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png");
     }
 
     void LightingTest::Run()

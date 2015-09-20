@@ -339,6 +339,8 @@ namespace TestClient
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
             m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,true);
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TANGENT,true);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT,true);
             
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_POSITION,true);
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_NORMAL  ,true);
@@ -365,7 +367,7 @@ namespace TestClient
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
             m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION,true);
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,false);
-            
+
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
             m_ShaderGenerator->SetAllowInstancing(true);
         }
