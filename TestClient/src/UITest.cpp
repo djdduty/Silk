@@ -26,7 +26,7 @@ namespace TestClient
         UIPanel* PTest = new UIPanel(Vec2(400,300));
         m_UIManager->AddElement(PTest);
         PTest->SetBackgroundColor(Vec4(0,0,0,0.75));
-        PTest->SetPosition(Vec3(100,100,0));
+        PTest->SetPosition(Vec3(0,0,0));
         m_UIElements.push_back(PTest);
 
         UIText* Test = new UIText();

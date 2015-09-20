@@ -6,8 +6,8 @@
 #define PARTICLE_COUNT              500000
 #define PARTICLE_SPAWN_POS          Vec3(0,15,0)
 #define PARTICLE_SPAWN_RADIUS       3.0
-#define PARTICLE_VELOCITY_MIN       Vec3(-9.0,15.0, 2.0)
-#define PARTICLE_VELOCITY_MAX       Vec3(-12.0,20.0, 4.0)
+#define PARTICLE_VELOCITY_MIN       Vec3(9.0,15.0, 2.0)
+#define PARTICLE_VELOCITY_MAX       Vec3(12.0,20.0, 4.0)
 #define PARTICLE_VELOCITY_ROT_AXIS  Vec3(0,1,0)
 #define PARTICLE_VELOCITY_ROTATIONS 100.0
 #define PARTICLE_MIN_EMIT_TIME      0.0

@@ -6,6 +6,10 @@
  *
  */
 
+#ifndef __APPLE__
+#define isnumber isdigit
+#endif
+
 #include "Parse.h"
 
 namespace Silk

@@ -126,9 +126,6 @@ namespace Silk
             m_View->DisableRTT();
         
             m_Renderer->GetScene()->SetActiveCamera(Cam);
-            m_View->DisableRTT();
-        
-            m_Renderer->GetScene()->SetActiveCamera(Cam);
             m_ViewNeedsUpdate = false;
         }
         m_Renderer->RenderTexture(m_View);
