@@ -148,6 +148,7 @@ namespace Silk
         
             //Post processing
             bool m_UsePostProcessing;
+            bool m_OverrideUsePostProcessing;
             FrameBuffer* m_SceneOutput;
             vector<PostProcessingEffect*> m_Effects;
         
@@ -169,7 +170,7 @@ namespace Silk
     class DeferredRenderer : public Renderer
     {
         public:
-            DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr) : Renderer(Raster, TaskMgr) {}
+            DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr) : Renderer(Raster, TaskMgr) { m_OverrideUsePostProcessing = true; }
             virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
 
         private:

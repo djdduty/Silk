@@ -15,7 +15,7 @@
 namespace Silk
 {
 	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0),
-                                                                  m_UsePostProcessing(false), m_SceneOutput(0)
+                                                                  m_UsePostProcessing(false), m_SceneOutput(0), m_OverrideUsePostProcessing(false)
     {
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_UsedFragmentOutputs[i] = 0;
     }
@@ -155,13 +155,13 @@ namespace Silk
         for(i32 i = 0;i < Lights.size();i++) CullResult->m_VisibleObjects->AddObject(Lights[i]);
         
         /* Enable custom framebuffer if using post effects */
-        if(m_UsePostProcessing && m_Effects.size() > 0) m_SceneOutput->EnableTarget();
+        if((m_UsePostProcessing && m_Effects.size() > 0) || m_OverrideUsePostProcessing) m_SceneOutput->EnableTarget();
         
         /* Render objects */
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
         
         /* Do post processing */
-        if(m_UsePostProcessing)
+        if(m_UsePostProcessing || m_OverrideUsePostProcessing)
         {
             m_SceneOutput->Disable();
             for(i32 i = 0;i < m_Effects.size();i++)
@@ -562,5 +562,8 @@ namespace Silk
         m_Stats.VisibleObjects += ActualObjectCount;
         m_Stats.VertexCount    += VertexCount;
         m_Stats.TriangleCount  += TriangleCount;
+
+        m_SceneOutput->Disable();
+        RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OUTPUT_FRAGMENT_TYPE::OFT_COLOR));
     }
 };
