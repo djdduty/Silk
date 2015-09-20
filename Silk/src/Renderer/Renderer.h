@@ -95,7 +95,7 @@ namespace Silk
         
             void UpdateUniforms();
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
-            virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
+            virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType, bool SendLighting = true);
             void RenderTexture(Texture* Tex,Material* Effect = 0);
         
             void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
@@ -148,7 +148,6 @@ namespace Silk
         
             //Post processing
             bool m_UsePostProcessing;
-            bool m_OverrideUsePostProcessing;
             FrameBuffer* m_SceneOutput;
             vector<PostProcessingEffect*> m_Effects;
         

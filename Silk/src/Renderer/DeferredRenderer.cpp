@@ -11,7 +11,7 @@ namespace Silk
     void DeferredRenderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType)
     {
         m_SceneOutput->EnableTarget();
-        Renderer::RenderObjects(List,PrimType);
+        Renderer::RenderObjects(List,PrimType,false);
         m_SceneOutput->Disable();
         
         RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OUTPUT_FRAGMENT_TYPE::OFT_NORMAL));

@@ -6,7 +6,7 @@ namespace Silk
     class DeferredRenderer : public Renderer
     {
         public:
-            DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr) : Renderer(Raster, TaskMgr) { m_OverrideUsePostProcessing = true; }
+            DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr) : Renderer(Raster, TaskMgr) { }
             virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
 
         private:

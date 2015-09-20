@@ -15,7 +15,7 @@
 namespace Silk
 {
 	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0),
-                                                                  m_UsePostProcessing(false), m_SceneOutput(0), m_OverrideUsePostProcessing(false)
+                                                                  m_UsePostProcessing(false), m_SceneOutput(0)
     {
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_UsedFragmentOutputs[i] = 0;
     }
@@ -155,13 +155,13 @@ namespace Silk
         for(i32 i = 0;i < Lights.size();i++) CullResult->m_VisibleObjects->AddObject(Lights[i]);
         
         /* Enable custom framebuffer if using post effects */
-        if((m_UsePostProcessing && m_Effects.size() > 0) || m_OverrideUsePostProcessing) m_SceneOutput->EnableTarget();
+        if(m_UsePostProcessing && m_Effects.size() > 0) m_SceneOutput->EnableTarget();
         
         /* Render objects */
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
         
         /* Do post processing */
-        if(m_UsePostProcessing || m_OverrideUsePostProcessing)
+        if(m_UsePostProcessing)
         {
             m_SceneOutput->Disable();
             for(i32 i = 0;i < m_Effects.size();i++)
@@ -198,24 +198,26 @@ namespace Silk
         
         delete CullResult;
     }
-    void Renderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType)
+    void Renderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType, bool SendLighting)
     {
         SilkObjectVector Lights = List->GetLightList();
         std::vector<Light*> LightsVector;
-        for(i32 i = 0; i < Lights.size(); i++)
-        {
-            LightsVector.push_back(Lights[i]->GetLight());
-            Mat4 T = Lights[i]->GetTransform();
-           
-            Lights[i]->GetLight()->m_Position  = Vec4(T.x.w,
-                                                      T.y.w,
-                                                      T.z.w,
-                                                      1.0f);
-            
-            Lights[i]->GetLight()->m_Direction = Vec4(T.x.z,
-                                                      T.y.z,
-                                                      T.z.z,
-                                                      1.0f);
+        if(SendLighting) {
+            for(i32 i = 0; i < Lights.size(); i++)
+            {
+                LightsVector.push_back(Lights[i]->GetLight());
+                Mat4 T = Lights[i]->GetTransform();
+
+                Lights[i]->GetLight()->m_Position  = Vec4(T.x.w,
+                                                          T.y.w,
+                                                          T.z.w,
+                                                          1.0f);
+
+                Lights[i]->GetLight()->m_Direction = Vec4(T.x.z,
+                                                          T.y.z,
+                                                          T.z.z,
+                                                          1.0f);
+            }
         }
         
         /*
@@ -249,7 +251,8 @@ namespace Silk
             
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
                 {
-                    Obj->GetUniformSet()->SetLights(LightsVector);
+                    if(SendLighting)
+                        Obj->GetUniformSet()->SetLights(LightsVector);
                     
                     //Pass material uniforms
                     Material* Mat = Obj->GetMaterial();
