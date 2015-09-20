@@ -51,6 +51,7 @@ namespace Silk
         FragmentCustom5OutputName  ,
         FragmentCustom6OutputName  ,
         FragmentCustom7OutputName  ,
+        FragmentLightOutputName    ,
     };
     
     string GetFragmentOutputTypeName(ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type)
@@ -73,6 +74,7 @@ namespace Silk
         FragmentCustom5OutputIndex  ,
         FragmentCustom6OutputIndex  ,
         FragmentCustom7OutputIndex  ,
+        FragmentLightOutputIndex    ,
     };
     
     i32 GetFragmentOutputIndex    (ShaderGenerator::OUTPUT_FRAGMENT_TYPE Type)

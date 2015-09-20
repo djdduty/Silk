@@ -40,22 +40,23 @@ namespace Silk
                 MT_POST_PROCESSING_OUTPUT,
                 
                 //Use these only for gbuffer attachments (MUST BE SAME AS OUTPUT_FRAGMENT_TYPE)
-                MT_FRAG_COLOR    ,
-                MT_FRAG_POSITION ,
-                MT_FRAG_NORMAL   ,
-                MT_FRAG_TANGENT  ,
-                MT_FRAG_MATERIAL0,
-                MT_FRAG_MATERIAL1,
-                MT_FRAG_CUSTOM0  ,
-                MT_FRAG_CUSTOM1  ,
-                MT_FRAG_CUSTOM2  ,
-                MT_FRAG_CUSTOM3  ,
-                MT_FRAG_CUSTOM4  ,
-                MT_FRAG_CUSTOM5  ,
-                MT_FRAG_CUSTOM6  ,
-                MT_FRAG_CUSTOM7  ,
+                MT_FRAG_COLOR     ,
+                MT_FRAG_POSITION  ,
+                MT_FRAG_NORMAL    ,
+                MT_FRAG_TANGENT   ,
+                MT_FRAG_MATERIAL0 ,
+                MT_FRAG_MATERIAL1 ,
+                MT_FRAG_CUSTOM0   ,
+                MT_FRAG_CUSTOM1   ,
+                MT_FRAG_CUSTOM2   ,
+                MT_FRAG_CUSTOM3   ,
+                MT_FRAG_CUSTOM4   ,
+                MT_FRAG_CUSTOM5   ,
+                MT_FRAG_CUSTOM6   ,
+                MT_FRAG_CUSTOM7   ,
+                MT_FRAG_LIGHTACCUM,
                 
-                MT_COUNT         ,
+                MT_COUNT          ,
             };
         
             i32 AddRef() { m_RefCount++; return m_RefCount; }

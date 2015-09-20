@@ -5,7 +5,11 @@
  *  Created by Michael DeCicco on 9/13/15.
  *
  */
+
+#ifndef __APPLE__
 #define isnumber isdigit
+#endif
+
 #include "Parse.h"
 
 namespace Silk
