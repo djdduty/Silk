@@ -5,7 +5,7 @@
  *  Created by Michael DeCicco on 9/13/15.
  *
  */
-
+#define isnumber isdigit
 #include "Parse.h"
 
 namespace Silk
