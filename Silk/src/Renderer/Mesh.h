@@ -86,6 +86,7 @@ namespace Silk
         protected:
             friend class Scene;
             friend class Renderer;
+            friend class DeferredRenderer;
             friend class ObjectList;
             friend class RenderObject;
             friend class CullingAlgorithm;

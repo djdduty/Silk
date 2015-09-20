@@ -71,6 +71,7 @@ namespace Silk
         
             friend class Scene;
             friend class Renderer;
+            friend class DeferredRenderer;
             friend class UIManager;
             friend class UIElement;
             friend class ObjectList;
