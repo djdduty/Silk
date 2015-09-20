@@ -20,6 +20,7 @@ namespace TestClient
             virtual void Shutdown();
         
             virtual const char* GetTestName() const { return "Lighting Test"; }
+            virtual Renderer* GetPreferredRenderer(Rasterizer* Raster, TaskManager* TaskMng) const { return new Renderer(Raster,TaskMng); }
         
         protected:
             ObjLoader   * m_ObjLoader;

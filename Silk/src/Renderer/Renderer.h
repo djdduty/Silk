@@ -95,7 +95,7 @@ namespace Silk
         
             void UpdateUniforms();
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
-            void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
+            virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
             void RenderTexture(Texture* Tex,Material* Effect = 0);
         
             void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
@@ -164,5 +164,14 @@ namespace Silk
             RenderUniformSet* m_RendererUniforms;
             Rasterizer      * m_Raster          ;
             Configuration   * m_Configuration   ;
+    };
+
+    class DeferredRenderer : public Renderer
+    {
+        public:
+            DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr) : Renderer(Raster, TaskMgr) {}
+            virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType);
+
+        private:
     };
 };

@@ -114,7 +114,7 @@ namespace TestClient
             m_Window->PollEvents();
             
             m_TaskManager = new TaskManager();
-            m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
+            m_Renderer = GetPreferredRenderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
             m_Renderer->Init();
             
