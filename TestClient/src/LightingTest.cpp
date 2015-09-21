@@ -42,12 +42,13 @@ namespace TestClient
     {
         Light* L = 0;
 
-        /*
-        L = AddLight(LT_POINT,Vec3(0,0,0))->GetLight();
+		/*
+        L = AddLight(LT_POINT,Vec3(0,5,0))->GetLight();
         L->m_Attenuation.Constant    = 1.00f;
         L->m_Attenuation.Linear      = 0.10f;
         L->m_Attenuation.Exponential = 0.01f;
         
+		/*
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
         L->m_Power                   = 0.24;
@@ -56,18 +57,18 @@ namespace TestClient
         L->m_Attenuation.Linear      = 0.10f;
         L->m_Attenuation.Exponential = 0.01f;
         */
-        
-        L = AddLight(LT_DIRECTIONAL,Vec3(0,0,0))->GetLight();
+        L = AddLight(LT_DIRECTIONAL,Vec3(0,100,0))->GetLight();
         L->m_Color                   = Vec4(0.9,0.8,0.6,1);
         L->m_Power                   = 0.5f;
         L->m_Direction               = Vec4(1,1,0,1);
+		
 
     }
     void LightingTest::LoadMesh()
     {
         m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
         
-        i32 mid = AddMesh("LightingTest/LightDisplay.object",m_Materials[0],Vec3(0,0,0),m_Lights.size());
+        i32 mid = AddMesh("LightingTest/LightDisplay.object",m_Materials[0],Vec3(0,5,0),m_Lights.size());
         for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
 
         glEnable(GL_CULL_FACE);
@@ -92,7 +93,7 @@ namespace TestClient
         Pt->LoadMaterial(Load("Silk/PointLight.mtrl"));
         Material* Sp = m_Renderer->CreateMaterial();
         Sp->LoadMaterial(Load("Silk/SpotLight.mtrl"));
-        Material* Dr = m_Renderer->CreateMaterial();
+		Material* Dr = m_Renderer->CreateMaterial();
         Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
         
         r->SetPointLightMaterial(Pt);

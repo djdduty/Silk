@@ -13,13 +13,18 @@ Material "DirectionalLightPass"
         }
         FragmentModule "SetColor" 0
         {
+            vec4 Position = texture(u_FragPosition,o_TexCoord);
+
+            vec3 SurfaceToLight = u_Lights[0].Position.xyz - Position.xyz;
+
             vec4  Normal     = texture(u_FragNormal,o_TexCoord);
-            float ndotl      = max(dot(Normal.xyz,u_Lights[0].Direction.xyz),0.0);
+            float Lambertian = max(dot(Normal.xyz,SurfaceToLight),0.0);
 
-            vec4 Diffuse     = texture(u_FragColor,o_TexCoord);
-            vec3 OutColor    = ndotl * Diffuse.xyz;
+            vec4 Diffuse        = texture(u_FragColor,o_TexCoord);
+            vec3 ColorLinear    = u_Lights[0].Power * (Lambertian * Diffuse.xyz);
+            vec3 GammaCorrected = pow(ColorLinear,vec3(1.0 / u_Gamma));
 
-            vec4 sColor = vec4(OutColor,Diffuse.a);
+            vec4 sColor = vec4(GammaCorrected,Diffuse.a);
         }
         Requires
         {
