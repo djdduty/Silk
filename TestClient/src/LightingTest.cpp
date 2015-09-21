@@ -45,7 +45,7 @@ namespace TestClient
         L = AddLight(LT_POINT,Vec3(0,0,0))->GetLight();
         L->m_Attenuation.Constant    = 1.00f;
         L->m_Attenuation.Linear      = 0.10f;
-        L->m_Attenuation.Exponential = 0.01f;
+        L->m_Attenuation.Exponential = 0.05f;
         
         /*
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
@@ -116,14 +116,16 @@ namespace TestClient
         while(IsRunning())
         {
             a += GetDeltaTime();
+            /*
             m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
-            m_Lights[0]->GetLight()->m_Power = 15.0f + (sin(a) * 5.0f);
+            m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
             
             m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
                                                        OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
                                                        OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
             
             m_LightMeshes[0]->SetTransform(m_Lights[0]->GetTransform());
+            */
         }
     }
 
