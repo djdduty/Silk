@@ -79,8 +79,8 @@ namespace Silk
             
             void SetDiffuse (const Vec4& Color);
             Vec4 GetDiffuse () const;
-            void SetSpecular(const Vec4& Color);
-            Vec4 GetSpecular() const;
+            void SetSpecular(Scalar Factor);
+            Scalar GetSpecular() const;
             void SetEmissive(const Vec4& Color);
             Vec4 GetEmissive() const;
             

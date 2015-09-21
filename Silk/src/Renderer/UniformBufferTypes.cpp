@@ -223,7 +223,7 @@ namespace Silk
         SetMetalness(0.5f);
         SetRoughness(0.1f);
         SetShininess(1.0f);
-        SetSpecular(Vec4(1,1,1,1));
+        SetSpecular(1.0f);
         SetDiffuse (Vec4(1,1,1,1));
         SetEmissive(Vec4(1,1,1,1));
         SetMinParallaxLayers(10);

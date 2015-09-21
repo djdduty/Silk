@@ -28,7 +28,7 @@ namespace TestClient
             virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
 #endif
 
-            virtual Renderer* GetPreferredRenderer(Rasterizer* Raster, TaskManager* TaskMng) const { return new DeferredRenderer(Raster,TaskMng); }
+            virtual Renderer* GetPreferredRenderer(Rasterizer* Raster,TaskManager* TaskMng) const { return new DeferredRenderer(Raster,TaskMng); }
         
         protected:
             ObjLoader   * m_ObjLoader;

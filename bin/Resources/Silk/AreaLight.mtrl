@@ -1,0 +1,43 @@
+Material "DirectionalLightPass"
+{
+    Shader
+    {
+        //Remove this module once there are light volumes
+        VertexModule "SetGLPosition" 0
+        {
+            gl_Position = vec4(a_Position,1.0);
+        }
+        VertexModule "SetTexCoords" 1
+        {
+            o_TexCoord = a_TexCoord;
+        }
+        FragmentModule "SetColor" 0
+        {
+            vec4 sColor = u_Lights[0].Color;
+        }
+        Requires
+        {
+            //Uniforms
+            ObjectData
+            RenderData
+            
+            //Attributes
+            a_Position
+            a_TexCoord
+        }
+        VertexOutputs
+        {
+            a_TexCoord
+        }
+        TextureMaps
+        {
+            u_FragColor
+            u_FragNormal
+            u_FragPosition
+        }
+        Outputs
+        {
+            f_Color
+        }
+    }
+}

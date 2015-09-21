@@ -377,7 +377,7 @@ namespace Silk
         
         if(m_MapTypesUsed[Material::MT_NORMAL])
         {
-            VertexShader += string("\t\tTBN = mat3(") + TangentOutName + ",normalize(cross(" + NormalOutName + "," + TangentOutName + "))," + NormalOutName + ");\n";
+            VertexShader += string("TBN = mat3(") + TangentOutName + ",normalize(cross(" + NormalOutName + "," + TangentOutName + "))," + NormalOutName + ");\n";
         }
         
         /*
@@ -400,7 +400,7 @@ namespace Silk
                 }
             }
             UnsortedBlockIndices.erase(UnsortedBlockIndices.begin() + BlockIndexIndex);
-            VertexShader += "\t" + m_VertexBlocks[MinExecutionIndexIndex].Code + "\n";
+            VertexShader += "" + m_VertexBlocks[MinExecutionIndexIndex].Code + "\n";
         }
         
         VertexShader += "}\n";
@@ -541,50 +541,50 @@ namespace Silk
         FragmentShader += "\n";
         FragmentShader += "void main()\n{\n";
         
-        if(!SetPosition && m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("\tvec3 sPosition = ") + PositionOutName + ";\n";
+        if(!SetPosition && m_AttributeOutputsUsed[IAT_POSITION]) FragmentShader += string("vec3 sPosition = ") + PositionOutName + ";\n";
         if(!SetTexC     && m_AttributeOutputsUsed[IAT_TEXCOORD])
         {
             if(m_MapTypesUsed[Material::MT_PARALLAX])
             {
-                FragmentShader += "\tfloat Ht;\n";
-                FragmentShader += string("\tvec2 sTexCoord = ParallaxOffset(normalize(u_CameraPosition - sPosition) * TBN,-") + NormalOutName + "," + TexCoordOutName + ",u_ParallaxScale,Ht);\n";
+                FragmentShader += "float Ht;\n";
+                FragmentShader += string("vec2 sTexCoord = ParallaxOffset(normalize(u_CameraPosition - sPosition) * TBN,-") + NormalOutName + "," + TexCoordOutName + ",u_ParallaxScale,Ht);\n";
             }
-            else FragmentShader += string("\tvec2 sTexCoord = ") + TexCoordOutName + ";\n";
+            else FragmentShader += string("vec2 sTexCoord = ") + TexCoordOutName + ";\n";
         }
         
-        if(!SetTangent  && m_AttributeOutputsUsed[IAT_TANGENT]) FragmentShader += string("\tvec3 sTangent  = normalize(") + TangentOutName  + ");\n";
+        if(!SetTangent  && m_AttributeOutputsUsed[IAT_TANGENT]) FragmentShader += string("vec3 sTangent  = normalize(") + TangentOutName  + ");\n";
         if(!SetNormal   && m_AttributeOutputsUsed[IAT_NORMAL])
         {
-            if(!m_MapTypesUsed[Material::MT_NORMAL] && m_AttributeOutputsUsed[IAT_NORMAL ]) FragmentShader += string("\tvec3 sNormal = normalize(") + NormalOutName + ");\n";
+            if(!m_MapTypesUsed[Material::MT_NORMAL] && m_AttributeOutputsUsed[IAT_NORMAL ]) FragmentShader += string("vec3 sNormal = normalize(") + NormalOutName + ");\n";
             else if(m_MapTypesUsed[Material::MT_NORMAL])
             {
-                FragmentShader += string("\tvec3 sNormal = TBN * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
+                FragmentShader += string("vec3 sNormal = TBN * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
             }
         }
         if(!SetColor    )
         {
-            if(!m_MapTypesUsed[Material::MT_DIFFUSE] && m_AttributeOutputsUsed[IAT_COLOR]) FragmentShader += string("\tvec4 sColor = ") + ColorOutName + ";\n";
-            else if(m_MapTypesUsed[Material::MT_DIFFUSE]) FragmentShader += string("\tvec4 sColor = texture(") + GetShaderMapName(Material::MT_DIFFUSE) + ",sTexCoord);\n";
+            if(!m_MapTypesUsed[Material::MT_DIFFUSE] && m_AttributeOutputsUsed[IAT_COLOR]) FragmentShader += string("vec4 sColor = ") + ColorOutName + ";\n";
+            else if(m_MapTypesUsed[Material::MT_DIFFUSE]) FragmentShader += string("vec4 sColor = texture(") + GetShaderMapName(Material::MT_DIFFUSE) + ",sTexCoord);\n";
         }
         if(!SetSpecular )
         {
-            if(!m_MapTypesUsed[Material::MT_SPECULAR] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("\tvec4 sSpecular = u_Specular;\n");
-            else if(m_MapTypesUsed[Material::MT_SPECULAR]) FragmentShader += string("\tvec4 sSpecular = ") + GetShaderMapName(Material::MT_SPECULAR) + ",sTexCoord);\n";
+            if(!m_MapTypesUsed[Material::MT_SPECULAR] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("float sSpecular = u_Specular;\n");
+            else if(m_MapTypesUsed[Material::MT_SPECULAR]) FragmentShader += string("float sSpecular = ") + GetShaderMapName(Material::MT_SPECULAR) + ",sTexCoord);\n";
         }
         if(!SetEmissive )
         {
-            if(!m_MapTypesUsed[Material::MT_EMISSIVE] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("\tvec4 sEmissive = u_Emissive;\n");
-            else if(m_MapTypesUsed[Material::MT_EMISSIVE]) FragmentShader += string("\tvec4 sEmissive = ") + GetShaderMapName(Material::MT_EMISSIVE) + ",sTexCoord);\n";
+            if(!m_MapTypesUsed[Material::MT_EMISSIVE] && m_UniformInputsUsed[IUT_MATERIAL_UNIFORMS]) FragmentShader += string("vec4 sEmissive = u_Emissive;\n");
+            else if(m_MapTypesUsed[Material::MT_EMISSIVE]) FragmentShader += string("vec4 sEmissive = ") + GetShaderMapName(Material::MT_EMISSIVE) + ",sTexCoord);\n";
         }
         
         //Two custom material maps, not sure if this is useful or not yet
         if(!SetMaterial0 && m_MapTypesUsed[Material::MT_MATERIAL0]) //Only use Material0 if a map is going to be set
         {
-            FragmentShader += string("\tvec4 sMaterial0 = texture(") + GetShaderMapName(Material::MT_MATERIAL0) + ",sTexCoord);\n";
+            FragmentShader += string("vec4 sMaterial0 = texture(") + GetShaderMapName(Material::MT_MATERIAL0) + ",sTexCoord);\n";
         }
         if(!SetMaterial1 && m_MapTypesUsed[Material::MT_MATERIAL1]) //Only use Material1 if a map is going to be set
         {
-            FragmentShader += string("\tvec4 sMaterial1 = texture(") + GetShaderMapName(Material::MT_MATERIAL1) + ",sTexCoord);\n";
+            FragmentShader += string("vec4 sMaterial1 = texture(") + GetShaderMapName(Material::MT_MATERIAL1) + ",sTexCoord);\n";
         }
         
         while(UnsortedBlockIndices.size() != 0)
@@ -600,7 +600,7 @@ namespace Silk
                 }
             }
             UnsortedBlockIndices.erase(UnsortedBlockIndices.begin() + BlockIndexIndex);
-            FragmentShader += "\t" + m_FragmentBlocks[MinExecutionIndexIndex].Code + "\n";
+            FragmentShader += "" + m_FragmentBlocks[MinExecutionIndexIndex].Code + "\n";
         }
         
         
@@ -618,7 +618,7 @@ namespace Silk
                     
 					if(m_MapTypesUsed[Material::MT_PARALLAX] && m_UseParallaxShadows)
                     {
-                        FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
+                        FragmentShader += string("f_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_1;
@@ -628,7 +628,7 @@ namespace Silk
                     
                     if(m_MapTypesUsed[Material::MT_PARALLAX] && m_UseParallaxShadows)
                     {
-                        FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
+                        FragmentShader += string("f_Color *= pow(ParallaxSoftShadowMultiplier(Dir,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_2;
@@ -638,7 +638,7 @@ namespace Silk
                     
                     if(m_MapTypesUsed[Material::MT_PARALLAX] && m_UseParallaxShadows)
                     {
-                        FragmentShader += string("\t\t\t\tf_Color *= pow(ParallaxSoftShadowMultiplier(u_Lights[l].Direction.xyz,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
+                        FragmentShader += string("f_Color *= pow(ParallaxSoftShadowMultiplier(u_Lights[l].Direction.xyz,") + TexCoordOutName + ",u_ParallaxScale,Ht),4);\n";
                     }
                     
                     FragmentShader += DefaultFragmentShaderBase_3;
@@ -679,7 +679,7 @@ namespace Silk
         {
             if(m_FragmentOutputsUsed[i])
             {
-                FragmentShader += string("\t\t\t") + GetFragmentOutputTypeName((ShaderGenerator::OUTPUT_FRAGMENT_TYPE)i) + " = ";
+                FragmentShader += string("") + GetFragmentOutputTypeName((ShaderGenerator::OUTPUT_FRAGMENT_TYPE)i) + " = ";
                 if(i >= OFT_POSITION && i <= OFT_TANGENT)
                 {
                     FragmentShader += "vec4(" + AttribVarName[i] + ",1.0);\n";

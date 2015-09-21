@@ -46,7 +46,8 @@ namespace TestClient
         L->m_Attenuation.Constant    = 0.00f;
         L->m_Attenuation.Linear      = 2.10f;
         L->m_Attenuation.Exponential = 5.90f;
-
+        
+        /*
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
         L->m_Power                   = 0.24;
@@ -58,6 +59,7 @@ namespace TestClient
         L = AddLight(LT_DIRECTIONAL,Vec3(0,10,0))->GetLight();
         L->m_Color                   = Vec4(0.9,0.8,0.6,1);
         L->m_Power                   = 0.5f;
+        */
     }
     void LightingTest::LoadMesh()
     {
@@ -76,13 +78,24 @@ namespace TestClient
         Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png",
                                                              "Common/GroundNormal.png");
         Mat->SetShininess(1.0f);
-        Mat->SetSpecular(Vec4(1,1,1,0));
+        Mat->SetSpecular(1.0f);
 
         //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
         
-        //For All
-        AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png");
+        //Light pass materials
+        DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
+        
+        Material* Pt = m_Renderer->CreateMaterial();
+        Pt->LoadMaterial(Load("Silk/PointLight.mtrl"));
+        Material* Sp = m_Renderer->CreateMaterial();
+        Sp->LoadMaterial(Load("Silk/SpotLight.mtrl"));
+        Material* Dr = m_Renderer->CreateMaterial();
+        Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
+        
+        r->SetPointLightMaterial(Pt);
+        r->SetSpotLightMaterial(Sp);
+        r->SetDirectionalLightMaterial(Dr);
     }
 
     void LightingTest::Run()

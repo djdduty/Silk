@@ -119,6 +119,7 @@ namespace Silk
             Vec2(0.0f,1.0f)
         };
         Mesh* fsq = new Mesh();
+        fsq->PrimitiveType = PT_TRIANGLE_FAN;
         fsq->SetVertexBuffer  (4,fsqverts  );
         fsq->SetTexCoordBuffer(4,fsqtcoords);
         m_FSQ->SetMesh(fsq,m_DefaultFSQMaterial);
@@ -344,7 +345,7 @@ namespace Silk
         m_Stats.VertexCount    += VertexCount;
         m_Stats.TriangleCount  += TriangleCount;
     }
-    void Renderer::RenderTexture(Texture *Tex,Material* Effect)
+    void Renderer::RenderTexture(Texture *Tex,Material* Effect,RenderObject* Obj)
     {
         Material* m = Effect ? Effect : m_DefaultFSQMaterial;
         Shader* s = m->GetShader();
@@ -354,13 +355,40 @@ namespace Silk
         s->Enable();
         s->UseMaterial(m);
         
-        //Do full screen quad rendering here
-        RasterObject* Obj = m_FSQ->GetObject();
-        Obj->Render(m_FSQ,PT_TRIANGLE_FAN,0,4);
-        
-        m_Stats.DrawCalls     += 1;
-        m_Stats.VertexCount   += 4;
-        m_Stats.TriangleCount += 2;
+        if(Obj)
+        {
+            if(s->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
+            {
+                Obj->UpdateUniforms();
+                s->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+            }
+            
+            i32 Count = 0;
+            if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
+            else Count = Obj->m_Mesh->GetVertexCount();
+            
+            PRIMITIVE_TYPE p = Obj->m_Mesh->PrimitiveType == PT_COUNT ? PT_TRIANGLES : Obj->m_Mesh->PrimitiveType;
+            Obj->m_Object->Render(Obj,p,0,Count);
+            
+            i32 vc = Obj->m_Mesh->GetVertexCount();
+            i32 tc = 0;
+            if(p == PT_TRIANGLES     ) tc = vc / 3;
+            if(p == PT_TRIANGLE_STRIP
+            || p == PT_TRIANGLE_FAN  ) tc = vc - 2;
+            
+            m_Stats.DrawCalls     += 1;
+            m_Stats.VertexCount   += vc;
+            m_Stats.TriangleCount += tc;
+        }
+        else
+        {
+            RasterObject* O = m_FSQ->GetObject();
+            O->Render(m_FSQ,PT_TRIANGLE_FAN,0,4);
+            
+            m_Stats.DrawCalls     += 1;
+            m_Stats.VertexCount   += 4;
+            m_Stats.TriangleCount += 2;
+        }
         
         s->Disable();
     }

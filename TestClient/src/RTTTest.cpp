@@ -95,7 +95,7 @@ namespace TestClient
         Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"RTTTest/GroundDiffuse.png",
                                                               "RTTTest/GroundNormal.png");
         Mat->SetShininess(1.0f);
-        Mat->SetSpecular(Vec4(1,1,1,0));
+        Mat->SetSpecular(1.0f);
         
         //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"RTTTest/GroundDiffuse.png");

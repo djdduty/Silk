@@ -392,7 +392,7 @@ namespace TestClient
         Mat->SetShader(Shdr);
         Shdr->Destroy();
         
-        Mat->SetSpecular(Vec4(0,0,0,0));
+        Mat->SetSpecular(0.0f);
         Mat->SetShininess(0.0f);
         
         m_Materials.push_back(Mat);

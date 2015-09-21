@@ -125,7 +125,7 @@ namespace TestClient
         
         m_Material = m_Renderer->CreateMaterial();
         m_Material->SetShininess(1.0f);
-        m_Material->SetSpecular(Vec4(1,1,1,0));
+        m_Material->SetSpecular(1.0f);
         m_Material->SetShader(m_ShaderGenerator->Generate());
         
         m_LDispMat = m_Renderer->CreateMaterial();

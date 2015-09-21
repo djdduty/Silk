@@ -94,12 +94,12 @@ namespace Silk
     void Material::SetShininess(f32 Shininess) { m_Uniforms->SetShininess(Shininess); m_HasUpdated = true; }
     f32 Material::GetShininess() const { return m_Uniforms->GetShininess(); }
     
-    void Material::SetDiffuse (const Vec4& Color) { m_Uniforms->SetDiffuse(Color); m_HasUpdated = true; }
-    Vec4 Material::GetDiffuse() const { return m_Uniforms->GetDiffuse(); }
-    void Material::SetSpecular(const Vec4& Color) { m_Uniforms->SetSpecular(Color); m_HasUpdated = true; }
-    Vec4 Material::GetSpecular() const { return m_Uniforms->GetSpecular(); }
-    void Material::SetEmissive(const Vec4& Color) { m_Uniforms->SetEmissive(Color); m_HasUpdated = true; }
-    Vec4 Material::GetEmissive() const { return m_Uniforms->GetEmissive(); }
+    void   Material::SetDiffuse (const Vec4& Color) { m_Uniforms->SetDiffuse(Color); m_HasUpdated = true; }
+    Vec4   Material::GetDiffuse () const            { return m_Uniforms->GetDiffuse(); }
+    void   Material::SetSpecular(Scalar Factor)     { m_Uniforms->SetSpecular(Factor); m_HasUpdated = true; }
+    Scalar Material::GetSpecular() const            { return m_Uniforms->GetSpecular(); }
+    void   Material::SetEmissive(const Vec4& Color) { m_Uniforms->SetEmissive(Color); m_HasUpdated = true; }
+    Vec4   Material::GetEmissive() const            { return m_Uniforms->GetEmissive(); }
     
     void Material::SetMinParallaxLayers(f32 Min  ) { m_Uniforms->SetMinParallaxLayers(Min); m_HasUpdated = true; }
     void Material::SetMaxParallaxLayers(f32 Max  ) { m_Uniforms->SetMaxParallaxLayers(Max); m_HasUpdated = true; }
