@@ -167,10 +167,12 @@ namespace Silk
     {
         vector<string>Lines;
         string l;
+        bool LineStarted = false;
         for(i32 i = 0;i < Code.length();i++)
         {
-            if(Code[i] != '\t') l += Code[i];
-            if(Code[i] == '\n') { Lines.push_back(l); l.clear(); }
+            if(Code[i] != ' ') LineStarted = true;
+            if(Code[i] != '\t' && LineStarted) l += Code[i];
+            if(Code[i] == '\n') { Lines.push_back(l); l.clear(); LineStarted = false; }
         }
         
         string r;
@@ -184,17 +186,20 @@ namespace Silk
                 else if(Lines[i][c] == '}') Level--;
             }
             r += Lines[i];
+            printf("%3d|%s",i + 1,Lines[i].c_str());
         }
         return r;
     }
     Shader* ShaderGenerator::Generate()
     {
+        printf("Vertex:\n");
         string VertexShader   = FixWhitespace(GenerateVertexShader  ());
+        printf("Geometry:\n");
         string GeometryShader = FixWhitespace(GenerateGeometryShader());
+        printf("Fragment:\n");
         string FragmentShader = FixWhitespace(GenerateFragmentShader());
         
         Shader* S = m_Renderer->GetRasterizer()->CreateShader();
-        printf("Vertex:\n%s\n\nFragment:\n%s\n",VertexShader.c_str(),FragmentShader.c_str());
         if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
         {
             m_Renderer->GetRasterizer()->Destroy(S);

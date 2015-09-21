@@ -85,6 +85,7 @@ namespace Silk
             i32 m_iNearPlane      ; //f32
             i32 m_iFarPlane       ; //f32
             i32 m_iFocalPoint     ; //f32
+            i32 m_iGamma          ; //f32
         
             Renderer* m_Renderer;
     };

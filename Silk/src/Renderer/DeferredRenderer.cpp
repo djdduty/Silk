@@ -23,15 +23,19 @@ namespace Silk
         SilkObjectVector Lights = List->GetLightList();
         for(i32 l = 0;l < Lights.size();l++)
         {
-            LightPass(Lights[l]->GetLight());
+            LightPass(Lights[l]);
         }
     }
-    void DeferredRenderer::LightPass(Light *l)
+    void DeferredRenderer::LightPass(RenderObject* l)
     {
         vector<Light*>Lt;
-        Lt.push_back(l);
+        Lt.push_back(l->GetLight());
         
-        switch(l->m_Type)
+        Mat4 T = l->GetTransform();
+        l->GetLight()->m_Position  = Vec4(T.GetTranslation(),1.0f);
+        l->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
+        
+        switch(l->GetLight()->m_Type)
         {
             case LT_POINT:
             {

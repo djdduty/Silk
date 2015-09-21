@@ -38,8 +38,6 @@ namespace TestClient
             Texture     * m_Diffuse  ;
             Material    * m_Material ;
             Material    * m_LDispMat ;
-            vector<RenderObject*> m_LightDisplays;
-            vector<RenderObject*> m_Lights       ;
     };
 };
 

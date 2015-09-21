@@ -49,6 +49,7 @@ namespace Silk
         m_Prefs.AverageSampleDuration = 5.0f;
         m_Prefs.MinObjectCountForMultithreadedCulling = 1000;
         m_Prefs.MinObjectCountForMultithreadedTransformSync = 1000;
+        SetGamma(1.0f);
         
         m_Stats.FrameID = 0;
         m_Stats.VisibleObjects = 0;

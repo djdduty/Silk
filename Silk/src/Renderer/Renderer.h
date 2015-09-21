@@ -24,6 +24,9 @@ namespace Silk
         public:
 			struct RenderPreferences
             {
+                /* Globals */
+                f32 GammaCorrection;
+                
                 /* Per object */
                 i32 MaxLights;
                 
@@ -105,6 +108,9 @@ namespace Silk
 			 * Render preferences
 			 */
         
+            bool DidGammaChange() { bool tmp = m_GammaChanged; m_GammaChanged = false; return tmp; }
+            void SetGamma(f32 Gamma) { m_Prefs.GammaCorrection = Gamma; m_GammaChanged = true; }
+            f32 GetGamma() const { return m_Prefs.GammaCorrection; }
 
             //Max lights per object
 			void SetMaxLights(i32 MaxLights) { m_Prefs.MaxLights = MaxLights; m_DoRecompileAllShaders = true; }
@@ -132,6 +138,8 @@ namespace Silk
         protected:
             friend class UIManager;
             friend class UIElement;
+        
+            bool m_GammaChanged;
 
             RenderPreferences m_Prefs;
             RenderStats m_Stats;
