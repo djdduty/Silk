@@ -8,6 +8,10 @@
 
 #include "Parse.h"
 
+#ifdef _WIN32
+#define isnumber isdigit
+#endif
+
 namespace Silk
 {
     string ReadNextWord   (char* Data,const string& NonDelimiters,i32 &Offset)
