@@ -30,7 +30,7 @@ namespace Silk
         if(m_Type == PT_FLOAT) pType = GL_FLOAT;
         
         glBindTexture(GL_TEXTURE_2D,m_TexID);
-        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,m_Width,m_Height,0,GL_RGBA,pType,m_Pixels);
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA16F,m_Width,m_Height,0,GL_RGBA,pType,m_Pixels);
         //To do: make the following code user accessable
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
