@@ -42,10 +42,10 @@ namespace TestClient
     {
         Light* L = 0;
 
-        L = AddLight(LT_POINT,Vec3(0,0,0))->GetLight();
-        L->m_Attenuation.Constant    = 1.00f;
+        L = AddLight(LT_POINT,Vec3(0,5,0))->GetLight();
+        L->m_Attenuation.Constant    = 0.5f;
         L->m_Attenuation.Linear      = 0.10f;
-        L->m_Attenuation.Exponential = 0.05f;
+        L->m_Attenuation.Exponential = 2.0f;
         
         /*
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
@@ -77,8 +77,8 @@ namespace TestClient
         //For ground
         Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png",
                                                              "Common/GroundNormal.png");
-        Mat->SetShininess(10.0f);
-        Mat->SetSpecular(1.0f);
+        Mat->SetShininess(0.01f);
+        Mat->SetSpecular(100.0f);
 
         //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
@@ -110,22 +110,20 @@ namespace TestClient
         m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
 
         
-        Vec3 OscillationSpeedMultiplier = Vec3(0.25f,0.5f,0.5f);
+        Vec3 OscillationSpeedMultiplier = Vec3(0.25f,0.5f,0.5f) * 0.1f;
         Vec3 OscillationBase  = Vec3( 0,40, 0);
         Vec3 OscillationRange = Vec3(40,40,40);
         while(IsRunning())
         {
             a += GetDeltaTime();
-            /*
-            m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
-            m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
+            //m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
+            //m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
             
             m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
                                                        OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
                                                        OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
             
             m_LightMeshes[0]->SetTransform(m_Lights[0]->GetTransform());
-            */
         }
     }
 
