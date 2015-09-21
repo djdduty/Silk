@@ -1,0 +1,52 @@
+Material "Particles"
+{
+    Shader
+    {
+        VertexModule "SetGLPosition" 0
+        {
+            //Position = Initial position
+            //Normal   = Initial velocity
+            //Tex      = Duration,Emit Time
+            
+            vec3 Pos = a_Position;
+            
+            if(Time > a_TexCoord.y)
+            {
+                float RelTime = Time - a_TexCoord.y;
+                Pos += (a_Normal * RelTime) + ((Gravity * 0.5) * pow(RelTime,2.0));
+            }
+            
+            gl_PointSize = 2.5;
+            gl_Position = u_MVP * vec4(Pos,1.0);
+        }
+        VertexModule "SetColor" 1
+        {
+            o_Color = vec4(a_Color.rgb,1.0);
+        }
+        Uniforms "SimData"
+        {
+            float Time = 0.0
+            vec3 Gravity = 0.0,-9.80665,0.0
+        }
+        Requires
+        {
+            //Uniforms
+            SimData
+            ObjectData
+            
+            //Attributes
+            a_Position
+            a_TexCoord
+            a_Normal
+            a_Color
+        }
+        VertexOutputs
+        {
+            a_Color
+        }
+        Outputs
+        {
+            f_Color
+        }
+    }
+}

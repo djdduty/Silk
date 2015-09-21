@@ -46,6 +46,7 @@ using namespace std;
 #define FragmentCustom5OutputIndex   11
 #define FragmentCustom6OutputIndex   12
 #define FragmentCustom7OutputIndex   13
+#define FragmentLightOutputIndex     14
 
 #define FragmentColorOutputName     "f_Color"
 #define FragmentPositionOutputName  "f_Position"
@@ -61,6 +62,7 @@ using namespace std;
 #define FragmentCustom5OutputName   "f_Custom5"
 #define FragmentCustom6OutputName   "f_Custom6"
 #define FragmentCustom7OutputName   "f_Custom7"
+#define FragmentLightOutputName     "f_LightAccum"
 
 namespace Silk
 {
@@ -113,12 +115,19 @@ namespace Silk
                 OFT_CUSTOM5,
                 OFT_CUSTOM6,
                 OFT_CUSTOM7,
+                OFT_LIGHTACCUM,
                 OFT_COUNT,
             };
             enum LIGHTING_MODES
             {
+                //Basic phong lighting
                 LM_PHONG,
+                
+                //Don't calculate lighting
                 LM_FLAT,
+                
+                //Pass surface attributes to output color buffers
+                LM_PASS,
             };
             enum PARALLAX_FUNCTION
             {
@@ -138,9 +147,13 @@ namespace Silk
         
             void Reset();
         
-            void AddVertexModule(CString Code,i32 Index);
+            void AddVertexModule  (CString Code,i32 Index);
             void AddGeometryModule(CString Code,i32 Index);
             void AddFragmentModule(CString Code,i32 Index);
+        
+            void AddVertexFunction  (CString Code,i32 Index);
+            void AddGeometryFunction(CString Code,i32 Index);
+            void AddFragmentFunction(CString Code,i32 Index);
         
             void SetAllowInstancing(bool Flag);
             void SetAllowInstancedTextureMatrix(bool Flag) { m_AllowInstancedTextureMatrix = Flag; }
@@ -172,6 +185,10 @@ namespace Silk
             vector<CodeBlock>   m_VertexBlocks;
             vector<CodeBlock>   m_GeometryBlocks;
             vector<CodeBlock>   m_FragmentBlocks;
+        
+            vector<CodeBlock>   m_VertexFuncs;
+            vector<CodeBlock>   m_GeometryFuncs;
+            vector<CodeBlock>   m_FragmentFuncs;
             
             i32                 m_ShaderVersion;
 

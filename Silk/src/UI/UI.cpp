@@ -87,8 +87,7 @@ namespace Silk
         if(m_Elements.size() == 0) return;
         
         //Update texture and projection if resolution changes
-        Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();;
-        if(m_Resolution.x != cRes.x || m_Resolution.y != cRes.y)
+        Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         if(m_ViewNeedsUpdate == true)
         {
             //Update texture and projection if resolution changes
@@ -123,9 +122,6 @@ namespace Silk
                 MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
             }
         
-            m_View->DisableRTT();
-        
-            m_Renderer->GetScene()->SetActiveCamera(Cam);
             m_View->DisableRTT();
         
             m_Renderer->GetScene()->SetActiveCamera(Cam);

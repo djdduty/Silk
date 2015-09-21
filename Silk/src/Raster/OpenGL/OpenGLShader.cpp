@@ -251,6 +251,11 @@ namespace Silk
             PassUniforms(Mat->GetUniforms());
         }
         
+        if(m_UniformInputs[ShaderGenerator::IUT_USER_UNIFORMS])
+        {
+            PassUniforms(Mat->GetUserUniforms());
+        }
+        
         for(i32 i = 0;i < Material::MT_COUNT;i++)
         {
             OpenGLTexture* t = (OpenGLTexture*)Mat->GetMap((Material::MAP_TYPE)i);

@@ -14,7 +14,8 @@
 
 namespace Silk
 {
-	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0)
+	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0),
+                                                                  m_UsePostProcessing(false), m_SceneOutput(0)
     {
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_UsedFragmentOutputs[i] = 0;
     }
@@ -48,6 +49,7 @@ namespace Silk
         m_Prefs.AverageSampleDuration = 5.0f;
         m_Prefs.MinObjectCountForMultithreadedCulling = 1000;
         m_Prefs.MinObjectCountForMultithreadedTransformSync = 1000;
+        SetGamma(1.0f);
         
         m_Stats.FrameID = 0;
         m_Stats.VisibleObjects = 0;
@@ -118,6 +120,7 @@ namespace Silk
             Vec2(0.0f,1.0f)
         };
         Mesh* fsq = new Mesh();
+        fsq->PrimitiveType = PT_TRIANGLE_FAN;
         fsq->SetVertexBuffer  (4,fsqverts  );
         fsq->SetTexCoordBuffer(4,fsqtcoords);
         m_FSQ->SetMesh(fsq,m_DefaultFSQMaterial);
@@ -197,24 +200,26 @@ namespace Silk
         
         delete CullResult;
     }
-    void Renderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType)
+    void Renderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType, bool SendLighting)
     {
         SilkObjectVector Lights = List->GetLightList();
         std::vector<Light*> LightsVector;
-        for(i32 i = 0; i < Lights.size(); i++)
-        {
-            LightsVector.push_back(Lights[i]->GetLight());
-            Mat4 T = Lights[i]->GetTransform();
-           
-            Lights[i]->GetLight()->m_Position  = Vec4(T.x.w,
-                                                      T.y.w,
-                                                      T.z.w,
-                                                      1.0f);
-            
-            Lights[i]->GetLight()->m_Direction = Vec4(T.x.z,
-                                                      T.y.z,
-                                                      T.z.z,
-                                                      1.0f);
+        if(SendLighting) {
+            for(i32 i = 0; i < Lights.size(); i++)
+            {
+                LightsVector.push_back(Lights[i]->GetLight());
+                Mat4 T = Lights[i]->GetTransform();
+
+                Lights[i]->GetLight()->m_Position  = Vec4(T.x.w,
+                                                          T.y.w,
+                                                          T.z.w,
+                                                          1.0f);
+
+                Lights[i]->GetLight()->m_Direction = Vec4(T.x.z,
+                                                          T.y.z,
+                                                          T.z.z,
+                                                          1.0f);
+            }
         }
         
         /*
@@ -248,7 +253,8 @@ namespace Silk
             
                 if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
                 {
-                    Obj->GetUniformSet()->SetLights(LightsVector);
+                    if(SendLighting)
+                        Obj->GetUniformSet()->SetLights(LightsVector);
                     
                     //Pass material uniforms
                     Material* Mat = Obj->GetMaterial();
@@ -340,7 +346,7 @@ namespace Silk
         m_Stats.VertexCount    += VertexCount;
         m_Stats.TriangleCount  += TriangleCount;
     }
-    void Renderer::RenderTexture(Texture *Tex,Material* Effect)
+    void Renderer::RenderTexture(Texture *Tex,Material* Effect,RenderObject* Obj)
     {
         Material* m = Effect ? Effect : m_DefaultFSQMaterial;
         Shader* s = m->GetShader();
@@ -350,13 +356,40 @@ namespace Silk
         s->Enable();
         s->UseMaterial(m);
         
-        //Do full screen quad rendering here
-        RasterObject* Obj = m_FSQ->GetObject();
-        Obj->Render(m_FSQ,PT_TRIANGLE_FAN,0,4);
-        
-        m_Stats.DrawCalls     += 1;
-        m_Stats.VertexCount   += 4;
-        m_Stats.TriangleCount += 2;
+        if(Obj)
+        {
+            if(s->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
+            {
+                Obj->UpdateUniforms();
+                s->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+            }
+            
+            i32 Count = 0;
+            if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
+            else Count = Obj->m_Mesh->GetVertexCount();
+            
+            PRIMITIVE_TYPE p = Obj->m_Mesh->PrimitiveType == PT_COUNT ? PT_TRIANGLES : Obj->m_Mesh->PrimitiveType;
+            Obj->m_Object->Render(Obj,p,0,Count);
+            
+            i32 vc = Obj->m_Mesh->GetVertexCount();
+            i32 tc = 0;
+            if(p == PT_TRIANGLES     ) tc = vc / 3;
+            if(p == PT_TRIANGLE_STRIP
+            || p == PT_TRIANGLE_FAN  ) tc = vc - 2;
+            
+            m_Stats.DrawCalls     += 1;
+            m_Stats.VertexCount   += vc;
+            m_Stats.TriangleCount += tc;
+        }
+        else
+        {
+            RasterObject* O = m_FSQ->GetObject();
+            O->Render(m_FSQ,PT_TRIANGLE_FAN,0,4);
+            
+            m_Stats.DrawCalls     += 1;
+            m_Stats.VertexCount   += 4;
+            m_Stats.TriangleCount += 2;
+        }
         
         s->Disable();
     }

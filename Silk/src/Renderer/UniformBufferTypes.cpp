@@ -161,6 +161,7 @@ namespace Silk
         m_iNearPlane       = m_UniformBuffer->DefineUniform("u_NearPlane"      );
         m_iFarPlane        = m_UniformBuffer->DefineUniform("u_FarPlane"       );
         m_iFocalPoint      = m_UniformBuffer->DefineUniform("u_FocalPoint"     );
+        m_iGamma           = m_UniformBuffer->DefineUniform("u_Gamma"          );
         
         Vec2 Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         m_UniformBuffer->SetUniform(m_iView           ,Mat4::Identity       );
@@ -174,6 +175,7 @@ namespace Silk
         m_UniformBuffer->SetUniform(m_iNearPlane      ,0.0f                 );
         m_UniformBuffer->SetUniform(m_iFarPlane       ,0.0f                 );
         m_UniformBuffer->SetUniform(m_iFocalPoint     ,0.0f                 );
+        m_UniformBuffer->SetUniform(m_iGamma          ,0.0f                 );
     }
     RenderUniformSet::~RenderUniformSet()
     {
@@ -189,16 +191,18 @@ namespace Silk
         Vec3 cPos = Vec3(cTrans[0][3],cTrans[1][3],cTrans[2][3]);
         Vec3 cFwd = Vec3(cTrans[0][2],cTrans[1][2],cTrans[2][2]);
         
-        if(DidTrans)                    m_UniformBuffer->SetUniform(m_iCameraPosition ,cPos                 );
-        if(DidTrans)                    m_UniformBuffer->SetUniform(m_iCameraDirection,cFwd                 );
-        if(DidTrans)                    m_UniformBuffer->SetUniform(m_iView           ,cTrans               );
-        if(Cam->DidProjectionUpdate ()) m_UniformBuffer->SetUniform(m_iProjection     ,Cam->GetProjection ());
-        if(Cam->DidViewportUpdate   ()) m_UniformBuffer->SetUniform(m_iViewport       ,Cam->GetViewport   ());
-        if(Cam->DidExposureUpdate   ()) m_UniformBuffer->SetUniform(m_iExposire       ,Cam->GetExposure   ());
-        if(Cam->DidFieldOfViewUpdate()) m_UniformBuffer->SetUniform(m_iFieldOfView    ,Cam->GetFieldOfView());
-        if(Cam->DidNearPlaneUpdate  ()) m_UniformBuffer->SetUniform(m_iNearPlane      ,Cam->GetNearPlane  ());
-        if(Cam->DidFarPlaneUpdate   ()) m_UniformBuffer->SetUniform(m_iFarPlane       ,Cam->GetFarPlane   ());
-        if(Cam->DidFocalPointUpdate ()) m_UniformBuffer->SetUniform(m_iFocalPoint     ,Cam->GetFocalPoint ());
+        if(DidTrans)                     m_UniformBuffer->SetUniform(m_iCameraPosition ,cPos                 );
+        if(DidTrans)                     m_UniformBuffer->SetUniform(m_iCameraDirection,cFwd                 );
+        if(DidTrans)                     m_UniformBuffer->SetUniform(m_iView           ,cTrans               );
+        if(Cam->DidProjectionUpdate  ()) m_UniformBuffer->SetUniform(m_iProjection     ,Cam->GetProjection ());
+        if(Cam->DidViewportUpdate    ()) m_UniformBuffer->SetUniform(m_iViewport       ,Cam->GetViewport   ());
+        if(Cam->DidExposureUpdate    ()) m_UniformBuffer->SetUniform(m_iExposire       ,Cam->GetExposure   ());
+        if(Cam->DidFieldOfViewUpdate ()) m_UniformBuffer->SetUniform(m_iFieldOfView    ,Cam->GetFieldOfView());
+        if(Cam->DidNearPlaneUpdate   ()) m_UniformBuffer->SetUniform(m_iNearPlane      ,Cam->GetNearPlane  ());
+        if(Cam->DidFarPlaneUpdate    ()) m_UniformBuffer->SetUniform(m_iFarPlane       ,Cam->GetFarPlane   ());
+        if(Cam->DidFocalPointUpdate  ()) m_UniformBuffer->SetUniform(m_iFocalPoint     ,Cam->GetFocalPoint ());
+        if(m_Renderer->DidGammaChange()) m_UniformBuffer->SetUniform(m_iGamma          ,m_Renderer->GetGamma());
+        
         m_UniformBuffer->SetUniform(m_iResolution,m_Renderer->GetRasterizer()->GetContext()->GetResolution());
         //m_UniformBuffer->UpdateBuffer();
     }
@@ -223,7 +227,7 @@ namespace Silk
         SetMetalness(0.5f);
         SetRoughness(0.1f);
         SetShininess(1.0f);
-        SetSpecular(Vec4(1,1,1,1));
+        SetSpecular(1.0f);
         SetDiffuse (Vec4(1,1,1,1));
         SetEmissive(Vec4(1,1,1,1));
         SetMinParallaxLayers(10);

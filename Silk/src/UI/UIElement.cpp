@@ -122,12 +122,10 @@ namespace Silk
     }
     void UIElement::_Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {
-        //TODO Setup Scissor
         _PreRender();
         Render(PrimType, ObjectsRendered);
         for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Render(PrimType, ObjectsRendered);
         _PostRender();
-        //TODO End Scissor
     }
     void UIElement::_PostRender()
     {

@@ -152,7 +152,11 @@ namespace Silk
         }
         return false;
     }
-        
+    void PostProcessingEffect::AddStage(Silk::PostProcessingStage *Stage,i32 Iterations)
+    {
+        m_Stages.push_back(Stage);
+        m_StageIterations.push_back(Iterations);
+    }
     void PostProcessingEffect::Execute()
     {
         for(i32 i = 0;i < m_Stages.size();i++)

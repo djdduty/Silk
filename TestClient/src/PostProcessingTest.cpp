@@ -42,10 +42,12 @@ namespace TestClient
         
         SetFPSPrintFrequency(0.5f);
         
+        /*
         PostProcessingEffect* Effect = new PostProcessingEffect(m_Renderer);
-        Effect->LoadEffect(Load("Common/NormalDisplay.ppe"));
+        Effect->LoadEffect(Load("Common/SMAA.ppe"));
         m_Renderer->SetUsePostProcessing(true);
         m_Renderer->AddPostProcessingEffect(Effect);
+        */
     }
     void PostProcessingTest::LoadLights()
     {
@@ -96,7 +98,7 @@ namespace TestClient
         Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"PostProcessingTest/GroundDiffuse.png",
                                                               "PostProcessingTest/GroundNormal.png");
         Mat->SetShininess(1.0f);
-        Mat->SetSpecular(Vec4(1,1,1,0));
+        Mat->SetSpecular(1.0f);
         
         //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"PostProcessingTest/GroundDiffuse.png");
@@ -112,10 +114,50 @@ namespace TestClient
         Scalar a = 0.0f;
         m_TaskManager->GetTaskContainer()->SetAverageTaskDurationSampleCount(10);
         m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
+        
+        //Particle stuff
+        Material* pMat = m_Renderer->CreateMaterial();
+        pMat->LoadMaterial(Load("PostProcessingTest/Particles.mtrl"));
+        m_Materials.push_back(pMat);
+        
+        RenderObject* ParticleCloud = m_Renderer->CreateRenderObject(ROT_MESH);
+        Mesh* m = new Mesh();
+        
+        vector<Vec3> InitialPositions;
+        vector<Vec3> InitialVelocities;
+        vector<Vec4> Colors;
+        vector<Vec2> TimeVars;
+        
+        
+        for(i32 i = 0;i < PARTICLE_COUNT;i++)
+        {
+            Scalar EmitTime = Random(PARTICLE_MIN_EMIT_TIME,PARTICLE_MAX_EMIT_TIME);
+            Scalar EmitTimeNormalized = (EmitTime - PARTICLE_MIN_EMIT_TIME) / (PARTICLE_MAX_EMIT_TIME - PARTICLE_MIN_EMIT_TIME);
+            
+            InitialPositions.push_back(RandomVec(PARTICLE_SPAWN_RADIUS).Normalized() + PARTICLE_SPAWN_POS);
+            InitialVelocities.push_back(Quat(PARTICLE_VELOCITY_ROT_AXIS,EmitTimeNormalized * 360.0f * PARTICLE_VELOCITY_ROTATIONS).ToMat() * Random(PARTICLE_VELOCITY_MIN,PARTICLE_VELOCITY_MAX));
+            TimeVars.push_back(Vec2(Random(PARTICLE_MIN_DURATION,PARTICLE_MAX_DURATION),EmitTime));
+            Colors.push_back(Vec4(ColorFunc(EmitTimeNormalized),1.0f));
+        }
+        
+        m->SetVertexBuffer(PARTICLE_COUNT,&InitialPositions[0].x);
+        m->SetNormalBuffer(PARTICLE_COUNT,&InitialVelocities[0].x);
+        m->SetColorBuffer(PARTICLE_COUNT,&Colors[0].x);
+        m->SetTexCoordBuffer(PARTICLE_COUNT,&TimeVars[0].x);
+        m->PrimitiveType = PT_POINTS;
+        ParticleCloud->SetMesh(m,pMat);
+        ParticleCloud->SetAlwaysVisible(true);
+        m_Renderer->GetScene()->AddRenderObject(ParticleCloud);
+        
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        
     
         while(IsRunning())
         {
             a += GetDeltaTime();
+            
+            //Update time
+            pMat->GetUserUniforms()->SetUniform(0,a * 0.9f);
             
             Mat4 r = Rotation(Vec3(0,1,0),a * 2.0f);
             //m_Meshes[0]->SetTransform(RotationZ(a));

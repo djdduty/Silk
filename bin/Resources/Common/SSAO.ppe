@@ -1,0 +1,59 @@
+Effect "FXAA"
+{
+    Stage
+    {
+        Material "FXAA_Pass"
+        {
+            Shader
+            {
+                VertexModule "SetGLPosition" 0
+                {
+                    gl_Position = vec4(a_Position,1.0);
+                }
+                VertexModule "SetTexCoords" 1
+                {
+                    o_TexCoord = a_TexCoord;
+                }
+                FragmentFunction 0
+                {
+                    vec4 SMAA_Pass0()
+                    {
+                        return vec4(1,0,1,1);
+                    }
+                }
+                FragmentModule "SetColor" 0
+                {
+                    vec4 sColor = texture(u_FragColor,sTexCoord);
+                }
+                Requires
+                {
+                    //Uniforms
+                    RenderData
+                    
+                    //Attributes
+                    a_Position
+                    a_TexCoord
+                }
+                VertexOutputs
+                {
+                    a_TexCoord
+                }
+                TextureMaps
+                {
+                    u_FragColor
+                }
+                Outputs
+                {
+                    f_Color
+                }
+            }
+        }
+        Iterations 1
+        OutputType ubyte
+
+        Requires
+        {
+            f_Color
+        }
+    }
+}

@@ -114,7 +114,7 @@ namespace TestClient
             m_Window->PollEvents();
             
             m_TaskManager = new TaskManager();
-            m_Renderer = new Renderer(m_Rasterizer,m_TaskManager);
+            m_Renderer = GetPreferredRenderer(m_Rasterizer,m_TaskManager);
             m_Rasterizer->SetRenderer(m_Renderer);
             m_Renderer->Init();
             
@@ -339,10 +339,13 @@ namespace TestClient
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,true);
             m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD,true);
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
+            m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TANGENT,true);
+            m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT,true);
             
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_POSITION,true);
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_NORMAL  ,true);
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
+            m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_TANGENT ,true);
             m_ShaderGenerator->SetAllowInstancing(false);
             
             if(Normal || Parallax)
@@ -364,7 +367,7 @@ namespace TestClient
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
             m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION,true);
             m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION,false);
-            
+
             m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
             m_ShaderGenerator->SetAllowInstancing(true);
         }
@@ -389,7 +392,7 @@ namespace TestClient
         Mat->SetShader(Shdr);
         Shdr->Destroy();
         
-        Mat->SetSpecular(Vec4(0,0,0,0));
+        Mat->SetSpecular(0.0f);
         Mat->SetShininess(0.0f);
         
         m_Materials.push_back(Mat);

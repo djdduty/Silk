@@ -85,6 +85,7 @@ namespace Silk
             i32 m_iNearPlane      ; //f32
             i32 m_iFarPlane       ; //f32
             i32 m_iFocalPoint     ; //f32
+            i32 m_iGamma          ; //f32
         
             Renderer* m_Renderer;
     };
@@ -102,12 +103,12 @@ namespace Silk
             f32 GetMetalness() const { return m_Metalness; }
             f32 GetShininess() const { return m_Shininess; }
             
-            void SetDiffuse (const Vec4& Color) { m_Diffuse  = Color; m_DiffuseUpdated  = true; }
-            void SetSpecular(const Vec4& Color) { m_Specular = Color; m_SpecularUpdated = true; }
-            void SetEmissive(const Vec4& Color) { m_Emissive = Color; m_EmissiveUpdated = true; }
-            Vec4 GetDiffuse () const { return m_Diffuse ; }
-            Vec4 GetSpecular() const { return m_Specular; }
-            Vec4 GetEmissive() const { return m_Emissive; }
+            void   SetDiffuse (const Vec4& Color) { m_Diffuse  = Color ; m_DiffuseUpdated  = true; }
+            void   SetSpecular(Scalar Factor)     { m_Specular = Factor; m_SpecularUpdated = true; }
+            void   SetEmissive(const Vec4& Color) { m_Emissive = Color ; m_EmissiveUpdated = true; }
+            Vec4   GetDiffuse () const { return m_Diffuse ; }
+            Scalar GetSpecular() const { return m_Specular; }
+            Vec4   GetEmissive() const { return m_Emissive; }
         
             void SetMinParallaxLayers(f32 Min  ) { m_MinParallaxLayers = Min  ; m_MinParallaxLayersUpdated = true; }
             void SetMaxParallaxLayers(f32 Max  ) { m_MaxParallaxLayers = Max  ; m_MaxParallaxLayersUpdated = true; }
@@ -131,24 +132,24 @@ namespace Silk
             i32 m_iMaxParallaxLayers;
             i32 m_iParallaxScale;
         
-            f32 m_Roughness;
-            bool m_RoughnessUpdated;
-            f32 m_Metalness;
-            bool m_MetalnessUpdated;
-            f32 m_Shininess;
-            bool m_ShininessUpdated;
-            Vec4 m_Diffuse;
-            bool m_DiffuseUpdated;
-            Vec4 m_Specular;
-            bool m_SpecularUpdated;
-            Vec4 m_Emissive;
-            bool m_EmissiveUpdated;
-            f32 m_MinParallaxLayers;
-            bool m_MinParallaxLayersUpdated;
-            f32 m_MaxParallaxLayers;
-            bool m_MaxParallaxLayersUpdated;
-            f32 m_ParallaxScale;
-            bool m_ParallaxScaleUpdated;
+            f32    m_Roughness;
+            bool   m_RoughnessUpdated;
+            f32    m_Metalness;
+            bool   m_MetalnessUpdated;
+            f32    m_Shininess;
+            bool   m_ShininessUpdated;
+            Vec4   m_Diffuse;
+            bool   m_DiffuseUpdated;
+            Scalar m_Specular;
+            bool   m_SpecularUpdated;
+            Vec4   m_Emissive;
+            bool   m_EmissiveUpdated;
+            f32    m_MinParallaxLayers;
+            bool   m_MinParallaxLayersUpdated;
+            f32    m_MaxParallaxLayers;
+            bool   m_MaxParallaxLayersUpdated;
+            f32    m_ParallaxScale;
+            bool   m_ParallaxScaleUpdated;
         
             Renderer* m_Renderer;
     };

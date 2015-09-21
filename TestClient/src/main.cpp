@@ -13,33 +13,53 @@
 #include <CullingTest.h>
 #include <UITest.h>
 #include <RTTTest.h>
-#include <PostProcessingTest.h>
+#include <PostProcessingTest.h>\
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <T4_Viewer.h>
 using namespace TestClient;
+
+bool dirExists(const char *path)
+{
+    struct stat info;
+
+    if(stat( path, &info ) != 0)
+        return false;
+    else if(info.st_mode & S_IFDIR)
+        return true;
+    else
+        return false;
+}
 
 int main(int ArgC,char *ArgV[])
 {
     string Path(ArgV[0]);
     for(size_t i = Path.size() - 1;i > 0;i--)
     {
-        if(Path[i] == '/' || Path[i] == '\\') { Path[i] = 0; break; }
+        if(Path[i] == '/' || Path[i] == '\\') { break; }
         Path.pop_back();
     }
+    string SubFolder = "../Resources";
+    if(dirExists((Path+"Resources").c_str()))
+        SubFolder = "Resources";
+    Path[Path.size()-1] = 0;
     chdir(Path.c_str());
-    chdir("../Resources");
+    chdir(SubFolder.c_str());
     
     char cwd[256];
     getcwd(cwd,256);
     
     //Test* Test = new InstancingTest();
-    //Test* Test = new LightingTest();
+    Test* Test = new LightingTest();
     //Test* Test = new NormalMappingTest();
     //Test* Test = new ParallaxMappingTest();
     //Test* Test = new CullingTest();
     //Test* Test = new UITest();
     //Test* Test = new RTTTest();
-    Test* Test = new PostProcessingTest();
+    //Test* Test = new PostProcessingTest();
 	//Test* Test = new T4_Viewer(ArgC,ArgV);
     
     Test->Init    ();

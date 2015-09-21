@@ -7,6 +7,7 @@ namespace TestClient
 {
     InputManager::InputManager(Renderer* r) : m_MouseLeftID(-1), m_MouseMiddleID(-1), m_MouseRightID(-1), m_Renderer(r)
     {
+        m_Resolution = r->GetRasterizer()->GetContext()->GetResolution();
     }
     InputManager::~InputManager()
     {

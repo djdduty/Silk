@@ -1,5 +1,6 @@
 #pragma once
 #include <Test.h>
+#include <Renderer/DeferredRenderer.h>
 
 namespace TestClient
 {
@@ -21,6 +22,14 @@ namespace TestClient
         
             virtual const char* GetTestName() const { return "Lighting Test"; }
         
+#ifdef __APPLE__
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(800,600); }
+#else
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
+#endif
+
+            virtual Renderer* GetPreferredRenderer(Rasterizer* Raster,TaskManager* TaskMng) const { return new DeferredRenderer(Raster,TaskMng); }
+        
         protected:
             ObjLoader   * m_ObjLoader;
             RenderObject* m_Object   ;
@@ -29,8 +38,6 @@ namespace TestClient
             Texture     * m_Diffuse  ;
             Material    * m_Material ;
             Material    * m_LDispMat ;
-            vector<RenderObject*> m_LightDisplays;
-            vector<RenderObject*> m_Lights       ;
     };
 };
 

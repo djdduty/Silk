@@ -6,7 +6,7 @@ namespace Silk
     UIPanel::UIPanel(Vec2 Size) : UIElement()
     {
         SetSize(Size);
-        SetChildOffset(Vec2(-10,0));
+        SetChildOffset(Vec2(0,0));
         EnableScissor(true);
     }
     UIPanel::~UIPanel()

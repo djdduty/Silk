@@ -4,6 +4,7 @@
 #include <ObjLoader.h>
 #include <Window.h>
 #include <InputManager.h>
+#include <Renderer/Renderer.h>
 
 #define CAMERA_MOVE_SPEED 15.0f
 #define CAMERA_TURN_SPEED 0.6f
@@ -61,6 +62,7 @@ namespace TestClient
             virtual const char* GetTestName() const = 0;
             virtual Vec2 GetPreferredInitResolution() const;
 			virtual CullingAlgorithm* GetPreferredCullingAlgorithm() const { return new BruteForceCullingAlgorithm(m_Renderer->GetScene(),m_TaskManager); }
+            virtual Renderer* GetPreferredRenderer(Rasterizer* Raster, TaskManager* TaskMng) const { return new Renderer(Raster,TaskMng); }
         
             Window         * m_Window;
             Renderer       * m_Renderer;

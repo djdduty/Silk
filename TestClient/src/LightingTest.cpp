@@ -14,195 +14,123 @@ namespace TestClient
 
     void LightingTest::Initialize()
     {
-        m_ObjLoader = new ObjLoader();
+        InitGUI();
+        InitFlyCamera();
+        //InitDebugDisplay();
+
+        m_ShaderGenerator->Reset();
+        m_ShaderGenerator->SetShaderVersion   (330);
+        m_ShaderGenerator->SetAllowInstancing (false);
+
+        m_ShaderGenerator->SetUniformInput    (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
+        m_ShaderGenerator->SetUniformInput    (ShaderGenerator::IUT_MATERIAL_UNIFORMS,true);
+        m_ShaderGenerator->SetUniformInput    (ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
+
+        m_ShaderGenerator->SetAttributeInput  (ShaderGenerator::IAT_POSITION,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_COLOR   ,true);
+        m_ShaderGenerator->SetAttributeOutput (ShaderGenerator::IAT_POSITION,true);
+
+        m_ShaderGenerator->SetParallaxFunction(ShaderGenerator::PF_RELIEF);
+
         LoadMaterial();
         LoadLight   ();
         LoadMesh    ();
+
+        SetFPSPrintFrequency(0.5f);
     }
     void LightingTest::LoadLight()
     {
-        RenderObject* LObj = 0;
         Light* L = 0;
+
+		/*
+        L = AddLight(LT_POINT,Vec3(0,5,0))->GetLight();
+        L->m_Attenuation.Constant    = 1.00f;
+        L->m_Attenuation.Linear      = 0.10f;
+        L->m_Attenuation.Exponential = 0.01f;
         
-        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT);
-        L = new Light(LT_POINT);
-        
-        LObj->SetLight(L);
-        L->m_Attenuation.Constant    = 0.00f; //?
-        L->m_Attenuation.Linear      = 0.10f; //?
-        LObj->SetTransform(Translation(Vec3(0,1,-5)));
-        
-        m_Renderer->GetScene()->AddRenderObject(LObj);
-        m_Lights.push_back(LObj);
-        
-        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT);
-        L = new Light(LT_SPOT);
-        
-        LObj->SetLight(L);
-        L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 1.02;
-        L->m_Cutoff = 45.0f;
-        L->m_Attenuation.Constant    = 0.00f; //?
-        L->m_Attenuation.Linear      = 0.10f; //?
-        L->m_Attenuation.Exponential = 0.01f; //?
-        LObj->SetTransform(Translation(Vec3(0,8,0)));
-        
-        m_Renderer->GetScene()->AddRenderObject(LObj);
-        m_Lights.push_back(LObj);
-        
-        
-        LObj = m_Renderer->CreateRenderObject(ROT_LIGHT);
-        L = new Light(LT_DIRECTIONAL);
-        
-        LObj->SetLight(L);
-        L->m_Color = Vec4(1,1,1,1);
-        L->m_Power = 0.1;
-        
-        m_Renderer->GetScene()->AddRenderObject(LObj);
-        m_Lights.push_back(LObj);
+		/*
+        L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
+        L->m_Color                   = Vec4(1,1,1,1);
+        L->m_Power                   = 0.24;
+        L->m_Cutoff                  = 45.0f;
+        L->m_Attenuation.Constant    = 0.00f;
+        L->m_Attenuation.Linear      = 0.10f;
+        L->m_Attenuation.Exponential = 0.01f;
+        */
+        L = AddLight(LT_DIRECTIONAL,Vec3(0,100,0))->GetLight();
+        L->m_Color                   = Vec4(0.9,0.8,0.6,1);
+        L->m_Power                   = 0.5f;
+        L->m_Direction               = Vec4(1,1,0,1);
+		
+
     }
     void LightingTest::LoadMesh()
     {
-        m_ObjLoader->Load(const_cast<CString>("LightingTest/Scene.object"));
+        m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
         
-        m_Mesh = new Mesh();
-        m_Mesh->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
-        m_Mesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
-        m_Mesh->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
-        
-        m_Object = m_Renderer->CreateRenderObject(ROT_MESH);
-        m_Object->SetMesh(m_Mesh,m_Material);
-        m_Renderer->GetScene()->AddRenderObject(m_Object);
-        
-        m_Object->SetTransform(Translation(Vec3(0,0,0)));
-        m_Object->SetTextureTransform(Mat4::Identity);
-        
-        m_ObjLoader->Load(const_cast<CString>("LightingTest/LightDisplay.object"));
-        m_LDispMesh = new Mesh();
-        m_LDispMesh->SetVertexBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetPositions()));
-        m_LDispMesh->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
-        m_LDispMesh->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
-        
-        for(i32 i = 0;i < m_Lights.size();i++)
-        {
-            RenderObject* d = m_Renderer->CreateRenderObject(ROT_MESH);
-            d->SetMesh(m_LDispMesh,m_LDispMat);
-            m_Renderer->GetScene()->AddRenderObject(d);
-            m_LightDisplays.push_back(d);
-        }
-        
+        i32 mid = AddMesh("LightingTest/LightDisplay.object",m_Materials[0],Vec3(0,5,0),m_Lights.size());
+        for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
+
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
     }
     void LightingTest::LoadMaterial()
     {
-        m_ShaderGenerator->SetShaderVersion  (330);
-        m_ShaderGenerator->SetAllowInstancing(false);
-        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_RENDERER_UNIFORMS,true);
-        m_ShaderGenerator->SetUniformInput   (ShaderGenerator::IUT_OBJECT_UNIFORMS  ,true);
+        //For ground
+        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png",
+                                                             "Common/GroundNormal.png");
+        Mat->SetShininess(0.01f);
+        Mat->SetSpecular(100.0f);
+
+        //For light displays
+        AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
         
-        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_POSITION         ,true);
-        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_NORMAL           ,true);
-        m_ShaderGenerator->SetAttributeInput (ShaderGenerator::IAT_TEXCOORD         ,true);
+        //Light pass materials
+        DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
         
-        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_POSITION         ,true);
-        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL           ,true);
-        m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD         ,true);
+        Material* Pt = m_Renderer->CreateMaterial();
+        Pt->LoadMaterial(Load("Silk/PointLight.mtrl"));
+        Material* Sp = m_Renderer->CreateMaterial();
+        Sp->LoadMaterial(Load("Silk/SpotLight.mtrl"));
+		Material* Dr = m_Renderer->CreateMaterial();
+        Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
         
-        m_ShaderGenerator->SetTextureInput   (Material::MT_DIFFUSE                  ,true);
-        m_ShaderGenerator->SetFragmentOutput (ShaderGenerator::OFT_COLOR            ,true);
-        m_ShaderGenerator->SetLightingMode   (ShaderGenerator::LM_PHONG);
-        
-        m_Material = m_Renderer->CreateMaterial();
-        m_Material->SetShader(m_ShaderGenerator->Generate());
-        
-        m_LDispMat = m_Renderer->CreateMaterial();
-        m_LDispMat->SetShader(m_Material->GetShader());
-        
-        m_ShaderGenerator->Reset();
-        
-        vector<u8> Pixels;
-        u32 w,h;
-        lodepng::decode(Pixels,w,h,"LightingTest/Diffuse.png");
-        m_Diffuse = m_Rasterizer->CreateTexture();
-        m_Diffuse->CreateTexture(w,h);
-        f32 Inv255 = 1.0f / 255.0f;
-        for(i32 x = 0;x < w;x++)
-        {
-            for(i32 y = 0;y < h;y++)
-            {
-                i32 Idx = (y * (w * 4)) + (x * 4);
-                
-                Vec4 C;
-                C.x = f32(Pixels[Idx + 0]) * Inv255;
-                C.y = f32(Pixels[Idx + 1]) * Inv255;
-                C.z = f32(Pixels[Idx + 2]) * Inv255;
-                C.w = f32(Pixels[Idx + 3]) * Inv255;
-                
-                m_Diffuse->SetPixel(Vec2(x,(h-1) - y),C);
-            }
-        }
-        m_Diffuse->UpdateTexture();
-        
-        m_Material->SetMap(Material::MT_DIFFUSE,m_Diffuse);
-        m_LDispMat->SetMap(Material::MT_DIFFUSE,m_Diffuse);
+        r->SetPointLightMaterial(Pt);
+        r->SetSpotLightMaterial(Sp);
+        r->SetDirectionalLightMaterial(Dr);
     }
 
     void LightingTest::Run()
     {
-        Mat4 t = Translation(Vec3(0,4,9));
+        Mat4 t = Translation(Vec3(0,4,9)) * RotationX(20.0f);
         m_Camera->SetTransform(t);
+
+        m_Meshes[0]->SetTextureTransform(Scale(25.0f));
+
         Scalar a = 0.0f;
+        m_TaskManager->GetTaskContainer()->SetAverageTaskDurationSampleCount(10);
+        m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
+
+        
+        Vec3 OscillationSpeedMultiplier = Vec3(0.25f,0.5f,0.5f) * 0.1f;
+        Vec3 OscillationBase  = Vec3( 0,40, 0);
+        Vec3 OscillationRange = Vec3(40,40,40);
         while(IsRunning())
         {
-            a += 7.5f * GetDeltaTime();
-            
+            a += GetDeltaTime();
+            //m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
+            //m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
             /*
-            m_Camera->SetTransform((Rotation(Vec3(1,0,0),20 + sin(a * 0.300f) * 9.0f) *
-                                    Rotation(Vec3(0,1,0),     sin(a * 0.250f) * 20.0f) *
-                                    Rotation(Vec3(0,0,1),     sin(a * 0.125f) * 18.0f)) *
-                                    Translation(Vec3(0,3,6)));
-             */
-            
-            Mat4 r = Rotation(Vec3(0,1,0),a * 8.0f);
-            
-            //Point
-            m_Lights[0]->GetLight()->m_Attenuation.Exponential = 1.9f + (sin(a * 0.2f) * 0.5f);
-            m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a * 0.01f),1.0f);
-            m_Lights[0]->GetLight()->m_Power = 5.0f + (sin(a * 0.01f) * 10.0f);
-            m_Lights[0]->SetTransform(r * Translation(Vec3(3,4 + (sin(a * 0.1f) * 3.0f),0)));
-            
-            //Spot
-            m_Lights[1]->SetTransform(Translation(Vec3(0,6,-1.5f)) * Rotation(Vec3(1,0,0),90.0f) * Rotation(Vec3(0,1,0),180.0f + (sin(a * 0.075f) * 95.0f)));
-            m_Lights[1]->GetLight()->m_Soften = (sin(a * 0.1f) * 0.5f) + 0.5f;
-            
-            //Directional
-            m_Lights[2]->SetTransform(Rotation(Vec3(0,0,1),a * 2.0f) * Rotation(Vec3(1,0,0),-90.0f));
-            
-            for(i32 i = 0;i < m_Lights.size();i++)
-            {
-                m_LightDisplays[i]->SetTransform(m_Lights[i]->GetTransform() * Scale(0.5f));
-            }
+            m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
+                                                       OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
+                                                       OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
+            */
+            m_LightMeshes[0]->SetTransform(m_Lights[0]->GetTransform());
         }
     }
 
     void LightingTest::Shutdown()
     {
-        for(i32 i = 0;i < m_Lights.size();i++)
-        {
-            delete m_Lights[i]->GetLight();
-            m_Renderer->Destroy(m_Lights[i]);
-            m_Renderer->Destroy(m_LightDisplays[i]);
-        }
-        m_Renderer->Destroy(m_Material);
-        m_Renderer->Destroy(m_Object);
-        m_Mesh->Destroy();
-        delete m_ObjLoader;
-        
-        m_ObjLoader = 0;
-        m_Material  = 0;
-        m_Object    = 0;
-        m_Mesh      = 0;
     }
 };

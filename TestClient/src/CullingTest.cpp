@@ -87,7 +87,7 @@ namespace TestClient
         Material* Mat = AddMaterial(ShaderGenerator::LM_PHONG,"CullingTest/GroundDiffuse.png",
                                                               "CullingTest/GroundNormal.png");
         Mat->SetShininess(1.0f);
-        Mat->SetSpecular(Vec4(1,1,1,0));
+        Mat->SetSpecular(1.0f);
         
         Mat->SetMinParallaxLayers(MIN_PARALLAX_LAYERS);
         Mat->SetMaxParallaxLayers(MAX_PARALLAX_LAYERS);
