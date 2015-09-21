@@ -13,14 +13,20 @@ Material "DirectionalLightPass"
         }
         FragmentModule "SetColor" 0
         {
-            vec4 sColor = u_Lights[0].Color;
+            vec4  Normal     = texture(u_FragNormal,o_TexCoord);
+            float ndotl      = max(dot(Normal.xyz,u_Lights[0].Direction.xyz),0.0);
+
+            vec4 Diffuse     = texture(u_FragColor,o_TexCoord);
+            vec3 OutColor    = ndotl * Diffuse.xyz;
+
+            vec4 sColor = u_Lights[0].Direction;//vec4(OutColor,Diffuse.a);
         }
         Requires
         {
             //Uniforms
             ObjectData
             RenderData
-            
+
             //Attributes
             a_Position
             a_TexCoord
