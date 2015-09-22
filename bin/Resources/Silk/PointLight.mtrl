@@ -32,10 +32,10 @@ Material "PointLightPass"
                 Specular     = pow(sAngle,16.0);
             }
 
-            vec4 ColorLinear    = Attenuation * u_Lights[0].Power * ((Lambertian * u_Lights[0].Color) + (sSpecular * Specular * u_Lights[0].Color));
+            vec4 ColorLinear    = Attenuation * u_Lights[0].Power * ((Lambertian * u_Lights[0].Color)  + (Specular * u_Lights[0].Color));
             vec4 GammaCorrected = pow(ColorLinear,vec4(vec3(1.0 / u_Gamma), 1));
 
-            vec4 sColor = ColorLinear;
+            vec4 sColor = GammaCorrected;
         }
         Requires
         {

@@ -24,7 +24,7 @@ namespace Silk
         //RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OFT_COLOR));
         glEnable(GL_BLEND); //TODO: Abstract this
         glDisable(GL_DEPTH_TEST);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE) ;
         for(i32 l = 0;l < Lights.size();l++)
         {
             LightPass(Lights[l]);
