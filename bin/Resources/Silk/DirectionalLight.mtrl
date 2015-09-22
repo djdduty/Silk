@@ -15,7 +15,7 @@ Material "DirectionalLightPass"
         {
             vec4 Position = texture(u_FragPosition,o_TexCoord);
 
-            vec3 SurfaceToLight = u_Lights[0].Position.xyz - Position.xyz;
+            vec3 SurfaceToLight = u_Lights[0].Direction.xyz;
 
             vec4  Normal     = texture(u_FragNormal,o_TexCoord);
             float Lambertian = max(dot(Normal.xyz,SurfaceToLight),0.0);
@@ -24,7 +24,7 @@ Material "DirectionalLightPass"
             vec3 ColorLinear    = u_Lights[0].Power * (Lambertian * Diffuse.xyz);
             vec3 GammaCorrected = pow(ColorLinear,vec3(1.0 / u_Gamma));
 
-            vec4 sColor = vec4(GammaCorrected,Diffuse.a);
+            vec4 sColor = vec4(GammaCorrected,Diffuse.a) + (u_Lights[0].Position * 0.000000001); //TODO: remove hacky fix to nvidia shader optimizing out the array of struct
         }
         Requires
         {
