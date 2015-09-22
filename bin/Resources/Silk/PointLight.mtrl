@@ -14,13 +14,13 @@ Material "PointLightPass"
         FragmentModule "SetColor" 0
         {
             vec4 Position = texture(u_FragPosition,o_TexCoord);
-            
+
             vec3 SurfaceToLight = u_Lights[0].Position.xyz - Position.xyz;
             float Dist = length(SurfaceToLight);
             float Attenuation = 1.0 / (u_Lights[0].CAtt + (u_Lights[0].LAtt * Dist) * (u_Lights[0].QAtt * pow(Dist,2.0)));
             if(Attenuation < 0.00001) discard;
             SurfaceToLight /= Dist;
-            
+
             vec4  Normal     = texture(u_FragNormal,o_TexCoord);
             float Lambertian = max(dot(Normal.xyz,SurfaceToLight),0.0);
             float Specular   = 0.0;
@@ -31,12 +31,11 @@ Material "PointLightPass"
                 float sAngle = max(dot(HalfDir,Normal.xyz),0.0);
                 Specular     = pow(sAngle,16.0);
             }
-            
-            vec4 Diffuse        = texture(u_FragColor,o_TexCoord);
-            vec3 ColorLinear    = Attenuation * u_Lights[0].Power * ((Lambertian * Diffuse.xyz) + (sSpecular * Specular * Diffuse.xyz));
-            vec3 GammaCorrected = pow(ColorLinear,vec3(1.0 / u_Gamma));
-            
-            vec4 sColor = vec4(GammaCorrected,Diffuse.a);
+
+            vec4 ColorLinear    = Attenuation * u_Lights[0].Power * ((Lambertian * u_Lights[0].Color) + (sSpecular * Specular * u_Lights[0].Color));
+            vec4 GammaCorrected = pow(ColorLinear,vec4(vec3(1.0 / u_Gamma), 1));
+
+            vec4 sColor = ColorLinear;
         }
         Requires
         {
@@ -44,7 +43,7 @@ Material "PointLightPass"
             ObjectData
             RenderData
             MaterialData
-            
+
             //Attributes
             a_Position
             a_TexCoord
