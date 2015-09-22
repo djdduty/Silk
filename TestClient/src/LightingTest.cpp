@@ -74,6 +74,8 @@ namespace TestClient
     }
     void LightingTest::LoadMesh()
     {
+        m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
+
         DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
         RenderObject* Point = m_Meshes[AddMesh("Silk/PointLight.object",r->GetPointLightMaterial(),Vec3(0,0,0))];
         RenderObject* Spot  = m_Meshes[AddMesh("Silk/SpotLight.object" ,r->GetSpotLightMaterial (),Vec3(0,0,0))];
@@ -82,8 +84,6 @@ namespace TestClient
         Point->SetEnabled(false);
         Spot->SetEnabled(false);
         
-        m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
-
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
