@@ -19,13 +19,14 @@ Material "DirectionalLightPass"
             vec4 Diffuse     = texture(u_FragColor,o_TexCoord);
             vec3 OutColor    = ndotl * Diffuse.xyz;
 
-            vec4 sColor = vec4(OutColor,Diffuse.a);
+            vec4 sColor      = vec4(OutColor,Diffuse.a);
         }
         Requires
         {
             //Uniforms
             ObjectData
             RenderData
+            MaterialData
 
             //Attributes
             a_Position
