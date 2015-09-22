@@ -44,6 +44,8 @@ namespace Silk
             const Mat4&   GetTextureTransform() { return m_Uniforms->GetTextureMatrix(); }
         
             void SetAlwaysVisible(bool Flag) { m_AlwaysVisible = Flag; }
+            void SetEnabled(bool Flag) { m_Enabled = Flag; }
+            bool IsEnabled() const { return m_Enabled; }
             bool IsVisible() const { return m_AlwaysVisible ? true : !m_IsCulled; }
             bool IsAlwaysVisible() const { return m_AlwaysVisible; }
         

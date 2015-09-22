@@ -21,10 +21,16 @@ namespace Silk
         //RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OUTPUT_FRAGMENT_TYPE::OFT_NORMAL));
         
         SilkObjectVector Lights = List->GetLightList();
+        //RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OFT_COLOR));
+        glEnable(GL_BLEND); //TODO: Abstract this
+        glDisable(GL_DEPTH_TEST);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         for(i32 l = 0;l < Lights.size();l++)
         {
             LightPass(Lights[l]);
         }
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
     }
     void DeferredRenderer::LightPass(RenderObject* l)
     {

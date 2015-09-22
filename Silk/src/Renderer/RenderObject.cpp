@@ -52,35 +52,38 @@ namespace Silk {
         if(m_Material) m_Material->Destroy();
         m_Material = Mat;
         
-        if(Mat->GetShader()->SupportsInstancing())
+        if(m_Material)
         {
-            m_Mesh->m_Instances.push_back(this);
-            m_InstanceIndex = m_Mesh->m_Instances.size() - 1;
-            m_InstanceList  = &m_Mesh->m_Instances;
-            
-            if(m_Mesh->Refs() == 1)
+            if(Mat->GetShader()->SupportsInstancing())
             {
-                m_Object->SetMesh(m_Mesh);
-                m_Mesh->m_Obj = this;
+                m_Mesh->m_Instances.push_back(this);
+                m_InstanceIndex = m_Mesh->m_Instances.size() - 1;
+                m_InstanceList  = &m_Mesh->m_Instances;
+                
+                if(m_Mesh->Refs() == 1)
+                {
+                    m_Object->SetMesh(m_Mesh);
+                    m_Mesh->m_Obj = this;
+                }
+                else
+                {
+                    if(m_Object) m_Object->Destroy(this);
+                    m_Type = ROT_MESH;
+                    m_Object = m_Mesh->m_Obj->m_Object;
+                    m_Object->AddRef();
+                    m_Object->AddInstance();
+                    m_Mesh->m_Obj->GetUniformSet()->SetIsInstanced(true);
+                }
             }
             else
             {
-                if(m_Object) m_Object->Destroy(this);
-                m_Type = ROT_MESH;
-                m_Object = m_Mesh->m_Obj->m_Object;
-                m_Object->AddRef();
-                m_Object->AddInstance();
-                m_Mesh->m_Obj->GetUniformSet()->SetIsInstanced(true);
+                m_Mesh->m_Obj = this;
+                m_Object->SetMesh(m_Mesh);
             }
-        }
-        else
-        {
-            m_Mesh->m_Obj = this;
-            m_Object->SetMesh(m_Mesh);
         }
         
         m_Mesh->AddRef();
-        m_Material->AddRef();
+        if(m_Material) m_Material->AddRef();
         UpdateOBB();
         MarkAsUpdated();
     }

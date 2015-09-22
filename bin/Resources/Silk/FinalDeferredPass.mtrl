@@ -13,24 +13,15 @@ Material "DirectionalLightPass"
         }
         FragmentModule "SetColor" 0
         {
-            vec4 Position = texture(u_FragPosition,o_TexCoord);
-
-            vec3 SurfaceToLight = u_Lights[0].Direction.xyz;
-
-            vec4  Normal     = texture(u_FragNormal,o_TexCoord);
-            float Lambertian = max(dot(Normal.xyz,SurfaceToLight),0.0);
-
-            vec4 ColorLinear    = u_Lights[0].Power * (Lambertian * u_Lights[0].Color);
-            vec4 GammaCorrected = pow(ColorLinear,vec4(vec3(1.0 / u_Gamma), 1));
-
-            vec4 sColor = ColorLinear + (u_Lights[0].Position * 0.000000001); //TODO: remove hacky fix to nvidia shader optimizing out the array of struct
+            vec4 Diffuse = texture(u_FragPosition,o_TexCoord);
+            //vec4 LA = texture(u_FragLighting,o_TexCoord); TODO
+            //vec4 sCloro = LA * Diffuse; TODO And gamma correct
         }
         Requires
         {
             //Uniforms
             ObjectData
             RenderData
-            MaterialData
 
             //Attributes
             a_Position

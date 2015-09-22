@@ -16,6 +16,9 @@ namespace Silk
             void SetPointLightMaterial      (Material*     Mat);
             void SetSpotLightMaterial       (Material*     Obj);
             void SetDirectionalLightMaterial(Material*     Obj);
+            Material* GetPointLightMaterial      () const { return m_PointLightMat      ; }
+            Material* GetSpotLightMaterial       () const { return m_SpotLightMat       ; }
+            Material* GetDirectionalLightMaterial() const { return m_DirectionalLightMat; }
         
         private:
             RenderObject* m_PointLightObj;

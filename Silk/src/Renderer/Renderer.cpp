@@ -246,6 +246,7 @@ namespace Silk
             for(i32 m = 0;m < Meshes.size();m++)
             {
                 RenderObject* Obj = Meshes[m];
+                if(!Obj->IsEnabled()) continue;
                 if(Obj->IsInstanced() && Obj->m_Mesh->m_LastFrameRendered == m_Stats.FrameID) continue;
                 else if(Obj->IsInstanced()) Obj = (*Obj->GetMesh()->GetInstanceList())[0];
                 
@@ -258,7 +259,7 @@ namespace Silk
                     
                     //Pass material uniforms
                     Material* Mat = Obj->GetMaterial();
-                    /*if(Mat->HasUpdated())*/ Shader->UseMaterial(Obj->GetMaterial());
+                    /*if(Mat->HasUpdated())*/ Shader->UseMaterial(Mat);
                     
                     //Pass object uniforms
                     if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
