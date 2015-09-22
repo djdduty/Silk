@@ -2,18 +2,18 @@ Material "PointLightPass"
 {
     Shader
     {
-        //Remove this module once there are light volumes
         VertexModule "SetGLPosition" 0
         {
-            gl_Position = vec4(a_Position,1.0);
+            float Radius = (1.0 / sqrt(u_Lights[0].QAtt * 0.001));
+            gl_Position = u_MVP * vec4((a_Position * Radius * 0.1),1.0);
         }
-        VertexModule "SetTexCoords" 1
+        FragmentModule "SetTexCoords" 0
         {
-            o_TexCoord = a_TexCoord;
+            vec2 sTexCoord = gl_FragCoord.xy / u_Resolution;
         }
-        FragmentModule "SetColor" 0
+        FragmentModule "SetColor" 1
         {
-            vec4 Position = texture(u_FragPosition,o_TexCoord);
+            vec4 Position = texture(u_FragPosition,sTexCoord);
 
             vec3 SurfaceToLight = u_Lights[0].Position.xyz - Position.xyz;
             float Dist = length(SurfaceToLight);
@@ -21,7 +21,7 @@ Material "PointLightPass"
             if(Attenuation < 0.00001) discard;
             SurfaceToLight /= Dist;
 
-            vec4  Normal     = texture(u_FragNormal,o_TexCoord);
+            vec4  Normal     = texture(u_FragNormal,sTexCoord);
             float Lambertian = max(dot(Normal.xyz,SurfaceToLight),0.0);
             float Specular   = 0.0;
             if(Lambertian > 0.0)

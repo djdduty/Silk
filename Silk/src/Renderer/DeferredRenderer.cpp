@@ -41,6 +41,8 @@ namespace Silk
         l->GetLight()->m_Position  = Vec4(T.GetTranslation(),1.0f);
         l->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
         
+        //To do: Abstract these away
+        glCullFace(GL_FRONT);
         switch(l->GetLight()->m_Type)
         {
             case LT_POINT:
@@ -75,6 +77,7 @@ namespace Silk
                 break;
             }
         }
+        glCullFace(GL_BACK);
     }
     
     void DeferredRenderer::SetPointLightObject        (RenderObject* Obj)

@@ -79,8 +79,10 @@ namespace TestClient
         DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
         RenderObject* Point = m_Meshes[AddMesh("Silk/PointLight.object",r->GetPointLightMaterial(),Vec3(0,0,0))];
         RenderObject* Spot  = m_Meshes[AddMesh("Silk/SpotLight.object" ,r->GetSpotLightMaterial (),Vec3(0,0,0))];
+        
         r->SetPointLightObject(Point);
         r->SetSpotLightObject(Spot);
+        
         Point->SetEnabled(false);
         Spot->SetEnabled(false);
         
