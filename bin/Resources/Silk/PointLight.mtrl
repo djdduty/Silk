@@ -5,7 +5,7 @@ Material "PointLightPass"
         VertexModule "SetGLPosition" 0
         {
             float Radius = (1.0 / sqrt(u_Lights[0].QAtt * 0.001));
-            gl_Position = u_MVP * vec4((a_Position * Radius * 0.1),1.0);
+            gl_Position = u_MVP * vec4((a_Position * Radius * 0.5),1.0);
         }
         FragmentModule "SetTexCoords" 0
         {

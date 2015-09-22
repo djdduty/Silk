@@ -44,17 +44,17 @@ namespace TestClient
 
         L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
         L->m_Color                   = Vec4(1,0,1,1);
-        L->m_Power                   = 4.0f;
+        L->m_Power                   = 14.0f;
         L->m_Attenuation.Constant    = 3.00f;
         L->m_Attenuation.Linear      = 0.15f;
-        L->m_Attenuation.Exponential = 0.01f;
+        L->m_Attenuation.Exponential = 0.1f;
 
         L = AddLight(LT_POINT,Vec3(0,11,-40))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 4.0f;
+        L->m_Power                   = 14.0f;
         L->m_Attenuation.Constant    = 3.00f;
         L->m_Attenuation.Linear      = 0.15f;
-        L->m_Attenuation.Exponential = 0.01f;
+        L->m_Attenuation.Exponential = 0.1f;
         
 		/*
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
@@ -65,6 +65,7 @@ namespace TestClient
         L->m_Attenuation.Linear      = 0.10f;
         L->m_Attenuation.Exponential = 0.01f;
         */
+        
         L = AddLight(LT_DIRECTIONAL,Vec3(0,100,0))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
         L->m_Power                   = 0.5f;

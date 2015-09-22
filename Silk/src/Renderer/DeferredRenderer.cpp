@@ -50,6 +50,7 @@ namespace Silk
                 if(!m_PointLightMat) return;
                 m_SceneOutput->EnableTexture(m_PointLightMat);
                 RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
+                if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
                 RenderTexture(0,m_PointLightMat,Obj);
                 break;
@@ -59,6 +60,7 @@ namespace Silk
                 if(!m_SpotLightMat) return;
                 m_SceneOutput->EnableTexture(m_SpotLightMat);
                 RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
+                if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
                 RenderTexture(0,m_SpotLightMat,Obj);
                 break;
@@ -68,6 +70,7 @@ namespace Silk
                 if(!m_DirectionalLightMat) return;
                 m_SceneOutput->EnableTexture(m_DirectionalLightMat);
                 RenderObject* Obj = m_DirectionalLightObj ? m_DirectionalLightObj : m_FSQ;
+                if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
                 RenderTexture(0,m_DirectionalLightMat,Obj);
                 break;
