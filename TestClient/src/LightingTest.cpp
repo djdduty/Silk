@@ -42,16 +42,18 @@ namespace TestClient
     {
         Light* L = 0;
 
-        L = AddLight(LT_POINT,Vec3(10,5,0))->GetLight();
-        L->m_Color                   = Vec4(1,0,0,1);
-        L->m_Attenuation.Constant    = 1.00f;
-        L->m_Attenuation.Linear      = 0.10f;
+        L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
+        L->m_Color                   = Vec4(1,0,1,1);
+        L->m_Power                   = 4.0f;
+        L->m_Attenuation.Constant    = 3.00f;
+        L->m_Attenuation.Linear      = 0.15f;
         L->m_Attenuation.Exponential = 0.01f;
 
-        L = AddLight(LT_POINT,Vec3(-10,5,0))->GetLight();
-        L->m_Color                   = Vec4(0,0,1,1);
-        L->m_Attenuation.Constant    = 1.00f;
-        L->m_Attenuation.Linear      = 0.10f;
+        L = AddLight(LT_POINT,Vec3(0,11,-40))->GetLight();
+        L->m_Color                   = Vec4(1,1,1,1);
+        L->m_Power                   = 4.0f;
+        L->m_Attenuation.Constant    = 3.00f;
+        L->m_Attenuation.Linear      = 0.15f;
         L->m_Attenuation.Exponential = 0.01f;
         
 		/*
@@ -64,7 +66,7 @@ namespace TestClient
         L->m_Attenuation.Exponential = 0.01f;
         */
         L = AddLight(LT_DIRECTIONAL,Vec3(0,100,0))->GetLight();
-        L->m_Color                   = Vec4(0,1,0,1);
+        L->m_Color                   = Vec4(1,1,1,1);
         L->m_Power                   = 0.5f;
         L->m_Direction               = Vec4(1,1,0,1);
 		
@@ -73,9 +75,6 @@ namespace TestClient
     void LightingTest::LoadMesh()
     {
         m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
-        
-        i32 mid = AddMesh("LightingTest/LightDisplay.object",m_Materials[0],Vec3(0,5,0),m_Lights.size());
-        for(i32 i = mid;i <= m_Lights.size();i++) m_LightMeshes.push_back(m_Meshes[i]);
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -132,7 +131,6 @@ namespace TestClient
                                                        OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
                                                        OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
             */
-            m_LightMeshes[0]->SetTransform(m_Lights[0]->GetTransform());
         }
     }
 
