@@ -165,11 +165,16 @@ namespace Silk
         /* Do post processing */
         if(m_UsePostProcessing)
         {
+            glEnable(GL_BLEND);
+            glDisable(GL_DEPTH_TEST);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
             m_SceneOutput->Disable();
             for(i32 i = 0;i < m_Effects.size();i++)
             {
                 m_Effects[i]->Execute();
             }
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
         }
         
         /* Render UI */

@@ -37,22 +37,17 @@ namespace TestClient
         LoadMesh    ();
 
         SetFPSPrintFrequency(0.5f);
-
-        //PostProcessingEffect* Effect = new PostProcessingEffect(m_Renderer);
-        //Effect->LoadEffect(Load("Common/FXAA2.ppe"));
-        //m_Renderer->SetUsePostProcessing(true);
-        //m_Renderer->AddPostProcessingEffect(Effect);
     }
     void LightingTest::LoadLight()
     {
         Light* L = 0;
-        
+        /*
         L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
         L->m_Color                   = Vec4(1,0,1,1);
         L->m_Power                   = 14.0f;
-        L->m_Attenuation.Constant    = 3.00f;
-        L->m_Attenuation.Linear      = 0.15f;
-        L->m_Attenuation.Exponential = 0.1f;
+        L->m_Attenuation.Constant    = 2.00f;
+        L->m_Attenuation.Linear      = 0.10f;
+        L->m_Attenuation.Exponential = 0.05f;
 
         L = AddLight(LT_POINT,Vec3(0,11,-40))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
@@ -70,12 +65,25 @@ namespace TestClient
         L->m_Attenuation.Linear      = 0.10f;
         L->m_Attenuation.Exponential = 0.01f;
         */
-        
-        RenderObject* LObj = AddLight(LT_DIRECTIONAL,Vec3(0,100,0));
-        L = LObj->GetLight();
-        L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 0.8f;
-        LObj->SetTransform(Rotation(60,25,0));
+
+        for(i32 x = -5; x < 5; x++)
+        {
+            for(i32 z = -5; z < 5; z++)
+            {
+                f32 randr = rand() % 101;
+                randr *= 0.01;
+                f32 randg = rand() % 101;
+                randg *= 0.01;
+                f32 randb = rand() % 101;
+                randb *= 0.01;
+                L = AddLight(LT_POINT,Vec3(x*10+5,5,z*10+5))->GetLight();
+                L->m_Color                   = Vec4(randr,randg,randb,1);
+                L->m_Power                   = 15.0f;
+                L->m_Attenuation.Constant    = 5.00f;
+                L->m_Attenuation.Linear      = 0.25f;
+                L->m_Attenuation.Exponential = 0.2f;
+            }
+        }
     }
     void LightingTest::LoadMesh()
     {
@@ -99,8 +107,8 @@ namespace TestClient
     {
         //For ground
         Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png","Common/GroundNormal.png");
-        Mat->SetShininess(1.0f);
-        Mat->SetSpecular(2.0f);
+        Mat->SetShininess(0.1f);
+        Mat->SetSpecular(0.2f);
 
         //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
