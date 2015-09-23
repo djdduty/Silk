@@ -1,4 +1,4 @@
-Material "DirectionalLightPass"
+Material "FinalLightPass"
 {
     Shader
     {
@@ -13,9 +13,10 @@ Material "DirectionalLightPass"
         }
         FragmentModule "SetColor" 0
         {
-            vec4 Diffuse = texture(u_FragPosition,o_TexCoord);
-            //vec4 LA = texture(u_FragLighting,o_TexCoord); TODO
-            //vec4 sCloro = LA * Diffuse; TODO And gamma correct
+            vec4 Diffuse  = texture(u_FragColor     ,o_TexCoord);
+            vec4 Lighting = texture(u_FragLightAccum,o_TexCoord);
+
+            vec4 sColor = Diffuse * Lighting;
         }
         Requires
         {
@@ -34,8 +35,7 @@ Material "DirectionalLightPass"
         TextureMaps
         {
             u_FragColor
-            u_FragNormal
-            u_FragPosition
+            u_FragLightAccum
         }
         Outputs
         {

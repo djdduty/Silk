@@ -15,11 +15,13 @@ namespace Silk
             void SetSpotLightObject         (RenderObject* Obj);
             void SetDirectionalLightObject  (RenderObject* Obj);
             void SetPointLightMaterial      (Material*     Mat);
-            void SetSpotLightMaterial       (Material*     Obj);
-            void SetDirectionalLightMaterial(Material*     Obj);
+            void SetSpotLightMaterial       (Material*     Mat);
+            void SetDirectionalLightMaterial(Material*     Mat);
+            void SetFinalPassMaterial       (Material*     Mat);
             Material* GetPointLightMaterial      () const { return m_PointLightMat      ; }
             Material* GetSpotLightMaterial       () const { return m_SpotLightMat       ; }
             Material* GetDirectionalLightMaterial() const { return m_DirectionalLightMat; }
+            Material* GetFinalPassMaterial       () const { return m_FinalPassMat       ; }
         
             virtual Texture* GetLightAccumulationTexture() { return m_LightAccumulationBuffer; }
         
@@ -32,6 +34,7 @@ namespace Silk
             Material*     m_PointLightMat;
             Material*     m_SpotLightMat;
             Material*     m_DirectionalLightMat;
+            Material*     m_FinalPassMat;
             Texture*      m_LightAccumulationBuffer;
     };
 };

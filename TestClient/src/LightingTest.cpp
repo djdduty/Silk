@@ -96,8 +96,8 @@ namespace TestClient
         //For ground
         Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png",
                                                              "Common/GroundNormal.png");
-        Mat->SetShininess(0.01f);
-        Mat->SetSpecular(100.0f);
+        Mat->SetShininess(1.0f);
+        Mat->SetSpecular(2.0f);
 
         //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
@@ -111,10 +111,13 @@ namespace TestClient
         Sp->LoadMaterial(Load("Silk/SpotLight.mtrl"));
 		Material* Dr = m_Renderer->CreateMaterial();
         Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
+        Material* FP = m_Renderer->CreateMaterial();
+        FP->LoadMaterial(Load("Silk/FinalDeferredPass.mtrl"));
         
         r->SetPointLightMaterial(Pt);
         r->SetSpotLightMaterial(Sp);
         r->SetDirectionalLightMaterial(Dr);
+        r->SetFinalPassMaterial(FP);
     }
 
     void LightingTest::Run()

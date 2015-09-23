@@ -170,7 +170,7 @@ namespace TestClient
         m_UIManager->Initialize();
         m_UIManager->SetZClipPlanes(0.0f,200.0f);
         
-        //glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
+        glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
         glfwSetMouseButtonCallback(m_Window->GetWindow(),OnClick     );
         glfwSetCursorPosCallback  (m_Window->GetWindow(),OnCursorMove);
         glfwSetKeyCallback        (m_Window->GetWindow(),OnKey       );
@@ -355,6 +355,22 @@ namespace TestClient
                 
                 m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_TANGENT ,true);
                 m_ShaderGenerator->SetAttributeOutput(ShaderGenerator::IAT_NORMAL  ,true);
+            }
+            
+            if(LightingMode == ShaderGenerator::LM_PASS)
+            {
+                m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_MATERIAL0,true);
+                m_ShaderGenerator->SetFragmentOutput(ShaderGenerator::OFT_MATERIAL1,true);
+                m_ShaderGenerator->AddFragmentModule(const_cast<CString>(
+                "[SetMaterial0]\n"
+                "vec4 sMaterial0 = vec4(u_Specular,u_Shininess,0.0,0.0);\n"
+                "[/SetMaterial0]\n"
+                ),0);
+                m_ShaderGenerator->AddFragmentModule(const_cast<CString>(
+                "[SetMaterial1]\n"
+                "vec4 sMaterial1 = u_Emissive;\n"
+                "[/SetMaterial1]\n"
+                ),1);
             }
         }
         else

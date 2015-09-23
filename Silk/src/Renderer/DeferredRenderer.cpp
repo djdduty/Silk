@@ -9,7 +9,7 @@ namespace Silk
 {
     DeferredRenderer::DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr) :
         Renderer(Raster, TaskMgr), m_PointLightObj(0), m_SpotLightObj(0), m_DirectionalLightObj(0),
-        m_PointLightMat(0), m_SpotLightMat(0), m_DirectionalLightMat(0)
+        m_PointLightMat(0), m_SpotLightMat(0), m_DirectionalLightMat(0), m_FinalPassMat(0), m_LightAccumulationBuffer(0)
     {
         m_LightAccumulationBuffer = m_Raster->CreateTexture();
         OnResolutionChanged();
@@ -20,6 +20,7 @@ namespace Silk
         if(m_PointLightMat      ) m_PointLightMat      ->Destroy();
         if(m_SpotLightMat       ) m_SpotLightMat       ->Destroy();
         if(m_DirectionalLightMat) m_DirectionalLightMat->Destroy();
+        if(m_FinalPassMat       ) m_FinalPassMat       ->Destroy();
     }
     void DeferredRenderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType,bool SendLighting)
     {
@@ -51,7 +52,8 @@ namespace Silk
         //Note: These GL calls need to be moved to the Renderer::RenderTexture
         //      function once the context state machine is written.
         glDisable(GL_CULL_FACE);
-        RenderTexture(m_LightAccumulationBuffer);
+        m_SceneOutput->EnableTexture(m_FinalPassMat);
+        RenderTexture(0,m_FinalPassMat);
         glEnable (GL_CULL_FACE);
     }
     void DeferredRenderer::LightPass(RenderObject* l)
@@ -130,6 +132,12 @@ namespace Silk
     {
         if(m_DirectionalLightMat) m_DirectionalLightMat->Destroy();
         m_DirectionalLightMat = Mat;
+        Mat->AddRef();
+    }
+    void DeferredRenderer::SetFinalPassMaterial(Material*     Mat)
+    {
+        if(m_FinalPassMat) m_FinalPassMat->Destroy();
+        m_FinalPassMat = Mat;
         Mat->AddRef();
     }
     void DeferredRenderer::OnResolutionChanged()
