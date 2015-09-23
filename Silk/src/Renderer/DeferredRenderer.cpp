@@ -51,10 +51,8 @@ namespace Silk
         
         //Note: These GL calls need to be moved to the Renderer::RenderTexture
         //      function once the context state machine is written.
-        glDisable(GL_CULL_FACE);
         m_SceneOutput->EnableTexture(m_FinalPassMat);
         RenderTexture(0,m_FinalPassMat);
-        glEnable (GL_CULL_FACE);
     }
     void DeferredRenderer::LightPass(RenderObject* l)
     {
@@ -74,7 +72,9 @@ namespace Silk
                 RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
+                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
                 RenderTexture(0,m_PointLightMat,Obj);
+                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
                 break;
             }
             case LT_SPOT:
@@ -84,7 +84,9 @@ namespace Silk
                 RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
+                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
                 RenderTexture(0,m_SpotLightMat,Obj);
+                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
                 break;
             }
             case LT_DIRECTIONAL:
@@ -94,7 +96,9 @@ namespace Silk
                 RenderObject* Obj = m_DirectionalLightObj ? m_DirectionalLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
+                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
                 RenderTexture(0,m_DirectionalLightMat,Obj);
+                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
                 break;
             }
             default:

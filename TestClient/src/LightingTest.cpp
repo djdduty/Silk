@@ -37,6 +37,11 @@ namespace TestClient
         LoadMesh    ();
 
         SetFPSPrintFrequency(0.5f);
+
+        //PostProcessingEffect* Effect = new PostProcessingEffect(m_Renderer);
+        //Effect->LoadEffect(Load("Common/FXAA2.ppe"));
+        //m_Renderer->SetUsePostProcessing(true);
+        //m_Renderer->AddPostProcessingEffect(Effect);
     }
     void LightingTest::LoadLight()
     {
@@ -66,12 +71,11 @@ namespace TestClient
         L->m_Attenuation.Exponential = 0.01f;
         */
         
-        L = AddLight(LT_DIRECTIONAL,Vec3(0,100,0))->GetLight();
+        RenderObject* LObj = AddLight(LT_DIRECTIONAL,Vec3(0,100,0));
+        L = LObj->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 0.5f;
-        L->m_Direction               = Vec4(1,1,0,1);
-		
-
+        L->m_Power                   = 0.8f;
+        LObj->SetTransform(Rotation(60,25,0));
     }
     void LightingTest::LoadMesh()
     {

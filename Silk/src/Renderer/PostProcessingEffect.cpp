@@ -11,6 +11,7 @@
 #include <Raster/Raster.h>
 
 #include <Utilities/Parse.h>
+#include <Raster/OpenGL/OpenGLRasterizer.h>
 
 namespace Silk
 {
@@ -59,11 +60,12 @@ namespace Silk
         m_Renderer->GetSceneOutput()->EnableTexture(m_Material);
         
         //Render using the effect
+        glDisable(GL_DEPTH_TEST);
         m_Output->EnableRTT(false);
         m_Renderer->RenderTexture(0,m_Material);
         m_Output->DisableRTT();
-        
         m_Renderer->RenderTexture(m_Output);
+        glEnable(GL_DEPTH_TEST);
     }
     void PostProcessingStage::OnResolutionChanged(const Vec2 &Resolution)
     {

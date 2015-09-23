@@ -107,17 +107,17 @@ namespace Silk
         m_FSQ = CreateRenderObject(ROT_MESH);
         Vec3 fsqverts[4] =
         {
-            Vec3(-1.0f, 1.0f,0.0f),
-            Vec3( 1.0f, 1.0f,0.0f),
+            Vec3(-1.0f,-1.0f,0.0f),
             Vec3( 1.0f,-1.0f,0.0f),
-            Vec3(-1.0f,-1.0f,0.0f)
+            Vec3( 1.0f, 1.0f,0.0f),
+            Vec3(-1.0f, 1.0f,0.0f)
         };
         Vec2 fsqtcoords[4] =
         {
-            Vec2(0.0f,1.0f),
-            Vec2(1.0f,1.0f),
+            Vec2(0.0f,0.0f),
             Vec2(1.0f,0.0f),
-            Vec2(0.0f,0.0f)
+            Vec2(1.0f,1.0f),
+            Vec2(0.0f,1.0f)
         };
         Mesh* fsq = new Mesh();
         fsq->PrimitiveType = PT_TRIANGLE_FAN;
