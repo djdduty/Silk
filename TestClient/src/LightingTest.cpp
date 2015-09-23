@@ -41,14 +41,13 @@ namespace TestClient
     void LightingTest::LoadLight()
     {
         Light* L = 0;
-        /*
-        L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
-        L->m_Color                   = Vec4(1,0,1,1);
-        L->m_Power                   = 14.0f;
-        L->m_Attenuation.Constant    = 2.00f;
-        L->m_Attenuation.Linear      = 0.10f;
-        L->m_Attenuation.Exponential = 0.05f;
-
+        
+        RenderObject* LObj = AddLight(LT_DIRECTIONAL,Vec3(0,11,0));
+		L = LObj->GetLight();
+        L->m_Color                   = Vec4(1,1,1,1);
+        L->m_Power                   = 0.8f;
+		LObj->SetTransform(RotationX(60));
+		/*
         L = AddLight(LT_POINT,Vec3(0,11,-40))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
         L->m_Power                   = 14.0f;
@@ -66,9 +65,9 @@ namespace TestClient
         L->m_Attenuation.Exponential = 0.01f;
         */
 
-        for(i32 x = -5; x < 5; x++)
+        for(i32 x = -1; x < 1; x++)
         {
-            for(i32 z = -5; z < 5; z++)
+            for(i32 z = -1; z < 1; z++)
             {
                 f32 randr = rand() % 101;
                 randr *= 0.01;
@@ -76,7 +75,7 @@ namespace TestClient
                 randg *= 0.01;
                 f32 randb = rand() % 101;
                 randb *= 0.01;
-                L = AddLight(LT_POINT,Vec3(x*10+5,5,z*10+5))->GetLight();
+                L = AddLight(LT_POINT,Vec3(x*10+5,5,z*10-10))->GetLight();
                 L->m_Color                   = Vec4(randr,randg,randb,1);
                 L->m_Power                   = 15.0f;
                 L->m_Attenuation.Constant    = 5.00f;
@@ -122,13 +121,15 @@ namespace TestClient
         Sp->LoadMaterial(Load("Silk/SpotLight.mtrl"));
 		Material* Dr = m_Renderer->CreateMaterial();
         Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
-        Material* FP = m_Renderer->CreateMaterial();
-        FP->LoadMaterial(Load("Silk/FinalDeferredPass.mtrl"));
+        m_Final = m_Renderer->CreateMaterial();
+        m_Final->LoadMaterial(Load("Silk/FinalDeferredPass.mtrl"));
+		m_NoFxaa = m_Renderer->CreateMaterial();
+        m_NoFxaa->LoadMaterial(Load("Silk/FinalDeferredPassNoFxaa.mtrl"));
         
         r->SetPointLightMaterial(Pt);
         r->SetSpotLightMaterial(Sp);
         r->SetDirectionalLightMaterial(Dr);
-        r->SetFinalPassMaterial(FP);
+        r->SetFinalPassMaterial(m_Final);
     }
 
     void LightingTest::Run()
@@ -148,6 +149,10 @@ namespace TestClient
         Vec3 OscillationRange = Vec3(40,40,40);
         while(IsRunning())
         {
+			if(m_InputManager->IsButtonDown(BTN_LEFT_MOUSE))
+				((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_NoFxaa);
+			else
+				((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_Final);
             a += GetDeltaTime();
             //m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
             //m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
