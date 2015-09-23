@@ -7,6 +7,7 @@ namespace Silk
     {
         public:
             DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr);
+            ~DeferredRenderer();
             virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType,bool SendLighting = true);
             void LightPass(RenderObject* l);
         
@@ -20,6 +21,10 @@ namespace Silk
             Material* GetSpotLightMaterial       () const { return m_SpotLightMat       ; }
             Material* GetDirectionalLightMaterial() const { return m_DirectionalLightMat; }
         
+            virtual Texture* GetLightAccumulationTexture() { return m_LightAccumulationBuffer; }
+        
+            virtual void OnResolutionChanged();
+        
         private:
             RenderObject* m_PointLightObj;
             RenderObject* m_SpotLightObj;
@@ -27,5 +32,6 @@ namespace Silk
             Material*     m_PointLightMat;
             Material*     m_SpotLightMat;
             Material*     m_DirectionalLightMat;
+            Texture*      m_LightAccumulationBuffer;
     };
 };

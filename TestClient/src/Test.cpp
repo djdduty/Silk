@@ -170,7 +170,7 @@ namespace TestClient
         m_UIManager->Initialize();
         m_UIManager->SetZClipPlanes(0.0f,200.0f);
         
-        glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
+        //glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
         glfwSetMouseButtonCallback(m_Window->GetWindow(),OnClick     );
         glfwSetCursorPosCallback  (m_Window->GetWindow(),OnCursorMove);
         glfwSetKeyCallback        (m_Window->GetWindow(),OnKey       );

@@ -11,6 +11,15 @@ namespace Silk
         Renderer(Raster, TaskMgr), m_PointLightObj(0), m_SpotLightObj(0), m_DirectionalLightObj(0),
         m_PointLightMat(0), m_SpotLightMat(0), m_DirectionalLightMat(0)
     {
+        m_LightAccumulationBuffer = m_Raster->CreateTexture();
+        OnResolutionChanged();
+    }
+    DeferredRenderer::~DeferredRenderer()
+    {
+        m_LightAccumulationBuffer->Destroy();
+        if(m_PointLightMat      ) m_PointLightMat      ->Destroy();
+        if(m_SpotLightMat       ) m_SpotLightMat       ->Destroy();
+        if(m_DirectionalLightMat) m_DirectionalLightMat->Destroy();
     }
     void DeferredRenderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType,bool SendLighting)
     {
@@ -18,19 +27,31 @@ namespace Silk
         Renderer::RenderObjects(List,PrimType,false);
         m_SceneOutput->Disable();
         
-        //RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OUTPUT_FRAGMENT_TYPE::OFT_NORMAL));
+        //RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OFT_NORMAL));
         
         SilkObjectVector Lights = List->GetLightList();
-        //RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OFT_COLOR));
-        glEnable(GL_BLEND); //TODO: Abstract this
+        
+        //TODO: Abstract all GL calls
+        glEnable(GL_BLEND);
         glDisable(GL_DEPTH_TEST);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE) ;
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        glCullFace(GL_FRONT);
+        
+        m_LightAccumulationBuffer->EnableRTT(true);
+        
         for(i32 l = 0;l < Lights.size();l++)
         {
             LightPass(Lights[l]);
         }
+        
+        m_LightAccumulationBuffer->DisableRTT();
+        
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
+        glCullFace(GL_BACK);
+        
+        //RenderTexture(m_LightAccumulationBuffer);
+        RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OFT_NORMAL));
     }
     void DeferredRenderer::LightPass(RenderObject* l)
     {
@@ -40,9 +61,7 @@ namespace Silk
         Mat4 T = l->GetTransform();
         l->GetLight()->m_Position  = Vec4(T.GetTranslation(),1.0f);
         l->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
-        
-        //To do: Abstract these away
-        glCullFace(GL_FRONT);
+    
         switch(l->GetLight()->m_Type)
         {
             case LT_POINT:
@@ -80,7 +99,6 @@ namespace Silk
                 break;
             }
         }
-        glCullFace(GL_BACK);
     }
     
     void DeferredRenderer::SetPointLightObject        (RenderObject* Obj)
@@ -112,5 +130,11 @@ namespace Silk
         if(m_DirectionalLightMat) m_DirectionalLightMat->Destroy();
         m_DirectionalLightMat = Mat;
         Mat->AddRef();
+    }
+    void DeferredRenderer::OnResolutionChanged()
+    {
+        Vec2 r = m_Raster->GetContext()->GetResolution();
+        m_LightAccumulationBuffer->CreateTexture(r.x,r.y,Texture::PT_UNSIGNED_BYTE);
+        m_LightAccumulationBuffer->UpdateTexture();
     }
 };
