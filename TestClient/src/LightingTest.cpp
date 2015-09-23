@@ -98,7 +98,7 @@ namespace TestClient
     void LightingTest::LoadMaterial()
     {
         //For ground
-        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png");
+        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png","Common/GroundNormal.png");
         Mat->SetShininess(1.0f);
         Mat->SetSpecular(2.0f);
 
