@@ -474,7 +474,6 @@ namespace Silk
     }
     void OpenGLFrameBuffer::EnableTexture(Material* Mat)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
         for(i32 i = 0;i < m_Attachments.size();i++)
         {
             Mat->SetMap((Material::MAP_TYPE)(Material::MT_FRAG_COLOR + i),m_Attachments[i]);

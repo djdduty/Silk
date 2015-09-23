@@ -41,7 +41,7 @@ namespace TestClient
     void LightingTest::LoadLight()
     {
         Light* L = 0;
-
+        
         L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
         L->m_Color                   = Vec4(1,0,1,1);
         L->m_Power                   = 14.0f;

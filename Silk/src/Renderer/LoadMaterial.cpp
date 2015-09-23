@@ -140,6 +140,10 @@ namespace Silk
                                         if(Word == GetShaderMapName((Material::MAP_TYPE)mn))
                                         {
                                             gen->SetTextureInput((Material::MAP_TYPE)mn,true);
+                                            if(mn == MT_FRAG_LIGHTACCUM)
+                                            {
+                                                SetMap(MT_FRAG_LIGHTACCUM,m_Renderer->GetLightAccumulationTexture());
+                                            }
                                         }
                                     }
                                 }

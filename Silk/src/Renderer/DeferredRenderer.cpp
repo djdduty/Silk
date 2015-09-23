@@ -27,8 +27,6 @@ namespace Silk
         Renderer::RenderObjects(List,PrimType,false);
         m_SceneOutput->Disable();
         
-        //RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OFT_NORMAL));
-        
         SilkObjectVector Lights = List->GetLightList();
         
         //TODO: Abstract all GL calls
@@ -37,7 +35,7 @@ namespace Silk
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         glCullFace(GL_FRONT);
         
-        m_LightAccumulationBuffer->EnableRTT(true);
+        m_LightAccumulationBuffer->EnableRTT(false);
         
         for(i32 l = 0;l < Lights.size();l++)
         {
@@ -50,8 +48,11 @@ namespace Silk
         glDisable(GL_BLEND);
         glCullFace(GL_BACK);
         
-        //RenderTexture(m_LightAccumulationBuffer);
-        RenderTexture(m_SceneOutput->GetAttachment(ShaderGenerator::OFT_NORMAL));
+        //Note: These GL calls need to be moved to the Renderer::RenderTexture
+        //      function once the context state machine is written.
+        glDisable(GL_CULL_FACE);
+        RenderTexture(m_LightAccumulationBuffer);
+        glEnable (GL_CULL_FACE);
     }
     void DeferredRenderer::LightPass(RenderObject* l)
     {
