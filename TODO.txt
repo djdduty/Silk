@@ -1,0 +1,13 @@
+Add input callbacks to UIManager
+
+Debug Rendering of Light Meshes
+
+FXAA
+
+SSAO
+
+Shadow Maps
+
+Deferred Final Pass (Make LA Buffer, pass it and diffuse into FinalPass material where they will be multiplied)
+
+Move Color to top of shader Light struct

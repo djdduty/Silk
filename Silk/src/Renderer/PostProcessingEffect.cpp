@@ -62,7 +62,6 @@ namespace Silk
         m_Output->EnableRTT(false);
         m_Renderer->RenderTexture(0,m_Material);
         m_Output->DisableRTT();
-        
         m_Renderer->RenderTexture(m_Output);
     }
     void PostProcessingStage::OnResolutionChanged(const Vec2 &Resolution)

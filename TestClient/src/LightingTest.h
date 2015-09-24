@@ -38,6 +38,8 @@ namespace TestClient
             Texture     * m_Diffuse  ;
             Material    * m_Material ;
             Material    * m_LDispMat ;
+			Material    * m_NoFxaa   ;
+			Material    * m_Final    ;
     };
 };
 

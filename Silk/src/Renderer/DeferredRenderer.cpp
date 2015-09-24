@@ -119,9 +119,9 @@ namespace Silk
         
         //Note: These GL calls need to be moved to the Renderer::RenderTexture
         //      function once the context state machine is written.
-        glDisable(GL_CULL_FACE);
         m_SceneOutput->EnableTexture(m_FinalPassMat);
         RenderTexture(0,m_FinalPassMat);
+        
         glEnable (GL_CULL_FACE);
         
         if(m_DebugDrawer)
@@ -150,12 +150,19 @@ namespace Silk
                 m_SceneOutput->EnableTexture(m_PointLightMat);
                 RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
+                else
+                {
+                    Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
+                    Obj->SetTransform(Scale(Radius));
+                }
+                
                 Obj->GetUniformSet()->SetLights(Lt);
-                Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
-                Obj->SetTransform(Scale(Radius));
-                RenderTexture(0,m_PointLightMat,Obj);
                 
                 if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
+
+                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
+                RenderTexture(0,m_PointLightMat,Obj);
+                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
                 break;
             }
             case LT_SPOT:
@@ -164,13 +171,20 @@ namespace Silk
                 m_SceneOutput->EnableTexture(m_SpotLightMat);
                 RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
+                else
+                {
+                    Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
+                    Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
+                    Obj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
+                }
+                
                 Obj->GetUniformSet()->SetLights(Lt);
-                Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
-                Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
-                Obj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
-                RenderTexture(0,m_SpotLightMat,Obj);
                 
                 if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
+
+                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
+                RenderTexture(0,m_SpotLightMat,Obj);
+                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
                 break;
             }
             case LT_DIRECTIONAL:
@@ -178,12 +192,18 @@ namespace Silk
                 if(!m_DirectionalLightMat) return;
                 m_SceneOutput->EnableTexture(m_DirectionalLightMat);
                 RenderObject* Obj = m_DirectionalLightObj ? m_DirectionalLightObj : m_FSQ;
+                
                 if(Obj != m_FSQ) Obj->SetTransform(T);
+                else Obj->SetTransform(Mat4::Identity);
+                
                 Obj->GetUniformSet()->SetLights(Lt);
-                Obj->SetTransform(Mat4::Identity);
-                RenderTexture(0,m_DirectionalLightMat,Obj);
                 
                 if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(T * Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
+
+                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
+                RenderTexture(0,m_DirectionalLightMat,Obj);
+                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
+                
                 break;
             }
             default:

@@ -107,17 +107,17 @@ namespace Silk
         m_FSQ = CreateRenderObject(ROT_MESH);
         Vec3 fsqverts[4] =
         {
-            Vec3(-1.0f, 1.0f,0.0f),
-            Vec3( 1.0f, 1.0f,0.0f),
+            Vec3(-1.0f,-1.0f,0.0f),
             Vec3( 1.0f,-1.0f,0.0f),
-            Vec3(-1.0f,-1.0f,0.0f)
+            Vec3( 1.0f, 1.0f,0.0f),
+            Vec3(-1.0f, 1.0f,0.0f)
         };
         Vec2 fsqtcoords[4] =
         {
-            Vec2(0.0f,1.0f),
-            Vec2(1.0f,1.0f),
+            Vec2(0.0f,0.0f),
             Vec2(1.0f,0.0f),
-            Vec2(0.0f,0.0f)
+            Vec2(1.0f,1.0f),
+            Vec2(0.0f,1.0f)
         };
         Mesh* fsq = new Mesh();
         fsq->PrimitiveType = PT_TRIANGLE_FAN;
@@ -165,11 +165,16 @@ namespace Silk
         /* Do post processing */
         if(m_UsePostProcessing)
         {
+            glEnable(GL_BLEND);
+            glDisable(GL_DEPTH_TEST);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
             m_SceneOutput->Disable();
             for(i32 i = 0;i < m_Effects.size();i++)
             {
                 m_Effects[i]->Execute();
             }
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
         }
         
         /* Render UI */
