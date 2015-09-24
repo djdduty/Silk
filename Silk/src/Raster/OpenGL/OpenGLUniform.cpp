@@ -81,16 +81,16 @@ namespace Silk
         
         Light* Lt = (Light*)Data;
         
-        glUniform3f(m_PositionLocs   [0],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z  );
-        glUniform3f(m_DirectionLocs  [0],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z  );
-        glUniform4f(m_ColorLocs      [0],Lt->m_Color.x,Lt->m_Color.y,Lt->m_Color.z,Lt->m_Color.w);
-        glUniform1f(m_CutoffLocs     [0],Lt->m_Cutoff                                           );
-        glUniform1f(m_SoftenLocs     [0],Lt->m_Soften                                           );
-        glUniform1f(m_PowerLocs      [0],Lt->m_Power                                            );
-        glUniform1f(m_ConstantLocs   [0],Lt->m_Attenuation.Constant                             );
-        glUniform1f(m_LinearLocs     [0],Lt->m_Attenuation.Linear                               );
-        glUniform1f(m_ExponentialLocs[0],Lt->m_Attenuation.Exponential                          );
-        glUniform1i(m_TypeLocs       [0],Lt->m_Type                                             );
+        glUniform3f(m_PositionLocs   [0],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z    );
+        glUniform3f(m_DirectionLocs  [0],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z    );
+        glUniform4f(m_ColorLocs      [0],Lt->m_Color.x,Lt->m_Color.y,Lt->m_Color.z,Lt->m_Color.w  );
+        glUniform1f(m_CutoffLocs     [0],cos(Lt->m_Cutoff * PI_OVER_180)                          );
+        glUniform1f(m_SoftenLocs     [0],cos(((1.0f - Lt->m_Soften) * Lt->m_Cutoff) * PI_OVER_180));
+        glUniform1f(m_PowerLocs      [0],Lt->m_Power                                              );
+        glUniform1f(m_ConstantLocs   [0],Lt->m_Attenuation.Constant                               );
+        glUniform1f(m_LinearLocs     [0],Lt->m_Attenuation.Linear                                 );
+        glUniform1f(m_ExponentialLocs[0],Lt->m_Attenuation.Exponential                            );
+        glUniform1i(m_TypeLocs       [0],Lt->m_Type                                               );
     }
     void UC_Light::CallArray(void *Data)
     {

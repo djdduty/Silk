@@ -254,6 +254,7 @@ namespace TestClient
         M->SetNormalBuffer  (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetNormals  ()));
         M->SetTangentBuffer (m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTangents ()));
         M->SetTexCoordBuffer(m_ObjLoader->GetVertCount (),const_cast<f32*>(m_ObjLoader->GetTexCoords()));
+        M->PrimitiveType = PT_TRIANGLES;
         
         RenderObject* Obj = 0;
         i32 First = m_Meshes.size();

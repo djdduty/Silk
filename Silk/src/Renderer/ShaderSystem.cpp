@@ -186,22 +186,35 @@ namespace Silk
                 else if(Lines[i][c] == '}') Level--;
             }
             r += Lines[i];
-            printf("%3d|%s",i + 1,Lines[i].c_str());
         }
         return r;
     }
+    void PrintShader(const string& Code)
+    {
+        string l;
+        bool LineStarted = false;
+        for(i32 i = 0;i < Code.length();i++)
+        {
+            if(Code[i] != ' ') LineStarted = true;
+            if(Code[i] != '\t' && LineStarted) l += Code[i];
+            if(Code[i] == '\n') { printf("%d|%s",i + 1,l.c_str()); l.clear(); LineStarted = false; }
+        }
+    }
     Shader* ShaderGenerator::Generate()
     {
-        printf("Vertex:\n");
         string VertexShader   = FixWhitespace(GenerateVertexShader  ());
-        printf("Geometry:\n");
         string GeometryShader = FixWhitespace(GenerateGeometryShader());
-        printf("Fragment:\n");
         string FragmentShader = FixWhitespace(GenerateFragmentShader());
         
         Shader* S = m_Renderer->GetRasterizer()->CreateShader();
         if(!S->Load(const_cast<CString>(VertexShader.c_str()),0,const_cast<CString>(FragmentShader.c_str())))
         {
+            printf("Vertex:\n");
+            PrintShader(VertexShader);
+            printf("Geometry:\n");
+            PrintShader(GeometryShader);
+            printf("Fragment:\n");
+            PrintShader(FragmentShader);
             m_Renderer->GetRasterizer()->Destroy(S);
             S = 0;
         }
@@ -563,7 +576,7 @@ namespace Silk
             if(!m_MapTypesUsed[Material::MT_NORMAL] && m_AttributeOutputsUsed[IAT_NORMAL ]) FragmentShader += string("vec3 sNormal = normalize(") + NormalOutName + ");\n";
             else if(m_MapTypesUsed[Material::MT_NORMAL])
             {
-                FragmentShader += string("vec3 sNormal = TBN * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0);\n";
+                FragmentShader += string("vec3 sNormal = normalize(TBN * normalize(texture(") + GetShaderMapName(Material::MT_NORMAL) + ",sTexCoord).rgb * 2.0 - 1.0));\n";
             }
         }
         if(!SetColor    )

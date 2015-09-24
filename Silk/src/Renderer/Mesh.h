@@ -72,12 +72,12 @@ namespace Silk
         
             i32 GetAttributeCount() const { return m_Attributes.size(); }
             const MeshAttribute* GetAttribute(i32 Index) const { return &m_Attributes[Index]; }
-            const MeshAttribute* GetIndexAttribute    () const { return &m_Attributes[m_IndexBufferID   ]; }
-            const MeshAttribute* GetVertexAttribute   () const { return &m_Attributes[m_VertexBufferID  ]; }
-            const MeshAttribute* GetNormalAttribute   () const { return &m_Attributes[m_NormalBufferID  ]; }
-            const MeshAttribute* GetTangentAttribute  () const { return &m_Attributes[m_TangentBufferID ]; }
-            const MeshAttribute* GetColorAttribute    () const { return &m_Attributes[m_ColorBufferID   ]; }
-            const MeshAttribute* GetTexCoordAttribute () const { return &m_Attributes[m_TexCoordBufferID]; }
+            const MeshAttribute* GetIndexAttribute    () const { if(m_IndexBufferID    == -1) { return 0; } return &m_Attributes[m_IndexBufferID   ]; }
+            const MeshAttribute* GetVertexAttribute   () const { if(m_VertexBufferID   == -1) { return 0; } return &m_Attributes[m_VertexBufferID  ]; }
+            const MeshAttribute* GetNormalAttribute   () const { if(m_NormalBufferID   == -1) { return 0; } return &m_Attributes[m_NormalBufferID  ]; }
+            const MeshAttribute* GetTangentAttribute  () const { if(m_TangentBufferID  == -1) { return 0; } return &m_Attributes[m_TangentBufferID ]; }
+            const MeshAttribute* GetColorAttribute    () const { if(m_ColorBufferID    == -1) { return 0; } return &m_Attributes[m_ColorBufferID   ]; }
+            const MeshAttribute* GetTexCoordAttribute () const { if(m_TexCoordBufferID == -1) { return 0; } return &m_Attributes[m_TexCoordBufferID]; }
         
             RenderObject* GetBaseObject() const { return m_Obj; }
         

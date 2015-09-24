@@ -25,8 +25,76 @@ namespace Silk
     void DeferredRenderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType,bool SendLighting)
     {
         m_SceneOutput->EnableTarget();
-        Renderer::RenderObjects(List,PrimType,false);
+        /*
+         * To do:
+         * Determine which lights affect which objects using a scene octree
+         * then call Object->GetUniformSet()->SetLights(ObjectLightVector);
+         */
+        
+        i32 ShaderCount = List->GetShaderCount();
+        
+        SilkObjectVector MeshesRendered;
+        i32 ActualObjectCount = 0;
+        i32 VertexCount       = 0;
+        i32 TriangleCount     = 0;
+        
+        for(i32 i = 0;i < ShaderCount;i++)
+        {
+            Shader* Shader = List->GetShader(i);
+            if(!Shader) continue;
+            
+            Shader->Enable();
+            
+            SilkObjectVector Meshes = List->GetShaderMeshList(i);
+            for(i32 m = 0;m < Meshes.size();m++)
+            {
+                RenderObject* Obj = Meshes[m];
+                if(Obj == m_DebugDrawer->GetObject()) continue;
+                if(!Obj->IsEnabled()) continue;
+                if(Obj->IsInstanced() && Obj->m_Mesh->m_LastFrameRendered == m_Stats.FrameID) continue;
+                else if(Obj->IsInstanced()) Obj = (*Obj->GetMesh()->GetInstanceList())[0];
+                
+                Obj->m_Mesh->m_LastFrameRendered = m_Stats.FrameID;
+            
+                if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
+                {
+                    RenderSingleObject(Obj);
+                    
+                    MeshesRendered.push_back(Obj);
+                }
+            }
+            
+            Shader->Disable();
+        }
         m_SceneOutput->Disable();
+        
+        for(i32 i = 0;i < MeshesRendered.size();i++)
+        {
+            MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
+            
+            if(m_DebugDrawer)
+            {
+                if(MeshesRendered[i]->IsInstanced())
+                {
+                    i32 ic = 0;
+                    const vector<RenderObject*>* iList = MeshesRendered[i]->m_Mesh->GetInstanceList();
+                    for(i32 c = 0;c < iList->size();c++)
+                    {
+                        if((*iList)[c]->m_CulledInstanceIndex == -1) continue;
+                        
+                        m_DebugDrawer->Transform((*iList)[c]->GetTransform());
+                        m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),(*iList)[c]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
+                        ic++;
+                    }
+                }
+                else
+                {
+                    m_DebugDrawer->Transform(MeshesRendered[i]->GetTransform());
+					m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),MeshesRendered[i]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
+					m_DebugDrawer->OBB      (MeshesRendered[i]->GetBoundingBox(),Vec4(1,0,0,1));
+                }
+            }
+        }
         
         SilkObjectVector Lights = List->GetLightList();
         
@@ -55,6 +123,15 @@ namespace Silk
         m_SceneOutput->EnableTexture(m_FinalPassMat);
         RenderTexture(0,m_FinalPassMat);
         glEnable (GL_CULL_FACE);
+        
+        if(m_DebugDrawer)
+        {
+            glDisable(GL_DEPTH_TEST);
+            m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Enable();
+            RenderSingleObject(m_DebugDrawer->GetObject());
+            m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Disable();
+            glEnable(GL_DEPTH_TEST);
+        }
     }
     void DeferredRenderer::LightPass(RenderObject* l)
     {
@@ -74,7 +151,11 @@ namespace Silk
                 RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
+                Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
+                Obj->SetTransform(Scale(Radius));
                 RenderTexture(0,m_PointLightMat,Obj);
+                
+                if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
                 break;
             }
             case LT_SPOT:
@@ -84,7 +165,12 @@ namespace Silk
                 RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
+                Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
+                Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
+                Obj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
                 RenderTexture(0,m_SpotLightMat,Obj);
+                
+                if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
                 break;
             }
             case LT_DIRECTIONAL:
@@ -94,7 +180,10 @@ namespace Silk
                 RenderObject* Obj = m_DirectionalLightObj ? m_DirectionalLightObj : m_FSQ;
                 if(Obj != m_FSQ) Obj->SetTransform(T);
                 Obj->GetUniformSet()->SetLights(Lt);
+                Obj->SetTransform(Mat4::Identity);
                 RenderTexture(0,m_DirectionalLightMat,Obj);
+                
+                if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(T * Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
                 break;
             }
             default:
@@ -102,6 +191,60 @@ namespace Silk
                 break;
             }
         }
+    }
+    void DeferredRenderer::RenderSingleObject(RenderObject* Obj)
+    {
+        //Pass material uniforms
+        Material* Mat = Obj->GetMaterial();
+        Shader* Shader = Mat->GetShader();
+        /*if(Mat->HasUpdated())*/ Shader->UseMaterial(Mat);
+        
+        //Pass object uniforms
+        if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
+        {
+            if(Obj->IsInstanced())
+            {
+                Mat4 tmp = Obj->GetTransform();
+                Obj->SetTransform(Mat4::Identity);
+                Obj->UpdateUniforms();
+                Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+                Obj->SetTransform(tmp);
+            }
+            else
+            {
+                Obj->UpdateUniforms();
+                Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+            }
+        }
+        
+        //To do: Batching
+        i32 Count = 0;
+        if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
+        else Count = Obj->m_Mesh->GetVertexCount();
+        
+        PRIMITIVE_TYPE p = Obj->m_Mesh->PrimitiveType;
+        Obj->m_Object->Render(Obj,p,0,Count);
+        
+        i32 vc = Obj->m_Mesh->GetVertexCount();
+        i32 tc = 0;
+        if(p == PT_TRIANGLES     ) tc = vc / 3;
+        if(p == PT_TRIANGLE_STRIP
+        || p == PT_TRIANGLE_FAN  ) tc = vc - 2;
+        
+        if(Obj->IsInstanced())
+        {
+            i32 InstanceCount = Obj->GetMesh()->m_VisibleInstanceCount;
+            m_Stats.VisibleObjects +=      InstanceCount;
+            m_Stats.VertexCount    += vc * InstanceCount;
+            m_Stats.TriangleCount  += tc * InstanceCount;
+        }
+        else
+        {
+            m_Stats.VisibleObjects++;
+            m_Stats.VertexCount   += vc;
+            m_Stats.TriangleCount += tc;
+        }
+        m_Stats.DrawCalls++;
     }
     
     void DeferredRenderer::SetPointLightObject        (RenderObject* Obj)

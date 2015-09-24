@@ -9,7 +9,8 @@ namespace Silk
             DeferredRenderer(Rasterizer* Raster,TaskManager* TaskMgr);
             ~DeferredRenderer();
             virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType,bool SendLighting = true);
-            void LightPass(RenderObject* l);
+            void RenderSingleObject(RenderObject* Obj);
+            void LightPass(class RenderObject* l);
         
             void SetPointLightObject        (RenderObject* Obj);
             void SetSpotLightObject         (RenderObject* Obj);
