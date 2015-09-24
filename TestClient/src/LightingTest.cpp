@@ -65,9 +65,9 @@ namespace TestClient
         L->m_Attenuation.Exponential = 0.01f;
         */
 
-        for(i32 x = -1; x < 1; x++)
+        for(i32 x = -5; x < 5; x++)
         {
-            for(i32 z = -1; z < 1; z++)
+            for(i32 z = -5; z < 5; z++)
             {
                 f32 randr = rand() % 101;
                 randr *= 0.01;
