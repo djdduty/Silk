@@ -149,8 +149,7 @@ namespace Silk
                 if(!m_PointLightMat) return;
                 m_SceneOutput->EnableTexture(m_PointLightMat);
                 RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
-                if(Obj != m_FSQ) Obj->SetTransform(T);
-                else
+                if(Obj != m_FSQ)
                 {
                     Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
                     Obj->SetTransform(Scale(Radius));
@@ -170,8 +169,7 @@ namespace Silk
                 if(!m_SpotLightMat) return;
                 m_SceneOutput->EnableTexture(m_SpotLightMat);
                 RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
-                if(Obj != m_FSQ) Obj->SetTransform(T);
-                else
+                if(Obj != m_FSQ)
                 {
                     Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
                     Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
@@ -194,7 +192,6 @@ namespace Silk
                 RenderObject* Obj = m_DirectionalLightObj ? m_DirectionalLightObj : m_FSQ;
                 
                 if(Obj != m_FSQ) Obj->SetTransform(T);
-                else Obj->SetTransform(Mat4::Identity);
                 
                 Obj->GetUniformSet()->SetLights(Lt);
                 
