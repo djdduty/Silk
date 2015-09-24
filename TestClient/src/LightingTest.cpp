@@ -16,7 +16,7 @@ namespace TestClient
     {
         InitGUI();
         InitFlyCamera();
-        //InitDebugDisplay();
+        InitDebugDisplay();
 
         m_ShaderGenerator->Reset();
         m_ShaderGenerator->SetShaderVersion   (330);
@@ -35,7 +35,7 @@ namespace TestClient
         LoadMaterial();
         LoadLight   ();
         LoadMesh    ();
-        InitDebugDisplay();
+        //InitDebugDisplay();
 
         SetFPSPrintFrequency(0.5f);
     }
@@ -45,7 +45,7 @@ namespace TestClient
         
         L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
         L->m_Color                   = Vec4(1,0,1,1);
-        L->m_Power                   = 14.0f;
+        L->m_Power                   = 1.0f;
         L->m_Attenuation.Constant    = 3.00f;
         L->m_Attenuation.Linear      = 0.15f;
         L->m_Attenuation.Exponential = 0.1f ;
@@ -58,12 +58,12 @@ namespace TestClient
         
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 0.24 ;
+        L->m_Power                   = 90.00;
         L->m_Cutoff                  = 20.0f;
         L->m_Soften                  = 0.5f ;
         L->m_Attenuation.Constant    = 0.00f;
         L->m_Attenuation.Linear      = 0.10f;
-        L->m_Attenuation.Exponential = 0.01f;
+        L->m_Attenuation.Exponential = 0.001f;
 /*
         for(i32 x = -5; x < 5; x++)
         {
@@ -163,7 +163,7 @@ namespace TestClient
                                                        OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
                                                        OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
             
-            m_Lights[2]->SetTransform(Translation(Vec3(0,5,0)) * Rotation(Vec3(1,0,0),a * 100.0f));
+            m_Lights[2]->SetTransform(Translation(Vec3(0,5,0)) * Rotation(Vec3(1,0,0),a * 5.0f));
         }
     }
 

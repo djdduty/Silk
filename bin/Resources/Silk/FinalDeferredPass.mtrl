@@ -2,7 +2,6 @@ Material "FinalLightPass"
 {
     Shader
     {
-        //Remove this module once there are light volumes
         VertexModule "SetGLPosition" 0
         {
             gl_Position = vec4(a_Position,1.0);
@@ -44,25 +43,20 @@ Material "FinalLightPass"
 
                 float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
 
-                float StepSize = MaxRadius / float(Iterations);
-                for(int i = 0;i < Iterations;i++)
-                {
-                    float Radius = StepSize * float(i + 1);
-                    mediump vec2 newdir = vec2(min(vec2(Radius,Radius), max(vec2(-Radius,-Radius), dir * rcpDirMin)) * InverseRes);
+                mediump vec2 newdir = vec2(min(vec2(Radius,Radius), max(vec2(-Radius,-Radius), dir * rcpDirMin)) * InverseRes);
 
-                    vec3 rgbA = 0.5 * (
-                        sampleColor(o_TexCoord + newdir * (1.0 / 3.0 - 0.5)).xyz +
-                        sampleColor(o_TexCoord + newdir * (2.0 / 3.0 - 0.5)).xyz);
+                vec3 rgbA = 0.5 * (
+                    sampleColor(o_TexCoord + newdir * (1.0 / 3.0 - 0.5)).xyz +
+                    sampleColor(o_TexCoord + newdir * (2.0 / 3.0 - 0.5)).xyz);
 
-                    vec3 rgbB = rgbA * 0.5 + 0.25 * (
-                        sampleColor(o_TexCoord + newdir * -0.5).xyz +
-                        sampleColor(o_TexCoord + newdir * 0.5).xyz);
+                vec3 rgbB = rgbA * 0.5 + 0.25 * (
+                    sampleColor(o_TexCoord + newdir * -0.5).xyz +
+                    sampleColor(o_TexCoord + newdir * 0.5).xyz);
 
-                    float lumaB = dot(rgbB, luma);
-                    if ((lumaB < lumaMin) || (lumaB > lumaMax)) sColor += vec4(rgbA, Color.a);
-                    else sColor += vec4(rgbB,Color.a);
-                }
-                sColor /= float(Iterations);
+                float lumaB = dot(rgbB, luma);
+                if ((lumaB < lumaMin) || (lumaB > lumaMax)) sColor = vec4(rgbA, Color.a);
+                else sColor = vec4(rgbB,Color.a);
+                    
                 return sColor;
             }
         }
@@ -74,8 +68,7 @@ Material "FinalLightPass"
         {
             float ReduceMin  = 0.0078125
             float ReduceMul  = 0.125
-            float MaxRadius  = 8.0
-            int   Iterations = 1
+            float Radius  = 8.0
         }
         Requires
         {

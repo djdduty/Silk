@@ -19,7 +19,7 @@ Material "PointLightPass"
             float Dist = length(SurfaceToLight);
             SurfaceToLight /= Dist;
 
-            float MaxChannel = max(max(u_Lights[0].Color.r, u_Lights[0].Color.g), u_Lights[0].Color.b);
+            float MaxChannel = max(max(u_Lights[0].Color.r,u_Lights[0].Color.g),u_Lights[0].Color.b);
             float c = MaxChannel * u_Lights[0].Power;
             if(Dist > 9 * sqrt(c)) { //Sqrt... but it actually helps WAY more than it hurts, 9 is some arbitrary number that seems to work well.
                 discard;
