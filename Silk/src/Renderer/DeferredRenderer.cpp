@@ -151,8 +151,9 @@ namespace Silk
                 RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
                 if(Obj != m_FSQ)
                 {
-                    Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
-                    Obj->SetTransform(Scale(Radius));
+					Vec3 Color = l->GetLight()->m_Color.xyz();
+                    Scalar Radius = 9 * sqrt(l->GetLight()->m_Power * max(max(Color.x, Color.y),Color.z));
+                    Obj->SetTransform(T * Scale(Radius));
                 }
                 
                 Obj->GetUniformSet()->SetLights(Lt);

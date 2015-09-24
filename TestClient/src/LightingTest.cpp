@@ -43,7 +43,7 @@ namespace TestClient
     {
         Light* L = 0;
         
-        L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
+        L = AddLight(LT_POINT,Vec3(0,2,0))->GetLight();
         L->m_Color                   = Vec4(1,0,1,1);
         L->m_Power                   = 14.0f;
         L->m_Attenuation.Constant    = 3.00f;
@@ -56,14 +56,14 @@ namespace TestClient
         L->m_Power                   = 0.8f;
 		LObj->SetTransform(RotationX(60));
         
-        L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
+        /*L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
         L->m_Power                   = 0.24 ;
         L->m_Cutoff                  = 20.0f;
         L->m_Soften                  = 0.5f ;
         L->m_Attenuation.Constant    = 0.00f;
         L->m_Attenuation.Linear      = 0.10f;
-        L->m_Attenuation.Exponential = 0.01f;
+        L->m_Attenuation.Exponential = 0.01f;*/
 /*
         for(i32 x = -5; x < 5; x++)
         {
@@ -159,11 +159,11 @@ namespace TestClient
             //m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
             //m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
             
-            m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
-                                                       OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
-                                                       OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
+            //m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
+                                                       //OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
+                                                       //OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
             
-            m_Lights[2]->SetTransform(Translation(Vec3(0,5,0)) * Rotation(Vec3(1,0,0),a * 100.0f));
+            //m_Lights[2]->SetTransform(Translation(Vec3(0,5,0)) * Rotation(Vec3(1,0,0),a * 100.0f));
         }
     }
 
