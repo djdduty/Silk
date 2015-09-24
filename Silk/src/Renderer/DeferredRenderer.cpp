@@ -171,8 +171,8 @@ namespace Silk
                 RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
                 if(Obj != m_FSQ)
                 {
-                    Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
-                    Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius * 2.0f;
+                    Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.01f));
+                    Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
                     Obj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
                 }
                 
