@@ -49,7 +49,7 @@ namespace Silk
             for(i32 m = 0;m < Meshes.size();m++)
             {
                 RenderObject* Obj = Meshes[m];
-                if(Obj == m_DebugDrawer->GetObject()) continue;
+                if(m_DebugDrawer && Obj == m_DebugDrawer->GetObject()) continue;
                 if(!Obj->IsEnabled()) continue;
                 if(Obj->IsInstanced() && Obj->m_Mesh->m_LastFrameRendered == m_Stats.FrameID) continue;
                 else if(Obj->IsInstanced()) Obj = (*Obj->GetMesh()->GetInstanceList())[0];
@@ -173,7 +173,7 @@ namespace Silk
                 if(Obj != m_FSQ)
                 {
                     Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.001f));
-                    Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
+                    Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius * 2.0f;
                     Obj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
                 }
                 
