@@ -104,13 +104,130 @@ namespace Silk
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         glCullFace(GL_FRONT);
         
-        m_LightAccumulationBuffer->EnableRTT(false);
+        
+        vector<RenderObject*> PointLights;
+        vector<RenderObject*> SpotLights;
+        vector<RenderObject*> DirLights;
         
         for(i32 l = 0;l < Lights.size();l++)
         {
-            LightPass(Lights[l]);
+            if     (Lights[l]->GetLight()->m_Type == LT_POINT      ) PointLights.push_back(Lights[l]);
+            else if(Lights[l]->GetLight()->m_Type == LT_SPOT       ) SpotLights .push_back(Lights[l]);
+            else if(Lights[l]->GetLight()->m_Type == LT_DIRECTIONAL) DirLights  .push_back(Lights[l]);
         }
         
+        
+        m_LightAccumulationBuffer->EnableRTT(false);
+        if(PointLights.size() > 0)
+        {
+            m_PointLightMat->GetShader()->Enable();
+            m_SceneOutput->EnableTexture(m_PointLightMat);
+            m_PointLightMat->GetShader()->UseMaterial(m_PointLightMat);
+            
+            for(i32 i = 0;i < PointLights.size();i++)
+            {
+                vector<Light*>Lt; Lt.push_back(PointLights[i]->GetLight());
+                if(m_PointLightObj)
+                {
+                    Mat4 T = PointLights[i]->GetTransform();
+                    PointLights[i]->GetLight()->m_Position  = Vec4(T.GetTranslation(),1.0f);
+                    PointLights[i]->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
+        
+					Vec3 Color = PointLights[i]->GetLight()->m_Color.xyz();
+                    Scalar Radius = 9 * sqrt(PointLights[i]->GetLight()->m_Power * max(max(Color.x, Color.y),Color.z));
+                    m_PointLightObj->SetTransform(T * Scale(Radius));
+                    
+                    if(m_DebugDrawer) m_DebugDrawer->DrawMesh(T,m_PointLightObj->GetMesh(),Vec4(Color,1.0f));
+                
+                    m_PointLightObj->GetUniformSet()->SetLights(Lt);
+                    
+                    glEnable(GL_CULL_FACE);
+                    glCullFace(GL_FRONT);
+                }
+                else
+                {
+                    glDisable(GL_CULL_FACE);
+                    m_FSQ->GetUniformSet()->SetLights(Lt);
+                }
+                
+                RenderLight(m_PointLightMat->GetShader(),PointLights[i],m_PointLightObj);
+            }
+            
+            m_PointLightMat->GetShader()->Disable();
+        }
+        if(SpotLights.size() > 0)
+        {
+            m_SpotLightMat->GetShader()->Enable();
+            m_SceneOutput->EnableTexture(m_SpotLightMat);
+            m_SpotLightMat->GetShader()->UseMaterial(m_SpotLightMat);
+            
+            for(i32 i = 0;i < SpotLights.size();i++)
+            {
+                vector<Light*>Lt; Lt.push_back(SpotLights[i]->GetLight());
+                if(m_SpotLightObj)
+                {
+                    Mat4 T = SpotLights[i]->GetTransform();
+                    SpotLights[i]->GetLight()->m_Position  = Vec4(T.GetTranslation(),1.0f);
+                    SpotLights[i]->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
+        
+					Vec3 Color = SpotLights[i]->GetLight()->m_Color.xyz();
+                    Scalar Radius = (1.0 / sqrt(SpotLights[i]->GetLight()->m_Attenuation.Exponential * 0.01f));
+                    Scalar BaseScale = tan(SpotLights[i]->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
+                    m_SpotLightObj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
+                    
+                    if(m_DebugDrawer) m_DebugDrawer->DrawMesh(T,m_SpotLightObj->GetMesh(),Vec4(0.5f,0.7f,1.0f,1.0f));
+                   
+                    m_SpotLightObj->GetUniformSet()->SetLights(Lt);
+                
+                    glEnable(GL_CULL_FACE);
+                    glCullFace(GL_FRONT);
+                }
+                else
+                {
+                    glDisable(GL_CULL_FACE);
+                    m_FSQ->GetUniformSet()->SetLights(Lt);
+                }
+                
+                RenderLight(m_SpotLightMat->GetShader(),SpotLights[i],m_SpotLightObj);
+            }
+            
+            m_SpotLightMat->GetShader()->Disable();
+        }
+        if(DirLights.size() > 0)
+        {
+            m_DirectionalLightMat->GetShader()->Enable();
+            m_SceneOutput->EnableTexture(m_DirectionalLightMat);
+            m_DirectionalLightMat->GetShader()->UseMaterial(m_DirectionalLightMat);
+            
+            for(i32 i = 0;i < DirLights.size();i++)
+            {
+                vector<Light*>Lt; Lt.push_back(DirLights[i]->GetLight());
+                if(m_DirectionalLightObj)
+                {
+                    Mat4 T = DirLights[i]->GetTransform();
+                    DirLights[i]->GetLight()->m_Position  = Vec4(T.GetTranslation(),1.0f);
+                    DirLights[i]->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
+        
+					Vec3 Color = DirLights[i]->GetLight()->m_Color.xyz();
+                    
+                    if(m_DebugDrawer) m_DebugDrawer->DrawMesh(T,m_DirectionalLightObj->GetMesh(),Vec4(Color,1.0f));
+                   
+                    m_DirectionalLightObj->GetUniformSet()->SetLights(Lt);
+                
+                    glEnable(GL_CULL_FACE);
+                    glCullFace(GL_FRONT);
+                }
+                else
+                {
+                    glDisable(GL_CULL_FACE);
+                    m_FSQ->GetUniformSet()->SetLights(Lt);
+                }
+                
+                RenderLight(m_DirectionalLightMat->GetShader(),DirLights[i],m_DirectionalLightObj);
+            }
+            
+            m_DirectionalLightMat->GetShader()->Disable();
+        }
         m_LightAccumulationBuffer->DisableRTT();
         
         glEnable(GL_DEPTH_TEST);
@@ -147,7 +264,6 @@ namespace Silk
             case LT_POINT:
             {
                 if(!m_PointLightMat) return;
-                m_SceneOutput->EnableTexture(m_PointLightMat);
                 RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
                 if(Obj != m_FSQ)
                 {
@@ -168,7 +284,6 @@ namespace Silk
             case LT_SPOT:
             {
                 if(!m_SpotLightMat) return;
-                m_SceneOutput->EnableTexture(m_SpotLightMat);
                 RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
                 if(Obj != m_FSQ)
                 {
@@ -189,7 +304,6 @@ namespace Silk
             case LT_DIRECTIONAL:
             {
                 if(!m_DirectionalLightMat) return;
-                m_SceneOutput->EnableTexture(m_DirectionalLightMat);
                 RenderObject* Obj = m_DirectionalLightObj ? m_DirectionalLightObj : m_FSQ;
                 
                 if(Obj != m_FSQ) Obj->SetTransform(T);
@@ -208,6 +322,45 @@ namespace Silk
             {
                 break;
             }
+        }
+    }
+    void DeferredRenderer::RenderLight(Shader* S,RenderObject* Lt,RenderObject* Obj)
+    {
+        if(Obj)
+        {
+            if(S->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
+            {
+                Obj->UpdateUniforms();
+                S->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+            }
+            
+            i32 Count = 0;
+            if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
+            else Count = Obj->m_Mesh->GetVertexCount();
+            
+            PRIMITIVE_TYPE p = Obj->m_Mesh->PrimitiveType == PT_COUNT ? PT_TRIANGLES : Obj->m_Mesh->PrimitiveType;
+            Obj->m_Object->Render(Obj,p,0,Count);
+            
+            i32 vc = Obj->m_Mesh->GetVertexCount();
+            i32 tc = 0;
+            if(p == PT_TRIANGLES     ) tc = vc / 3;
+            if(p == PT_TRIANGLE_STRIP
+            || p == PT_TRIANGLE_FAN  ) tc = vc - 2;
+            
+            m_Stats.DrawCalls     += 1;
+            m_Stats.VertexCount   += vc;
+            m_Stats.TriangleCount += tc;
+        }
+        else
+        {
+            m_FSQ->UpdateUniforms();
+            S->PassUniforms(m_FSQ->GetUniformSet()->GetUniforms());
+            RasterObject* O = m_FSQ->GetObject();
+            O->Render(m_FSQ,PT_TRIANGLE_FAN,0,4);
+            
+            m_Stats.DrawCalls     += 1;
+            m_Stats.VertexCount   += 4;
+            m_Stats.TriangleCount += 2;
         }
     }
     void DeferredRenderer::RenderSingleObject(RenderObject* Obj)

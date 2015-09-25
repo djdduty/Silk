@@ -52,7 +52,7 @@ namespace TestClient
         RenderObject* LObj = AddLight(LT_DIRECTIONAL,Vec3(0,11,0));
 		L = LObj->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 0.8f;
+        L->m_Power                   = 1.8f;
 		LObj->SetTransform(RotationX(60));
         
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
