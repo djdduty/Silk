@@ -80,17 +80,16 @@ namespace Silk
         if(!m_PositionLocs || m_PositionLocs[0] == -1) return;
         
         Light* Lt = (Light*)Data;
-        
-        glUniform3f(m_PositionLocs   [0],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z    );
-        glUniform3f(m_DirectionLocs  [0],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z    );
-        glUniform4f(m_ColorLocs      [0],Lt->m_Color.x,Lt->m_Color.y,Lt->m_Color.z,Lt->m_Color.w  );
-        glUniform1f(m_CutoffLocs     [0],cos(Lt->m_Cutoff * PI_OVER_180)                          );
-        glUniform1f(m_SoftenLocs     [0],cos(((1.0f - Lt->m_Soften) * Lt->m_Cutoff) * PI_OVER_180));
-        glUniform1f(m_PowerLocs      [0],Lt->m_Power                                              );
-        glUniform1f(m_ConstantLocs   [0],Lt->m_Attenuation.Constant                               );
-        glUniform1f(m_LinearLocs     [0],Lt->m_Attenuation.Linear                                 );
-        glUniform1f(m_ExponentialLocs[0],Lt->m_Attenuation.Exponential                            );
-        glUniform1i(m_TypeLocs       [0],Lt->m_Type                                               );
+        if(m_PositionLocs   [0] != -1) glUniform4f(m_PositionLocs   [0],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z,Lt->m_Position .w);
+        if(m_DirectionLocs  [0] != -1) glUniform4f(m_DirectionLocs  [0],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z,Lt->m_Direction.w);
+        if(m_ColorLocs      [0] != -1) glUniform4f(m_ColorLocs      [0],Lt->m_Color    .x,Lt->m_Color    .y,Lt->m_Color    .z,Lt->m_Color    .w);
+        if(m_CutoffLocs     [0] != -1) glUniform1f(m_CutoffLocs     [0],cos(Lt->m_Cutoff * PI_OVER_180                                        ));
+        if(m_SoftenLocs     [0] != -1) glUniform1f(m_SoftenLocs     [0],cos(((1.0f - Lt->m_Soften) * Lt->m_Cutoff) * PI_OVER_180              ));
+        if(m_PowerLocs      [0] != -1) glUniform1f(m_PowerLocs      [0],Lt->m_Power                                                            );
+        if(m_ConstantLocs   [0] != -1) glUniform1f(m_ConstantLocs   [0],Lt->m_Attenuation.Constant                                             );
+        if(m_LinearLocs     [0] != -1) glUniform1f(m_LinearLocs     [0],Lt->m_Attenuation.Linear                                               );
+        if(m_ExponentialLocs[0] != -1) glUniform1f(m_ExponentialLocs[0],Lt->m_Attenuation.Exponential                                          );
+        if(m_TypeLocs       [0] != -1) glUniform1i(m_TypeLocs       [0],Lt->m_Type                                                             );
     }
     void UC_Light::CallArray(void *Data)
     {
@@ -100,16 +99,16 @@ namespace Silk
         {
             Light* Lt = ((Light**)Data)[i];
             
-            glUniform4f(m_PositionLocs   [i],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z,Lt->m_Position .w);
-            glUniform4f(m_DirectionLocs  [i],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z,Lt->m_Direction.w);
-            glUniform4f(m_ColorLocs      [i],Lt->m_Color    .x,Lt->m_Color    .y,Lt->m_Color    .z,Lt->m_Color    .w);
-            glUniform1f(m_CutoffLocs     [i],cos(Lt->m_Cutoff * PI_OVER_180                                        ));
-            glUniform1f(m_SoftenLocs     [i],cos(((1.0f - Lt->m_Soften) * Lt->m_Cutoff) * PI_OVER_180              ));
-            glUniform1f(m_PowerLocs      [i],Lt->m_Power                                                            );
-            glUniform1f(m_ConstantLocs   [i],Lt->m_Attenuation.Constant                                             );
-            glUniform1f(m_LinearLocs     [i],Lt->m_Attenuation.Linear                                               );
-            glUniform1f(m_ExponentialLocs[i],Lt->m_Attenuation.Exponential                                          );
-            glUniform1i(m_TypeLocs       [i],Lt->m_Type                                                             );
+            if(m_PositionLocs   [i] != -1) glUniform4f(m_PositionLocs   [i],Lt->m_Position .x,Lt->m_Position .y,Lt->m_Position .z,Lt->m_Position .w);
+            if(m_DirectionLocs  [i] != -1) glUniform4f(m_DirectionLocs  [i],Lt->m_Direction.x,Lt->m_Direction.y,Lt->m_Direction.z,Lt->m_Direction.w);
+            if(m_ColorLocs      [i] != -1) glUniform4f(m_ColorLocs      [i],Lt->m_Color    .x,Lt->m_Color    .y,Lt->m_Color    .z,Lt->m_Color    .w);
+            if(m_CutoffLocs     [i] != -1) glUniform1f(m_CutoffLocs     [i],cos(Lt->m_Cutoff * PI_OVER_180                                        ));
+            if(m_SoftenLocs     [i] != -1) glUniform1f(m_SoftenLocs     [i],cos(((1.0f - Lt->m_Soften) * Lt->m_Cutoff) * PI_OVER_180              ));
+            if(m_PowerLocs      [i] != -1) glUniform1f(m_PowerLocs      [i],Lt->m_Power                                                            );
+            if(m_ConstantLocs   [i] != -1) glUniform1f(m_ConstantLocs   [i],Lt->m_Attenuation.Constant                                             );
+            if(m_LinearLocs     [i] != -1) glUniform1f(m_LinearLocs     [i],Lt->m_Attenuation.Linear                                               );
+            if(m_ExponentialLocs[i] != -1) glUniform1f(m_ExponentialLocs[i],Lt->m_Attenuation.Exponential                                          );
+            if(m_TypeLocs       [i] != -1) glUniform1i(m_TypeLocs       [i],Lt->m_Type                                                             );
         }
     }
     void UC_Light::AcquireLocations(u32 PID)
