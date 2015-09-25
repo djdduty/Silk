@@ -23,10 +23,11 @@ Material "PointLightPass"
             
             float cosLightAngle = dot(normalize(-u_Lights[0].Direction.xyz),SurfaceToLight);
             if(cosLightAngle < u_Lights[0].Cutoff) discard;
+            
             float cosSoftenRadius     = u_Lights[0].Soften;
             float cosLightCutoffAngle = u_Lights[0].Cutoff;
             float Soften = 1.0f;
-            if(cosLightAngle < cosSoftenRadius) Soften = (cosLightAngle - cosLightCutoffAngle) / (cosSoftenRadius - cosLightCutoffAngle);
+            if(cosLightAngle > cosLightCutoffAngle * 0.5) Soften = 0.0;//(cosLightAngle - cosLightCutoffAngle) / (cosSoftenRadius - cosLightCutoffAngle);
             
             if(Lambertian > 0.0)
             {
@@ -36,10 +37,10 @@ Material "PointLightPass"
                 Specular     = pow(sAngle,Material0.y * 128.0f);
             }
 
-            vec4 ColorLinear    = Soften * (Attenuation * u_Lights[0].Power * ((Lambertian * u_Lights[0].Color))) + (Material0.x * Specular * u_Lights[0].Color);
+            vec4 ColorLinear    = smoothstep(cosLightCutoffAngle,cosSoftenRadius,cosLightAngle) * ((Attenuation * u_Lights[0].Power * ((Lambertian * u_Lights[0].Color))) + (Material0.x * Specular * u_Lights[0].Color));
             vec4 GammaCorrected = pow(ColorLinear,vec4(vec3(1.0 / u_Gamma),1));
 
-            vec4 sColor = GammaCorrected;
+            vec4 sColor = vec4(GammaCorrected.rgb,ColorLinear.a);
         }
         Requires
         {

@@ -42,9 +42,9 @@ namespace TestClient
     {
         Light* L = 0;
         
-        L = AddLight(LT_POINT,Vec3(0,11,0))->GetLight();
+        L = AddLight(LT_POINT,Vec3(0,2,0))->GetLight();
         L->m_Color                   = Vec4(1,0,1,1);
-        L->m_Power                   = 1.0f;
+        L->m_Power                   = 10.0f;
         L->m_Attenuation.Constant    = 3.00f;
         L->m_Attenuation.Linear      = 0.15f;
         L->m_Attenuation.Exponential = 0.1f ;
@@ -57,13 +57,14 @@ namespace TestClient
         
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 90.00;
+        L->m_Power                   = 1.00;
         L->m_Cutoff                  = 20.0f;
         L->m_Soften                  = 0.5f ;
         L->m_Attenuation.Constant    = 0.00f;
         L->m_Attenuation.Linear      = 0.10f;
         L->m_Attenuation.Exponential = 0.001f;
-/*
+        
+		/*
         for(i32 x = -5; x < 5; x++)
         {
             for(i32 z = -5; z < 5; z++)
@@ -148,21 +149,23 @@ namespace TestClient
         Vec3 OscillationSpeedMultiplier = Vec3(0.25f,0.5f,0.5f) * 0.1f;
         Vec3 OscillationBase  = Vec3( 0,40, 0);
         Vec3 OscillationRange = Vec3(40,40,40);
+        
         while(IsRunning())
         {
 			if(m_InputManager->IsButtonDown(BTN_LEFT_MOUSE))
 				((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_NoFxaa);
 			else
 				((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_Final);
+            
             a += GetDeltaTime();
             //m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
             //m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
             
-            m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
-                                                       OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
-                                                       OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
+            //m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
+                                                       //OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
+                                                       //OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
             
-            m_Lights[2]->SetTransform(Translation(Vec3(0,5,0)) * Rotation(Vec3(1,0,0),a * 5.0f));
+            m_Lights[2]->SetTransform(Translation(Vec3(0,5,0)) * Rotation(Vec3(1,0,0),a * 8.0f));
         }
     }
 
