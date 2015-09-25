@@ -16,7 +16,7 @@ Material "FinalLightPass"
             {
                 vec4 Diffuse  = texture(u_FragColor     ,texCoord);
                 vec4 Lighting = texture(u_FragLightAccum,texCoord);
-                return Lighting;
+                return Diffuse * Lighting;
             }
 
             vec4 FXAA()
@@ -43,7 +43,7 @@ Material "FinalLightPass"
 
                 float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
 
-                mediump vec2 newdir = vec2(min(vec2(MaxRadius,MaxRadius), max(vec2(-MaxRadius,-MaxRadius), dir * rcpDirMin)) * InverseRes);
+                mediump vec2 newdir = vec2(min(vec2(Radius,Radius), max(vec2(-Radius,-Radius), dir * rcpDirMin)) * InverseRes);
 
                 vec3 rgbA = 0.5 * (
                     sampleColor(o_TexCoord + newdir * (1.0 / 3.0 - 0.5)).xyz +
@@ -51,7 +51,7 @@ Material "FinalLightPass"
 
                 vec3 rgbB = rgbA * 0.5 + 0.25 * (
                     sampleColor(o_TexCoord + newdir * -0.5).xyz +
-                    sampleColor(o_TexCoord + newdir * 0.5).xyz);
+                    sampleColor(o_TexCoord + newdir *  0.5).xyz);
 
                 float lumaB = dot(rgbB, luma);
                 if ((lumaB < lumaMin) || (lumaB > lumaMax)) sColor = vec4(rgbA, Color.a);
@@ -68,7 +68,7 @@ Material "FinalLightPass"
         {
             float ReduceMin  = 0.0078125
             float ReduceMul  = 0.125
-            float MaxRadius  = 8.0
+            float Radius     = 4.0
         }
         Requires
         {

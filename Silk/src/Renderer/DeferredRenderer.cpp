@@ -304,7 +304,7 @@ namespace Silk
     void DeferredRenderer::OnResolutionChanged()
     {
         Vec2 r = m_Raster->GetContext()->GetResolution();
-        m_LightAccumulationBuffer->CreateTexture(r.x,r.y,Texture::PT_UNSIGNED_BYTE);
+        m_LightAccumulationBuffer->CreateTexture(r.x,r.y,Texture::PT_FLOAT);
         m_LightAccumulationBuffer->UpdateTexture();
     }
 };

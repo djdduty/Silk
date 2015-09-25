@@ -57,14 +57,13 @@ namespace TestClient
         
         L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
         L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 1.00;
+        L->m_Power                   = 10.0f;
         L->m_Cutoff                  = 20.0f;
         L->m_Soften                  = 0.5f ;
         L->m_Attenuation.Constant    = 0.00f;
         L->m_Attenuation.Linear      = 0.10f;
         L->m_Attenuation.Exponential = 0.001f;
         
-		/*
         for(i32 x = -5; x < 5; x++)
         {
             for(i32 z = -5; z < 5; z++)
@@ -83,7 +82,6 @@ namespace TestClient
                 L->m_Attenuation.Exponential = 0.2f;
             }
         }
-        */
     }
     void LightingTest::LoadMesh()
     {
@@ -108,8 +106,8 @@ namespace TestClient
         //For ground
         Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png","Common/GroundNormal.png");
         
-        Mat->SetShininess(1.0f);
-        Mat->SetSpecular(2.0f);
+        Mat->SetShininess(0.1f);
+        Mat->SetSpecular(0.3f);
 
         //For light displays
         AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
@@ -165,7 +163,7 @@ namespace TestClient
                                                        //OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
                                                        //OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
             
-            m_Lights[2]->SetTransform(Translation(Vec3(0,5,0)) * Rotation(Vec3(1,0,0),a * 8.0f));
+            m_Lights[2]->SetTransform(Translation(Vec3(0,25,0)) * Rotation(Vec3(1,0,0),a * 15.0f));
         }
     }
 
