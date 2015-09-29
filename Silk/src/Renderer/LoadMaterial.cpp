@@ -140,6 +140,10 @@ namespace Silk
                                         if(Word == GetShaderMapName((Material::MAP_TYPE)mn))
                                         {
                                             gen->SetTextureInput((Material::MAP_TYPE)mn,true);
+                                            if(mn == MT_FRAG_LIGHTACCUM)
+                                            {
+                                                SetMap(MT_FRAG_LIGHTACCUM,m_Renderer->GetLightAccumulationTexture());
+                                            }
                                         }
                                     }
                                 }
@@ -188,63 +192,147 @@ namespace Silk
                                                 i32 vIdx = 0;
                                                 string Type = ReadNextWord(&v[0],"1234567890",vIdx);
                                                 string Name = ReadNextWord(&v[0],"_1234567890",vIdx);
+                                                bool IsArray = v[vIdx++] == '[';
+                                                i32 ArraySize = 0;
+                                                if(IsArray) ArraySize = ReadNextInt32(&v[0],vIdx); vIdx++;
                                                 bool HasInitializer = ReadUntil(&v[0],"=",vIdx);
                                                 
                                                 if(Type == "int")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    i32 Value = 0;
-                                                    if(HasInitializer) Value = ReadNextInt32(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    
+                                                    if(IsArray)
+                                                    {
+                                                        vector<i32>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(0);
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        i32 Value = 0;
+                                                        if(HasInitializer) Value = ReadNextInt32(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                                 else if(Type == "uint")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    u32 Value = 0;
-                                                    if(HasInitializer) Value = ReadNextInt32(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    if(IsArray)
+                                                    {
+                                                        vector<u32>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(0);
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        u32 Value = 0;
+                                                        if(HasInitializer) Value = ReadNextInt32(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                                 else if(Type == "float")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    f32 Value = 0;
-                                                    if(HasInitializer) Value = ReadNextFloat32(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    if(IsArray)
+                                                    {
+                                                        vector<f32>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(0);
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        f32 Value = 0.0f;
+                                                        if(HasInitializer) Value = ReadNextFloat32(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                                 else if(Type == "double")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    f64 Value = 0;
-                                                    if(HasInitializer) Value = ReadNextFloat64(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    if(IsArray)
+                                                    {
+                                                        vector<f64>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(0);
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        f64 Value = 0;
+                                                        if(HasInitializer) Value = ReadNextFloat64(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                                 else if(Type == "vec2")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    Vec2 Value;
-                                                    if(HasInitializer) Value = ReadNextVec2(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    if(IsArray)
+                                                    {
+                                                        vector<Vec2>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(Vec2());
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        Vec2 Value;
+                                                        if(HasInitializer) Value = ReadNextVec2(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                                 else if(Type == "vec3")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    Vec3 Value;
-                                                    if(HasInitializer) Value = ReadNextVec3(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    if(IsArray)
+                                                    {
+                                                        vector<Vec3>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(Vec3());
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        Vec3 Value;
+                                                        if(HasInitializer) Value = ReadNextVec3(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                                 else if(Type == "vec4")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    Vec4 Value;
-                                                    if(HasInitializer) Value = ReadNextVec4(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    if(IsArray)
+                                                    {
+                                                        vector<Vec4>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(Vec4());
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        Vec4 Value;
+                                                        if(HasInitializer) Value = ReadNextVec4(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                                 else if(Type == "mat4")
                                                 {
                                                     i32 ID = m_UserUniforms->DefineUniform(Name);
-                                                    Mat4 Value = Mat4::Identity;
-                                                    if(HasInitializer) Value = ReadNextMat4(&v[0],vIdx);
-                                                    m_UserUniforms->SetUniform(ID,Value);
+                                                    if(IsArray)
+                                                    {
+                                                        vector<Mat4>Value;
+                                                        for(i32 i = 0;i < ArraySize;i++) Value.push_back(Mat4::Identity);
+                                                        //to do: array initializers
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
+                                                    else
+                                                    {
+                                                        Mat4 Value = Mat4::Identity;
+                                                        if(HasInitializer) Value = ReadNextMat4(&v[0],vIdx);
+                                                        m_UserUniforms->SetUniform(ID,Value);
+                                                    }
                                                 }
                                             }
                                             

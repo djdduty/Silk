@@ -26,6 +26,7 @@ namespace Silk
         
             void SetResolution(const Vec2& Res);
             void SetMaterial(Material* Mat);
+            Material* GetMaterial() const { return m_Material; }
             void SetInput(ShaderGenerator::OUTPUT_FRAGMENT_TYPE InputType,bool Flag);
             void SetOutputType(Texture::PIXEL_TYPE Type);
             void Execute();
@@ -34,6 +35,7 @@ namespace Silk
         protected:
             friend class PostProcessingEffect;
             void OnResolutionChanged(const Vec2& Resolution);
+            
             bool m_UseCustomResolution;
             Vec2 m_Resolution;
             Material* m_Material;
@@ -54,7 +56,11 @@ namespace Silk
             bool LoadEffect(char* Data);
         
             void AddStage(PostProcessingStage* Stage,i32 Iterations = 1);
+            i32 GetStageCount() const { return m_Stages.size(); }
+            PostProcessingStage* GetStage(i32 Idx) { return m_Stages[Idx]; }
             void Execute();
+        
+            Texture* GetOutput() const { return m_Stages[m_Stages.size() - 1]->GetOutput(); }
         
         protected:
             vector<PostProcessingStage*> m_Stages;

@@ -9,6 +9,7 @@ namespace Silk
     class Renderer;
     class Material;
 	class Camera;
+    class Mesh;
     class DebugDrawer
     {
         public:
@@ -24,11 +25,14 @@ namespace Silk
             virtual void OBB(const OBB& Box,const Vec4& Color);
             virtual void AABB(const Mat4& ObjTrans,const AABB& Box,const Vec4& Color);
 			virtual void DrawCamera(Camera* Cam,const Vec4& Color);
+            virtual void DrawMesh(const Mat4& Trans,Mesh* m,const Vec4& Color);
         
             void AddVertex(Scalar x,Scalar y,Scalar z,Scalar r,Scalar g,Scalar b,Scalar a) { AddVertex(Vec3(x,y,z),Vec4(r,g,b,a)); }
             void AddVertex(const Vec3& Vert,const Vec4& Color);
         
             virtual void Update(Scalar dt);
+        
+            RenderObject* GetObject() const { return m_Display; }
         
         protected:
             Renderer* m_Renderer;

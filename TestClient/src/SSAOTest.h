@@ -2,14 +2,16 @@
 #include <Test.h>
 #include <Renderer/DeferredRenderer.h>
 
+#define SSAO_KERNEL_SIZE 128
+
 namespace TestClient
 {
     class ObjLoader;
-    class LightingTest : public Test
+    class SSAOTest : public Test
     {
         public:
-            LightingTest();
-            ~LightingTest();
+            SSAOTest();
+            ~SSAOTest();
         
             virtual void Initialize();
             void LoadMesh();
@@ -20,7 +22,7 @@ namespace TestClient
         
             virtual void Shutdown();
         
-            virtual const char* GetTestName() const { return "Lighting Test"; }
+            virtual const char* GetTestName() const { return "SSAO Test"; }
         
 #ifdef __APPLE__
             virtual Vec2 GetPreferredInitResolution() const { return Vec2(800,600); }

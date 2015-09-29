@@ -1,0 +1,100 @@
+Material "FinalLightPass"
+{
+    Shader
+    {
+        VertexModule "SetGLPosition" 0
+        {
+            gl_Position = vec4(a_Position,1.0);
+        }
+        VertexModule "SetTexCoords" 1
+        {
+            o_TexCoord = a_TexCoord;
+        }
+        FragmentFunction 0
+        {
+            vec4 sampleColor(vec2 texCoord)
+            {
+                vec4 Diffuse  = texture(u_FragColor     ,texCoord);
+                vec4 Lighting = texture(u_FragLightAccum,texCoord);
+                return Diffuse * Lighting;
+            }
+
+            vec4 FXAA()
+            {
+                vec4 Color = sampleColor(o_TexCoord);
+                vec4 sColor;
+
+                vec2 InverseRes = vec2(1.0 / u_Resolution.x,1.0 / u_Resolution.y);
+
+                vec3 luma = vec3(0.299, 0.587, 0.114);
+                float lumaNW = dot(sampleColor(o_TexCoord + (vec2(-1,-1) * InverseRes)).xyz, luma);
+                float lumaNE = dot(sampleColor(o_TexCoord + (vec2( 1,-1) * InverseRes)).xyz, luma);
+                float lumaSW = dot(sampleColor(o_TexCoord + (vec2(-1, 1) * InverseRes)).xyz, luma);
+                float lumaSE = dot(sampleColor(o_TexCoord + (vec2( 1, 1) * InverseRes)).xyz, luma);
+                float lumaM  = dot(Color.xyz, luma);
+                float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+                float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+
+                mediump vec2 dir;
+                dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
+                dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+
+                float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * ReduceMul),ReduceMin);
+
+                float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
+
+                mediump vec2 newdir = vec2(min(vec2(Radius,Radius), max(vec2(-Radius,-Radius), dir * rcpDirMin)) * InverseRes);
+
+                vec3 rgbA = 0.5 * (
+                    sampleColor(o_TexCoord + newdir * (1.0 / 3.0 - 0.5)).xyz +
+                    sampleColor(o_TexCoord + newdir * (2.0 / 3.0 - 0.5)).xyz);
+
+                vec3 rgbB = rgbA * 0.5 + 0.25 * (
+                    sampleColor(o_TexCoord + newdir * -0.5).xyz +
+                    sampleColor(o_TexCoord + newdir *  0.5).xyz);
+
+                float lumaB = dot(rgbB, luma);
+                if ((lumaB < lumaMin) || (lumaB > lumaMax)) sColor = vec4(rgbA, Color.a);
+                else sColor = vec4(rgbB,Color.a);
+
+                return sColor;
+            }
+        }
+        FragmentModule "SetColor" 0
+        {
+            vec4 sColor = FXAA();
+        }
+        Uniforms "Params"
+        {
+            float ReduceMin  = 0.0078125
+            float ReduceMul  = 0.125
+            float Radius     = 4.0
+        }
+        Requires
+        {
+            //Uniforms
+            Params
+            ObjectData
+            RenderData
+
+            //Attributes
+            a_Position
+            a_TexCoord
+        }
+        VertexOutputs
+        {
+            a_TexCoord
+        }
+        TextureMaps
+        {
+            u_FragColor
+            u_FragPosition
+            u_FragNormal
+            u_FragLightAccum
+        }
+        Outputs
+        {
+            f_Color
+        }
+    }
+}

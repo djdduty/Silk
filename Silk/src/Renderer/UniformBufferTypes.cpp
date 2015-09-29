@@ -193,7 +193,7 @@ namespace Silk
         
         if(DidTrans)                     m_UniformBuffer->SetUniform(m_iCameraPosition ,cPos                 );
         if(DidTrans)                     m_UniformBuffer->SetUniform(m_iCameraDirection,cFwd                 );
-        if(DidTrans)                     m_UniformBuffer->SetUniform(m_iView           ,cTrans               );
+        if(DidTrans)                     m_UniformBuffer->SetUniform(m_iView           ,cTrans.Inverse()     );
         if(Cam->DidProjectionUpdate  ()) m_UniformBuffer->SetUniform(m_iProjection     ,Cam->GetProjection ());
         if(Cam->DidViewportUpdate    ()) m_UniformBuffer->SetUniform(m_iViewport       ,Cam->GetViewport   ());
         if(Cam->DidExposureUpdate    ()) m_UniformBuffer->SetUniform(m_iExposire       ,Cam->GetExposure   ());

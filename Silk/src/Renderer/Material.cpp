@@ -50,6 +50,7 @@ namespace Silk
     {
         for(i32 i = 0;i < MT_COUNT;i++) m_Maps[i] = 0;
         m_Uniforms = new MaterialUniformSet(m_Renderer);
+        m_UserUniforms = 0;
     }
     Material::~Material()
     {

@@ -100,6 +100,8 @@ namespace Silk
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
             virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType,bool SendLighting = true);
             void RenderTexture(Texture* Tex,Material* Effect = 0,RenderObject* Obj = 0);
+            virtual Texture* GetLightAccumulationTexture() { return 0; }
+            virtual void OnResolutionChanged() { }
         
             void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
             Scene* GetScene() const { return m_Scene; }
@@ -156,6 +158,7 @@ namespace Silk
         
             //Post processing
             bool m_UsePostProcessing;
+            bool m_PostProcessingInherited;
             FrameBuffer* m_SceneOutput;
             vector<PostProcessingEffect*> m_Effects;
         

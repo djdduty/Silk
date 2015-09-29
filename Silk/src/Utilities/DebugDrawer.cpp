@@ -30,6 +30,7 @@ namespace Silk
         m_Display = m_Renderer->CreateRenderObject(ROT_MESH);
         m_Display->SetAlwaysVisible(true);
         Mesh* m = new Mesh();
+        m->PrimitiveType = PT_LINES;
         m_Display->SetMesh(m,m_Material);
         m->Destroy();
         
@@ -141,7 +142,43 @@ namespace Silk
         Line(Box[5],Box[1],Color);
         Line(Box[7],Box[3],Color);
 	}
-    void DebugDrawer::AddVertex(const Vec3 &Vert,const Vec4 &Color)
+    void DebugDrawer::DrawMesh(const Mat4& Trans,Mesh *m,const Vec4& Color)
+    {
+        Mat4 t = Trans.Transpose();
+        const Mesh::MeshAttribute* Indices = m->GetIndexAttribute();
+        if(Indices)
+        {
+            const Mesh::MeshAttribute* Vertices = m->GetVertexAttribute();
+            for(i32 i = 0;i < Indices->Count;i += 3)
+            {
+                u16 Idx0 = ((u16*)Indices->Pointer)[i + 0];
+                u16 Idx1 = ((u16*)Indices->Pointer)[i + 1];
+                u16 Idx2 = ((u16*)Indices->Pointer)[i + 2];
+                Vec3 Vtx0 = t * ((Vec3*)Vertices->Pointer)[Idx0];
+                Vec3 Vtx1 = t * ((Vec3*)Vertices->Pointer)[Idx1];
+                Vec3 Vtx2 = t * ((Vec3*)Vertices->Pointer)[Idx2];
+                
+                Line(Vtx0,Vtx1,Color);
+                Line(Vtx0,Vtx2,Color);
+                Line(Vtx1,Vtx2,Color);
+            }
+        }
+        else
+        {
+            const Mesh::MeshAttribute* Vertices = m->GetVertexAttribute();
+            for(i32 i = 0;i < Vertices->Count;i += 3)
+            {
+                Vec3 Vtx0 = t * ((Vec3*)Vertices->Pointer)[i + 0];
+                Vec3 Vtx1 = t * ((Vec3*)Vertices->Pointer)[i + 1];
+                Vec3 Vtx2 = t * ((Vec3*)Vertices->Pointer)[i + 2];
+                
+                Line(Vtx0,Vtx1,Color);
+                Line(Vtx0,Vtx2,Color);
+                Line(Vtx1,Vtx2,Color);
+            }
+        }
+    }
+    void DebugDrawer::AddVertex(const Vec3& Vert,const Vec4& Color)
     {
         m_Verts.push_back(Vert);
         m_Colors.push_back(Color);

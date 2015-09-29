@@ -1,18 +1,18 @@
-#include <LightingTest.h>
+#include <SSAOTest.h>
 #include <LodePNG.h>
 #include <ObjLoader.h>
 #include <math.h>
 
 namespace TestClient
 {
-    LightingTest::LightingTest()
+    SSAOTest::SSAOTest()
     {
     }
-    LightingTest::~LightingTest()
+    SSAOTest::~SSAOTest()
     {
     }
 
-    void LightingTest::Initialize()
+    void SSAOTest::Initialize()
     {
         InitGUI();
         InitFlyCamera();
@@ -35,38 +35,35 @@ namespace TestClient
         LoadLight   ();
         LoadMesh    ();
         //InitDebugDisplay();
+        
+        m_Camera->SetZClipPlanes(0.001f,200.0f);
+        m_CamPos = Vec3(0,60,20);
 
         SetFPSPrintFrequency(0.5f);
     }
-    void LightingTest::LoadLight()
+    void SSAOTest::LoadLight()
     {
         Light* L = 0;
         
-        for(i32 x = -5; x < 5; x++)
+        i32 lc = 10;
+        for(i32 i = 0;i < lc;i++)
         {
-            for(i32 z = -5; z < 5; z++)
-            {
-                f32 randr = rand() % 101;
-                randr *= 0.01;
-                f32 randg = rand() % 101;
-                randg *= 0.01;
-                f32 randb = rand() % 101;
-                randb *= 0.01;
-                L = AddLight(LT_POINT,Vec3(x*10+5,5,z*10-10))->GetLight();
-                L->m_Color                   = Vec4(randr,randg,randb,1);
-                L->m_Power                   = 1.5f;
-                L->m_Attenuation.Constant    = 0.00f;
-                L->m_Attenuation.Linear      = 0.10f;
-                L->m_Attenuation.Exponential = 0.05f;
-            }
+            Scalar Fraction = Scalar(i) * (1.0f / Scalar(lc));
+            Scalar th = Fraction * (2.0f * PI);
+            L = AddLight(LT_POINT,Vec3(cos(th) * 20.0f,70,sin(th) * 20.0f))->GetLight();
+            L->m_Color                   = Vec4(ColorFunc(Fraction),1.0);//Vec4(1,1,1,1);
+            L->m_Power                   = 1.2f;
+            L->m_Attenuation.Constant    = 0.00f;
+            L->m_Attenuation.Linear      = 0.10f;
+            L->m_Attenuation.Exponential = 0.001f;
         }
     }
-    void LightingTest::LoadMesh()
+    void SSAOTest::LoadMesh()
     {
-        m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
+        m_Meshes[AddMesh("SSAOTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
 
         DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
-        RenderObject* Point = m_Meshes[AddMesh("Silk/bsphere.object",r->GetPointLightMaterial(),Vec3(0,0,0))];
+        RenderObject* Point = m_Meshes[AddMesh("Silk/PointLight.object",r->GetPointLightMaterial(),Vec3(0,0,0))];
         RenderObject* Spot  = m_Meshes[AddMesh("Silk/SpotLight.object" ,r->GetSpotLightMaterial (),Vec3(0,0,0))];
         
         r->SetPointLightObject(Point);
@@ -79,16 +76,16 @@ namespace TestClient
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
     }
-    void LightingTest::LoadMaterial()
+    void SSAOTest::LoadMaterial()
     {
         //For ground
-        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"Common/GroundDiffuse.png","Common/GroundNormal.png");
+        Material* Mat = AddMaterial(ShaderGenerator::LM_PASS,"SSAOTest/Scene.png");
         
-        Mat->SetShininess(0.1f);
-        Mat->SetSpecular(0.3f);
+        Mat->SetShininess(0.9f);
+        Mat->SetSpecular(0.5f);
 
         //For light displays
-        AddMaterial(ShaderGenerator::LM_FLAT,"Common/GroundDiffuse.png");
+        AddMaterial(ShaderGenerator::LM_FLAT,"SSAOTest/Scene.png");
         
         //Light pass materials
         DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
@@ -110,7 +107,7 @@ namespace TestClient
         r->SetFinalPassMaterial(m_Final);
     }
 
-    void LightingTest::Run()
+    void SSAOTest::Run()
     {
         Mat4 t = Translation(Vec3(0,4,9)) * RotationX(20.0f);
         m_Camera->SetTransform(t);
@@ -121,6 +118,24 @@ namespace TestClient
         m_TaskManager->GetTaskContainer()->SetAverageTaskDurationSampleCount(10);
         m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
 
+        PostProcessingEffect* Effect = new PostProcessingEffect(m_Renderer);
+        Effect->LoadEffect(Load("Common/SSAO.ppe"));
+        m_Renderer->SetUsePostProcessing(true);
+        m_Renderer->AddPostProcessingEffect(Effect);
+        
+        UniformBuffer* SSAOInputs = Effect->GetStage(0)->GetMaterial()->GetUserUniforms();
+        
+        vector<Vec3> SSAOKernel;
+        for(i32 i = 0;i < SSAO_KERNEL_SIZE;i++)
+        {
+            SSAOKernel.push_back(RandomVec(1.0f));
+            SSAOKernel[i].z = abs(SSAOKernel[i].z);
+        }
+        
+        SSAOInputs->SetUniform(0,SSAOKernel      );
+        SSAOInputs->SetUniform(1,SSAO_KERNEL_SIZE);
+        SSAOInputs->SetUniform(2,1.0f);
+        SSAOInputs->SetUniform(3,1.5f);
         
         Vec3 OscillationSpeedMultiplier = Vec3(0.25f,0.5f,0.5f) * 0.1f;
         Vec3 OscillationBase  = Vec3( 0,40, 0);
@@ -134,18 +149,25 @@ namespace TestClient
 				((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_Final);
             
             a += GetDeltaTime();
-            //m_Lights[0]->GetLight()->m_Color = Vec4(ColorFunc(a),1.0f);
-            //m_Lights[0]->GetLight()->m_Power = 8.0f + (sin(a) * 5.0f);
             
-            //m_Lights[0]->SetTransform(Translation(Vec3(OscillationBase.x + (OscillationRange.x * cos(a * OscillationSpeedMultiplier.x)),
-                                                       //OscillationBase.y + (OscillationRange.y * sin(a * OscillationSpeedMultiplier.y)),
-                                                       //OscillationBase.z + (OscillationRange.z * cos(a * OscillationSpeedMultiplier.z)))));
+            /*
+            vector<Vec3> SSAOKernel;
+            for(i32 i = 0;i < SSAO_KERNEL_SIZE;i++)
+            {
+                SSAOKernel.push_back(RandomVec(1.0f));
+                SSAOKernel[i].z = abs(SSAOKernel[i].z);
+            }
             
-            m_Lights[2]->SetTransform(Translation(Vec3(0,25,0)) * Rotation(Vec3(1,0,0),a * 15.0f));
+            SSAOInputs->SetUniform(0,SSAOKernel      );
+            SSAOInputs->SetUniform(1,SSAO_KERNEL_SIZE);
+            */
+            
+            SSAOInputs->SetUniform(2,(sin(a) * 0.5f) + 0.5f);
+            SSAOInputs->SetUniform(3,(sin(a) * 0.5f) + 1.0f);
         }
     }
 
-    void LightingTest::Shutdown()
+    void SSAOTest::Shutdown()
     {
     }
 };
