@@ -19,6 +19,7 @@ namespace Silk
         m_Output = m_Renderer->GetRasterizer()->CreateTexture();
         m_Material = 0;
         m_ResolutionScale = 1.0f;
+		m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_Inputs[i] = false;
     }
@@ -49,10 +50,11 @@ namespace Silk
     {
         if(Type != m_Output->GetPixelType())
         {
-            m_Output->CreateTexture(m_Resolution.x,m_Resolution.y,Type);
+            m_OutputType = Type;
+            if(m_OutputType == Texture::PT_FLOAT) m_Output->CreateTexturef(m_Resolution.x,m_Resolution.y,0);
+            else m_Output->CreateTextureb(m_Resolution.x,m_Resolution.y,0);
             m_Output->UpdateTexture();
         }
-        m_OutputType = Type;
     }
     void PostProcessingStage::Execute()
     {
@@ -70,7 +72,8 @@ namespace Silk
     {
         if(m_UseCustomResolution) return;
         m_Resolution = Resolution * m_ResolutionScale;
-        m_Output->CreateTexture(m_Resolution.x,m_Resolution.y,m_OutputType);
+        if(m_OutputType == Texture::PT_FLOAT) m_Output->CreateTexturef(m_Resolution.x,m_Resolution.y,0);
+        else m_Output->CreateTextureb(m_Resolution.x,m_Resolution.y,0);
         m_Output->UpdateTexture();
     }
     
