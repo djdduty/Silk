@@ -43,17 +43,14 @@ namespace Silk
         
         if(m_UsePostProcessing && m_Effects.size() > 0)
         {   
-            for(i32 i = 0;i < m_Effects.size();i++)
-            {
-                m_Effects[i]->Execute();
-                glDisable(GL_DEPTH_TEST);
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
-                glBlendEquation(GL_ADD);
-                RenderTexture(m_Effects[i]->GetOutput());
-                glDisable(GL_BLEND);
-                glEnable(GL_DEPTH_TEST);
-            }
+            for(i32 i = 0;i < m_Effects.size();i++) m_Effects[i]->Execute();
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+            glBlendEquation(GL_ADD);
+            for(i32 i = 0; i < m_Effects.size();i++) RenderTexture(m_Effects[i]->GetOutput());
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
         }
         
         glEnable(GL_CULL_FACE);
