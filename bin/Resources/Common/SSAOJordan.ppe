@@ -1,0 +1,185 @@
+Effect "FXAA"
+{
+    Stage
+    {
+        Material "SSAO_Pass"
+        {
+            Shader
+            {
+                VertexModule "SetGLPosition" 0
+                {
+                    gl_Position = vec4(a_Position,1.0);
+                }
+                VertexModule "SetTexCoords" 1
+                {
+                    o_TexCoord = a_TexCoord;
+                }
+                FragmentFunction 0
+                {
+                    float getDepth(vec2 uv)
+                    {
+                        return (u_View * vec4(texture(u_FragPosition, uv).xyz,1)).z;
+                    }
+                    vec3 orientate(vec3 ref, vec3 nor)
+                    {
+                        float d = dot(ref, nor);
+                        if(d < 0)
+                            return ref * -1;
+                        return ref;
+                    }
+                    float hash(float n)
+                    {
+                        return fract(sin(n) * 43758.5453);
+                    }
+                    float Noise(vec3 x)
+                    {
+                        // The noise function returns a value in the range -1.0f -> 1.0f
+                        vec3 p = floor(x);
+                        vec3 f = fract(x);
+
+                              f = f * f * (3.0 - 2.0 * f);
+                        float n = p.x + p.y * 57.0 + 113.0 * p.z;
+
+                        return mix(mix(mix(hash(n + 0.0  ), hash(n + 1.0  ),f.x),
+                                       mix(hash(n + 57.0 ), hash(n + 58.0 ),f.x),f.y),
+                                   mix(mix(hash(n + 113.0), hash(n + 114.0),f.x),
+                                       mix(hash(n + 170.0), hash(n + 171.0),f.x),f.y),f.z);
+                    }
+                    float ssao( in vec2 pixel )
+                    {
+                        vec2  uv  = pixel;
+                        float z   = getDepth(uv);
+                        vec3  nor = texture( u_FragNormal, uv ).xyz;
+                        vec3  ref = vec3(Noise(gl_FragCoord.xyz));
+
+                        // accumulate occlusion
+                        float bl = 0.0;
+                        for( int i=0; i<KernelSize; i++ )
+                        {
+                            vec3  of = orientate( reflect( Kernel[i], ref ), nor );
+                            float sz = getDepth(uv+0.03*of.xy);
+                            float zd = (sz-z)*0.2;
+                            float rangeCheck= abs(z - sz) < SampleRadius ? 1.0 : 0.0;
+                            bl += (clamp(zd*10.0,0.1,1.0)*(1.0-clamp((zd-1.0)/5.0,0.0,1.0)))*rangeCheck;
+                        }
+
+                        return 1.0*bl/(KernelSize);
+                    }
+                }
+                FragmentModule "SetColor" 0
+                {
+                    float AO = ssao(o_TexCoord);
+                    vec4 sColor = vec4(0,0,0,AO);
+                }
+                Uniforms "Inputs"
+                {
+                    vec3  Kernel[32]
+                    int   KernelSize   = 32
+                    float SampleRadius = 5.0
+                    float Strength     = 1.0
+                }
+                Requires
+                {
+                    //Uniforms
+                    RenderData
+                    Inputs
+
+                    //Attributes
+                    a_Position
+                    a_TexCoord
+                }
+                VertexOutputs
+                {
+                    a_TexCoord
+                }
+                TextureMaps
+                {
+                    u_FragColor
+                    u_FragNormal
+                    u_FragPosition
+                }
+                Outputs
+                {
+                    f_Color
+                }
+            }
+        }
+
+        Iterations 1
+        OutputType ubyte
+
+        Requires
+        {
+            f_Color
+        }
+    }
+    Stage
+    {
+        Material "SSAO_Blur"
+        {
+            Shader
+            {
+                VertexModule "SetGLPosition" 0
+                {
+                    gl_Position = vec4(a_Position,1.0);
+                }
+                VertexModule "SetTexCoords" 1
+                {
+                    o_TexCoord = a_TexCoord;
+                }
+                FragmentModule "SetColor" 0
+                {
+                    vec4 sColor = vec4(0,0,0,0);
+                    if(o_TexCoord.x < 0.5)
+                    {
+                        vec2 TexelSize = 1.0 / vec2(textureSize(u_PostProcessOut,0));
+                        float Result = 0.0;
+                        int BlurRadius = 10;
+                        vec2 hlim = vec2(-float(BlurRadius) * 0.5 + 0.5);
+
+                        for(int i = 0;i < BlurRadius;i++)
+                        {
+                            for(int j = 0;j < BlurRadius;j++)
+                            {
+                                 vec2 Offset = (hlim + vec2(float(i),float(j))) * TexelSize;
+                                 Result += texture(u_PostProcessOut,o_TexCoord + Offset).a;
+                            }
+                        }
+
+                        sColor = vec4(0,0,0,Result / float(BlurRadius * BlurRadius));
+                    }
+
+                }
+                Requires
+                {
+                    //Uniforms
+                    RenderData
+
+                    //Attributes
+                    a_Position
+                    a_TexCoord
+                }
+                VertexOutputs
+                {
+                    a_TexCoord
+                }
+                TextureMaps
+                {
+                    u_PostProcessOut
+                }
+                Outputs
+                {
+                    f_Color
+                }
+            }
+        }
+
+        Iterations 1
+        OutputType ubyte
+
+        Requires
+        {
+            f_Color
+        }
+    }
+}

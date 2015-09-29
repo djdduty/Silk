@@ -150,6 +150,8 @@ namespace TestClient
             m_CursorObj = 0;
             
             m_RTTIndex = -1;
+            
+            m_SSAO = 0;
         }
         else
         {
@@ -188,6 +190,61 @@ namespace TestClient
         m_DebugDraw = new DebugDrawer(m_Renderer);
         m_Renderer->SetDebugDrawer(m_DebugDraw);
 	}
+    void Test::InitSSAO()
+    {
+        m_Renderer->SetUsePostProcessing(true);
+        
+        m_SSAO = new PostProcessingEffect(m_Renderer);
+        m_SSAO->LoadEffect(Load("Common/SSAO.ppe"));
+        m_Renderer->AddPostProcessingEffect(m_SSAO);
+        
+        m_SSAORandomTex = m_Renderer->GetRasterizer()->CreateTexture();
+        m_SSAORandomTex->CreateTexture(4,4,Texture::PT_FLOAT);
+        
+        for(i32 x = 0;x < 4;x++)
+        {
+            for(i32 y = 0;y < 4;y++)
+            {
+                m_SSAORandomTex->SetPixel(Vec2(x,y),Vec4(Random(-1.0f,1.0f),Random(-1.0f,1.0f),0.0f,1.0f));
+            }
+        }
+        m_SSAORandomTex->UpdateTexture();
+        m_SSAO->GetStage(0)->GetMaterial()->SetMap(Material::MT_CUSTOM0,m_SSAORandomTex);
+        
+        UniformBuffer* SSAOInputs = m_SSAO->GetStage(0)->GetMaterial()->GetUserUniforms();
+        
+        vector<Vec3> SSAOKernel;
+        for(i32 i = 0;i < SSAOInputs->GetUniformInfo(0)->ArraySize;i++)
+        {
+            Vec3 Sample = RandomVec(1.0f);
+            Sample.z = abs(Sample.z);
+            Sample.Normalize();
+            
+            Scalar Scale = Scalar(i) / Scalar(SSAOInputs->GetUniformInfo(0)->ArraySize);
+            Scale = 0.1f + ((1.0f - 0.1f) * pow(Scale,2.0f));
+            Sample *= Scale;
+            SSAOKernel.push_back(Sample);
+        }
+        
+        SSAOInputs->SetUniform(0,SSAOKernel);
+        SSAOInputs->SetUniform(1,SSAOInputs->GetUniformInfo(0)->ArraySize);
+        SSAOInputs->SetUniform(2,0.2f);
+        SSAOInputs->SetUniform(3,1.0f);
+        SetSSAONoiseScale(4);
+    }
+    void Test::SetSSAORadius(Scalar Radius)
+    {
+        m_SSAO->GetStage(0)->GetMaterial()->GetUserUniforms()->SetUniform(2,Radius);
+    }
+    void Test::SetSSAOIntensity(Scalar Intensity)
+    {
+        m_SSAO->GetStage(0)->GetMaterial()->GetUserUniforms()->SetUniform(3,Intensity);
+    }
+    void Test::SetSSAONoiseScale(i32 Scale)
+    {
+        m_SSAO->GetStage(0)->GetMaterial()->GetUserUniforms()->SetUniform(4,Scale);
+        m_SSAO->GetStage(1)->GetMaterial()->GetUserUniforms()->SetUniform(0,Scale);
+    }
     Byte* Test::Load(const char* File,i64 *OutSize)
     {
         FILE* fp = fopen(File,"rb");

@@ -482,6 +482,8 @@ namespace Silk
     void OpenGLFrameBuffer::Disable()
     {
         glBindFramebuffer(GL_FRAMEBUFFER,0);
+        Vec2 r = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
+        m_Renderer->GetRasterizer()->SetViewport(0,0,r.x,r.y);
     }
     
     OpenGLUniformBuffer::~OpenGLUniformBuffer()

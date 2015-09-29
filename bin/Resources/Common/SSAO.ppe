@@ -23,26 +23,6 @@ Effect "FXAA"
                         vec3 b = cross(SurfaceNormal,t);
                         return mat3(t,b,SurfaceNormal);
                     }
-                    
-                    float hash(float n)
-                    {
-                        return fract(sin(n) * 43758.5453);
-                    }
-
-                    float Noise(vec3 x)
-                    {
-                        // The noise function returns a value in the range -1.0f -> 1.0f
-                        vec3 p = floor(x);
-                        vec3 f = fract(x);
-
-                              f = f * f * (3.0 - 2.0 * f);
-                        float n = p.x + p.y * 57.0 + 113.0 * p.z;
-
-                        return mix(mix(mix(hash(n + 0.0  ), hash(n + 1.0  ),f.x),
-                                       mix(hash(n + 57.0 ), hash(n + 58.0 ),f.x),f.y),
-                                   mix(mix(hash(n + 113.0), hash(n + 114.0),f.x),
-                                       mix(hash(n + 170.0), hash(n + 171.0),f.x),f.y),f.z);
-                    }
                 }
                 FragmentModule "SetColor" 0
                 {
@@ -50,7 +30,9 @@ Effect "FXAA"
                     vec3 Nrm = mat3(u_View) * texture(u_FragNormal  ,o_TexCoord).xyz;
                     float Depth = u_FarPlane - Pos.z;
                     
-                    mat3 TBN = CreateTBN(Nrm,Kernel[int(max(0,Noise(gl_FragCoord.xyz))) * KernelSize]);
+                    vec2 NoiseScale = u_Resolution / float(NoiseStretch);
+                    vec3 RandomVec = texture(u_CustomMap0,o_TexCoord * NoiseScale).xyz;
+                    mat3 TBN = CreateTBN(Nrm,RandomVec);
                     
                     vec4 sColor = vec4(0,0,0,0);
                     float AO = 0.0;
@@ -78,6 +60,7 @@ Effect "FXAA"
                     int   KernelSize   = 128
                     float SampleRadius = 5.0
                     float Strength     = 1.0
+                    int   NoiseStretch = 4
                 }
                 Requires
                 {
@@ -98,6 +81,7 @@ Effect "FXAA"
                     u_FragColor
                     u_FragNormal
                     u_FragPosition
+                    u_CustomMap0
                 }
                 Outputs
                 {
@@ -105,7 +89,7 @@ Effect "FXAA"
                 }
             }
         }
-        
+        ResolutionScale 0.5
         Iterations 1
         OutputType ubyte
 
@@ -131,30 +115,30 @@ Effect "FXAA"
                 FragmentModule "SetColor" 0
                 {
                     vec4 sColor = vec4(0,0,0,0);
-                    if(o_TexCoord.x < 0.5)
-                    {
-                        vec2 TexelSize = 1.0 / vec2(textureSize(u_PostProcessOut,0));
-                        float Result = 0.0;
-                        int BlurRadius = 10;
-                        vec2 hlim = vec2(-float(BlurRadius) * 0.5 + 0.5);
-                        
-                        for(int i = 0;i < BlurRadius;i++)
-                        {
-                            for(int j = 0;j < BlurRadius;j++)
-                            {
-                                 vec2 Offset = (hlim + vec2(float(i),float(j))) * TexelSize;
-                                 Result += texture(u_PostProcessOut,o_TexCoord + Offset).a;
-                            }
-                        }
-
-                        sColor = vec4(0,0,0,Result / float(BlurRadius * BlurRadius));
-                    }
+                    vec2 TexelSize = 1.0 / vec2(textureSize(u_PostProcessOut,0));
+                    float Result = 0.0;
+                    vec2 hlim = vec2(-float(BlurRadius) * 0.5 + 0.5);
                     
+                    for(int i = 0;i < BlurRadius;i++)
+                    {
+                        for(int j = 0;j < BlurRadius;j++)
+                        {
+                             vec2 Offset = (hlim + vec2(float(i),float(j))) * TexelSize;
+                             Result += texture(u_PostProcessOut,o_TexCoord + Offset).a;
+                        }
+                    }
+
+                    sColor = vec4(0,0,0,Result / float(BlurRadius * BlurRadius));
+                }
+                Uniforms "Inputs"
+                {
+                    int BlurRadius = 4
                 }
                 Requires
                 {
                     //Uniforms
                     RenderData
+                    Inputs
 
                     //Attributes
                     a_Position
@@ -174,7 +158,7 @@ Effect "FXAA"
                 }
             }
         }
-        
+        ResolutionScale 0.5
         Iterations 1
         OutputType ubyte
 

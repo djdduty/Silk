@@ -38,6 +38,7 @@ namespace Silk
             
             bool m_UseCustomResolution;
             Vec2 m_Resolution;
+            Scalar m_ResolutionScale;
             Material* m_Material;
             bool m_Inputs[ShaderGenerator::OFT_COUNT];
         

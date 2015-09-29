@@ -18,6 +18,7 @@ namespace Silk
     {
         m_Output = m_Renderer->GetRasterizer()->CreateTexture();
         m_Material = 0;
+        m_ResolutionScale = 1.0f;
         
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_Inputs[i] = false;
     }
@@ -68,8 +69,8 @@ namespace Silk
     void PostProcessingStage::OnResolutionChanged(const Vec2 &Resolution)
     {
         if(m_UseCustomResolution) return;
-        m_Resolution = Resolution;
-        m_Output->CreateTexture(Resolution.x,Resolution.y,m_OutputType);
+        m_Resolution = Resolution * m_ResolutionScale;
+        m_Output->CreateTexture(m_Resolution.x,m_Resolution.y,m_OutputType);
         m_Output->UpdateTexture();
     }
     
@@ -99,7 +100,6 @@ namespace Silk
                         if(!ReadUntil(&EffStr[0],"}",eIdx,StageStr)) { ERROR("Unexpected end-of-file while searching for '}' for \"Stage\".\n"); return false; }
                         
                         PostProcessingStage* Stage = new PostProcessingStage(m_Renderer);
-                        Stage->m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
                         
                         i32 Iterations = 1;
                         while(sIdx < StageStr.length())
@@ -143,7 +143,17 @@ namespace Silk
                                 if(Word == "float") Stage->SetOutputType(Texture::PT_FLOAT);
                                 if(Word == "ubyte") Stage->SetOutputType(Texture::PT_UNSIGNED_BYTE);
                             }
+                            else if(Word == "Resolution")
+                            {
+                                Vec2 r = ReadNextVec2(&StageStr[0],sIdx);
+                                Stage->SetResolution(r);
+                            }
+                            else if(Word == "ResolutionScale")
+                            {
+                                Stage->m_ResolutionScale = ReadNextFloat32(&StageStr[0],sIdx);
+                            }
                         }
+                        Stage->OnResolutionChanged(m_Renderer->GetRasterizer()->GetContext()->GetResolution());
                         AddStage(Stage,Iterations);
                     }
                 }
