@@ -106,7 +106,16 @@ namespace TestClient
         r->SetDirectionalLightMaterial(Dr);
         r->SetFinalPassMaterial(m_Final);
     }
-
+	f32 Lerp(f32 v0, f32 v1, f32 t)
+	{
+		 return (1-t)*v0 + t*v1;
+	}
+	float RandomFloat(float a, float b) {
+		float random = ((float) rand()) / (float) RAND_MAX;
+		float diff = b - a;
+		float r = random * diff;
+		return a + r;
+	}
     void SSAOTest::Run()
     {
         Mat4 t = Translation(Vec3(0,4,9)) * RotationX(20.0f);
@@ -119,7 +128,7 @@ namespace TestClient
         m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
 
         PostProcessingEffect* Effect = new PostProcessingEffect(m_Renderer);
-        Effect->LoadEffect(Load("Common/SSAO.ppe"));
+        Effect->LoadEffect(Load("Common/SSAOJordan.ppe"));
         m_Renderer->SetUsePostProcessing(true);
         m_Renderer->AddPostProcessingEffect(Effect);
         
@@ -128,14 +137,22 @@ namespace TestClient
         vector<Vec3> SSAOKernel;
         for(i32 i = 0;i < SSAO_KERNEL_SIZE;i++)
         {
-            SSAOKernel.push_back(RandomVec(1.0f));
-            SSAOKernel[i].z = abs(SSAOKernel[i].z);
+			f32 randx = RandomFloat(-1.0,1.0);
+			f32 randy = RandomFloat(-1.0,1.0);
+			f32 randz = RandomFloat(0.0,1.0);
+			Vec3 sample = Vec3(randx,randy,randz);
+			sample.Normalize();
+			//sample *= RandomFloat(0.0f, 1.0f);
+			f32 Scale = f32(i) / SSAO_KERNEL_SIZE;
+            Scale = Lerp(0.1f, 1.0f, Scale*Scale);
+			sample *= Scale;
+			SSAOKernel.push_back(sample);
         }
         
         SSAOInputs->SetUniform(0,SSAOKernel      );
         SSAOInputs->SetUniform(1,SSAO_KERNEL_SIZE);
-        SSAOInputs->SetUniform(2,1.0f);
-        SSAOInputs->SetUniform(3,1.5f);
+        SSAOInputs->SetUniform(2,0.75f);
+        SSAOInputs->SetUniform(3,1.0f);
         
         Vec3 OscillationSpeedMultiplier = Vec3(0.25f,0.5f,0.5f) * 0.1f;
         Vec3 OscillationBase  = Vec3( 0,40, 0);
@@ -144,9 +161,13 @@ namespace TestClient
         while(IsRunning())
         {
 			if(m_InputManager->IsButtonDown(BTN_LEFT_MOUSE))
-				((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_NoFxaa);
-			else
-				((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_Final);
+			{
+				//((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_NoFxaa);
+				m_Renderer->SetUsePostProcessing(false);
+			} else {
+				//((DeferredRenderer*)m_Renderer)->SetFinalPassMaterial(m_Final);
+				m_Renderer->SetUsePostProcessing(true);
+			}
             
             a += GetDeltaTime();
             
@@ -162,8 +183,8 @@ namespace TestClient
             SSAOInputs->SetUniform(1,SSAO_KERNEL_SIZE);
             */
             
-            SSAOInputs->SetUniform(2,(sin(a) * 0.5f) + 0.5f);
-            SSAOInputs->SetUniform(3,(sin(a) * 0.5f) + 1.0f);
+            //SSAOInputs->SetUniform(2,(sin(a) * 0.5f) + 0.5f);
+            //SSAOInputs->SetUniform(3,(sin(a) * 0.5f) + 1.0f);
         }
     }
 
