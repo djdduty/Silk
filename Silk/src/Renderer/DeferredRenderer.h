@@ -11,7 +11,8 @@ namespace Silk
         
             virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType,bool SendLighting = true);
             void RenderSingleObject(RenderObject* Obj);
-            void LightPass(RenderObject* l);
+            void GeometryPass(ObjectList* List);
+            void LightPass(const SilkObjectVector& Lights);
             void RenderLight(Shader* S,RenderObject* Lt,RenderObject* Obj = 0);
         
             void SetPointLightObject        (RenderObject* Obj);

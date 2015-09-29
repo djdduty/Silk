@@ -13,6 +13,7 @@ namespace Silk
     {
         m_LightAccumulationBuffer = m_Raster->CreateTexture();
         OnResolutionChanged();
+        m_PostProcessingInherited = true;
     }
     DeferredRenderer::~DeferredRenderer()
     {
@@ -24,19 +25,56 @@ namespace Silk
     }
     void DeferredRenderer::RenderObjects(ObjectList *List,PRIMITIVE_TYPE PrimType,bool SendLighting)
     {
-        m_SceneOutput->EnableTarget();
-        /*
-         * To do:
-         * Determine which lights affect which objects using a scene octree
-         * then call Object->GetUniformSet()->SetLights(ObjectLightVector);
-         */
+        //Populate gbuffer
+        GeometryPass(List);
         
+        //Use gbuffer for lighting
+        LightPass(List->GetLightList());
+        
+        //TODO: Abstract all GL calls
+        //Note: These GL calls need to be moved to the Renderer::RenderTexture
+        //      function once the context state machine is written.
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+        glDisable(GL_CULL_FACE);
+        
+        m_SceneOutput->EnableTexture(m_FinalPassMat);
+        RenderTexture(0,m_FinalPassMat);
+        
+        if(m_UsePostProcessing && m_Effects.size() > 0)
+        {
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+            //glBlendEquation(GL_FUNC_ADD);
+            
+            for(i32 i = 0;i < m_Effects.size();i++)
+            {
+                m_Effects[i]->Execute();
+                RenderTexture(m_Effects[i]->GetOutput());
+            }
+            
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
+        }
+        
+        glEnable(GL_CULL_FACE);
+        
+        if(m_DebugDrawer)
+        {
+            m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Enable();
+            RenderSingleObject(m_DebugDrawer->GetObject());
+            m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Disable();
+        }
+        
+        glEnable(GL_DEPTH_TEST);
+    }
+    void DeferredRenderer::GeometryPass(ObjectList *List)
+    {
+        m_SceneOutput->EnableTarget();
         i32 ShaderCount = List->GetShaderCount();
         
         SilkObjectVector MeshesRendered;
-        i32 ActualObjectCount = 0;
-        i32 VertexCount       = 0;
-        i32 TriangleCount     = 0;
         
         for(i32 i = 0;i < ShaderCount;i++)
         {
@@ -66,7 +104,6 @@ namespace Silk
             
             Shader->Disable();
         }
-        m_SceneOutput->Disable();
         
         for(i32 i = 0;i < MeshesRendered.size();i++)
         {
@@ -95,10 +132,10 @@ namespace Silk
                 }
             }
         }
-        
-        SilkObjectVector Lights = List->GetLightList();
-        
-        //TODO: Abstract all GL calls
+        m_SceneOutput->Disable();
+    }
+    void DeferredRenderer::LightPass(const SilkObjectVector& Lights)
+    {
         glEnable(GL_BLEND);
         glDisable(GL_DEPTH_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -134,7 +171,7 @@ namespace Silk
                     PointLights[i]->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
         
 					Vec3 Color = PointLights[i]->GetLight()->m_Color.xyz();
-                    Scalar Radius = 9 * sqrt(PointLights[i]->GetLight()->m_Power * max(max(Color.x, Color.y),Color.z));
+                    Scalar Radius = (1.0 / sqrt(PointLights[i]->GetLight()->m_Attenuation.Exponential * 0.001f));
                     m_PointLightObj->SetTransform(T * Scale(Radius));
                     
                     if(m_DebugDrawer) m_DebugDrawer->DrawMesh(T,m_PointLightObj->GetMesh(),Vec4(Color,1.0f));
@@ -171,7 +208,7 @@ namespace Silk
                     SpotLights[i]->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
         
 					Vec3 Color = SpotLights[i]->GetLight()->m_Color.xyz();
-                    Scalar Radius = (1.0 / sqrt(SpotLights[i]->GetLight()->m_Attenuation.Exponential * 0.01f));
+                    Scalar Radius = (1.0 / sqrt(SpotLights[i]->GetLight()->m_Attenuation.Exponential * 0.001f));
                     Scalar BaseScale = tan(SpotLights[i]->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
                     m_SpotLightObj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
                     
@@ -230,99 +267,7 @@ namespace Silk
         }
         m_LightAccumulationBuffer->DisableRTT();
         
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
         glCullFace(GL_BACK);
-        
-        //Note: These GL calls need to be moved to the Renderer::RenderTexture
-        //      function once the context state machine is written.
-        m_SceneOutput->EnableTexture(m_FinalPassMat);
-        RenderTexture(0,m_FinalPassMat);
-        
-        glEnable (GL_CULL_FACE);
-        
-        if(m_DebugDrawer)
-        {
-            glDisable(GL_DEPTH_TEST);
-            m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Enable();
-            RenderSingleObject(m_DebugDrawer->GetObject());
-            m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Disable();
-            glEnable(GL_DEPTH_TEST);
-        }
-    }
-    void DeferredRenderer::LightPass(RenderObject* l)
-    {
-        vector<Light*>Lt;
-        Lt.push_back(l->GetLight());
-        
-        Mat4 T = l->GetTransform();
-        l->GetLight()->m_Position  = Vec4(T.GetTranslation(),1.0f);
-        l->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
-    
-        switch(l->GetLight()->m_Type)
-        {
-            case LT_POINT:
-            {
-                if(!m_PointLightMat) return;
-                RenderObject* Obj = m_PointLightObj ? m_PointLightObj : m_FSQ;
-                if(Obj != m_FSQ)
-                {
-					Vec3 Color = l->GetLight()->m_Color.xyz();
-                    Scalar Radius = 9 * sqrt(l->GetLight()->m_Power * max(max(Color.x, Color.y),Color.z));
-                    Obj->SetTransform(T * Scale(Radius));
-                }
-                
-                Obj->GetUniformSet()->SetLights(Lt);
-                
-                if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
-
-                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
-                RenderTexture(0,m_PointLightMat,Obj);
-                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
-                break;
-            }
-            case LT_SPOT:
-            {
-                if(!m_SpotLightMat) return;
-                RenderObject* Obj = m_SpotLightObj ? m_SpotLightObj : m_FSQ;
-                if(Obj != m_FSQ)
-                {
-                    Scalar Radius = (1.0 / sqrt(l->GetLight()->m_Attenuation.Exponential * 0.01f));
-                    Scalar BaseScale = tan(l->GetLight()->m_Cutoff * PI_OVER_180) * Radius;
-                    Obj->SetTransform(T * Scale(Vec3(BaseScale,BaseScale,Radius)));
-                }
-                
-                Obj->GetUniformSet()->SetLights(Lt);
-                
-                if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
-
-                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
-                RenderTexture(0,m_SpotLightMat,Obj);
-                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
-                break;
-            }
-            case LT_DIRECTIONAL:
-            {
-                if(!m_DirectionalLightMat) return;
-                RenderObject* Obj = m_DirectionalLightObj ? m_DirectionalLightObj : m_FSQ;
-                
-                if(Obj != m_FSQ) Obj->SetTransform(T);
-                
-                Obj->GetUniformSet()->SetLights(Lt);
-                
-                if(Obj != m_FSQ && m_DebugDrawer) m_DebugDrawer->DrawMesh(T * Obj->GetTransform(),Obj->GetMesh(),Vec4(0.5,0.7,1.0,1.0));
-
-                if(Obj == m_FSQ) glDisable(GL_CULL_FACE);
-                RenderTexture(0,m_DirectionalLightMat,Obj);
-                if(Obj == m_FSQ) glEnable(GL_CULL_FACE);
-                
-                break;
-            }
-            default:
-            {
-                break;
-            }
-        }
     }
     void DeferredRenderer::RenderLight(Shader* S,RenderObject* Lt,RenderObject* Obj)
     {

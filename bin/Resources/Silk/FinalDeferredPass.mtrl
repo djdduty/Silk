@@ -88,6 +88,8 @@ Material "FinalLightPass"
         TextureMaps
         {
             u_FragColor
+            u_FragPosition
+            u_FragNormal
             u_FragLightAccum
         }
         Outputs

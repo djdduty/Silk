@@ -2,7 +2,7 @@ Effect "FXAA"
 {
     Stage
     {
-        Material "FXAA_Pass"
+        Material "SSAO_Pass"
         {
             Shader
             {
@@ -14,16 +14,18 @@ Effect "FXAA"
                 {
                     o_TexCoord = a_TexCoord;
                 }
-                FragmentFunction 0
-                {
-                    vec4 SMAA_Pass0()
-                    {
-                        return vec4(1,0,1,1);
-                    }
-                }
                 FragmentModule "SetColor" 0
                 {
-                    vec4 sColor = texture(u_FragColor,sTexCoord);
+                    vec4 Pos = texture(u_FragPosition,o_TexCoord);
+                    vec4 Nrm = texture(u_FragNormal  ,o_TexCoord);
+                    vec4 sColor = vec4(0,0,0,0);
+                    
+                    if(o_TexCoord.y < 0.5)
+                    {
+                        if(o_TexCoord.x < 0.5) sColor = Nrm;
+                        else sColor = Pos;
+                        sColor.a = 1.0;
+                    }
                 }
                 Requires
                 {
@@ -41,6 +43,8 @@ Effect "FXAA"
                 TextureMaps
                 {
                     u_FragColor
+                    u_FragNormal
+                    u_FragPosition
                 }
                 Outputs
                 {

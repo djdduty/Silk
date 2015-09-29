@@ -34,6 +34,7 @@ namespace Silk
         protected:
             friend class PostProcessingEffect;
             void OnResolutionChanged(const Vec2& Resolution);
+            
             bool m_UseCustomResolution;
             Vec2 m_Resolution;
             Material* m_Material;
@@ -55,6 +56,8 @@ namespace Silk
         
             void AddStage(PostProcessingStage* Stage,i32 Iterations = 1);
             void Execute();
+        
+            Texture* GetOutput() const { return m_Stages[m_Stages.size() - 1]->GetOutput(); }
         
         protected:
             vector<PostProcessingStage*> m_Stages;

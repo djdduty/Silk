@@ -19,10 +19,7 @@ Material "PointLightPass"
             float Dist = length(SurfaceToLight);
             SurfaceToLight /= Dist;
 
-            float c = max(max(u_Lights[0].Color.r,u_Lights[0].Color.g),u_Lights[0].Color.b) * u_Lights[0].Power;
-            if(Dist > 9 * sqrt(c)) { //Sqrt... but it actually helps WAY more than it hurts, 9 is some arbitrary number that seems to work well.
-                discard;
-            }
+            if(Dist > 1.0 / sqrt(u_Lights[0].QAtt * 0.001)) discard;
 
             vec4  Normal     = texture(u_FragNormal,sTexCoord);
             float Lambertian = max(dot(Normal.xyz,SurfaceToLight),0.0);
@@ -33,7 +30,8 @@ Material "PointLightPass"
                 float Attenuation = 1.0 / (u_Lights[0].CAtt + (u_Lights[0].LAtt * Dist) * (u_Lights[0].QAtt * Dist * Dist));
                 if(Attenuation < 0.00001) discard;
                 vec4 specTotal = vec4(0);
-                if(Material0.y > 0.0) {
+                if(Material0.y > 0.0)
+                {
                     vec3 ViewDir      = normalize(u_CameraPosition - Position.xyz);
                     vec3 HalfDir      = normalize(SurfaceToLight + ViewDir);
                     float sAngle      = max(dot(HalfDir,Normal.xyz),0.0);
@@ -43,9 +41,8 @@ Material "PointLightPass"
 
                 vec4 ColorLinear  = (Attenuation * u_Lights[0].Power * ((Lambertian * u_Lights[0].Color))) + specTotal;
                 sColor = ColorLinear;
-            } else {
-                discard;
             }
+            else discard;
         }
         Requires
         {

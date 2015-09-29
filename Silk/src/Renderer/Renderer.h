@@ -158,6 +158,7 @@ namespace Silk
         
             //Post processing
             bool m_UsePostProcessing;
+            bool m_PostProcessingInherited;
             FrameBuffer* m_SceneOutput;
             vector<PostProcessingEffect*> m_Effects;
         

@@ -15,7 +15,7 @@
 namespace Silk
 {
 	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0),
-                                                                  m_UsePostProcessing(false), m_SceneOutput(0)
+                                                                  m_UsePostProcessing(false), m_PostProcessingInherited(false), m_SceneOutput(0)
     {
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_UsedFragmentOutputs[i] = 0;
     }
@@ -156,18 +156,18 @@ namespace Silk
         SilkObjectVector Lights = m_Scene->GetObjectList()->GetLightList();
         for(i32 i = 0;i < Lights.size();i++) CullResult->m_VisibleObjects->AddObject(Lights[i]);
         
-        /* Enable custom framebuffer if using post effects */
-        if(m_UsePostProcessing && m_Effects.size() > 0) m_SceneOutput->EnableTarget();
+        /* Enable gbuffer if using post effects */
+        if(!m_PostProcessingInherited && m_UsePostProcessing && m_Effects.size() > 0) m_SceneOutput->EnableTarget();
         
         /* Render objects */
         RenderObjects(CullResult->m_VisibleObjects,PrimType);
         
-        /* Do post processing */
-        if(m_UsePostProcessing)
+        /* Do post processing maybe */
+        if(!m_PostProcessingInherited && m_UsePostProcessing)
         {
             glEnable(GL_BLEND);
             glDisable(GL_DEPTH_TEST);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glBlendFunc(GL_SRC_ALPHA,GL_ONE);
             m_SceneOutput->Disable();
             for(i32 i = 0;i < m_Effects.size();i++)
             {
@@ -201,7 +201,6 @@ namespace Silk
         m_Stats.AverageVisibleObjects                .AddSample(m_Stats.VisibleObjects                );
         m_Stats.AverageFramerate                     .AddSample(m_Stats.FrameRate                     );
         m_Stats.AverageMultithreadedCullingEfficiency.AddSample(m_Stats.MultithreadedCullingEfficiency);
-        
         
         delete CullResult;
     }

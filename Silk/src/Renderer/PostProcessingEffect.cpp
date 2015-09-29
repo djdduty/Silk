@@ -34,9 +34,11 @@ namespace Silk
     }
     void PostProcessingStage::SetMaterial(Material *Mat)
     {
+        Texture* PreviousStageOutput = m_Material ? m_Material->GetMap(Material::MT_POST_PROCESSING_OUTPUT) : 0;
         if(m_Material) m_Material->Destroy();
         m_Material = Mat;
         m_Material->AddRef();
+        m_Material->SetMap(Material::MT_POST_PROCESSING_OUTPUT,PreviousStageOutput);
     }
     void PostProcessingStage::SetInput(ShaderGenerator::OUTPUT_FRAGMENT_TYPE InputType,bool Flag)
     {
@@ -62,7 +64,6 @@ namespace Silk
         m_Output->EnableRTT(false);
         m_Renderer->RenderTexture(0,m_Material);
         m_Output->DisableRTT();
-        m_Renderer->RenderTexture(m_Output);
     }
     void PostProcessingStage::OnResolutionChanged(const Vec2 &Resolution)
     {
@@ -153,6 +154,10 @@ namespace Silk
     }
     void PostProcessingEffect::AddStage(Silk::PostProcessingStage *Stage,i32 Iterations)
     {
+        if(m_Stages.size() > 0)
+        {
+            Stage->m_Material->SetMap(Material::MT_POST_PROCESSING_OUTPUT,m_Stages[m_Stages.size() - 1]->GetOutput());
+        }
         m_Stages.push_back(Stage);
         m_StageIterations.push_back(Iterations);
     }
