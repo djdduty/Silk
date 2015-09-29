@@ -36,6 +36,10 @@ namespace TestClient
             void InitGUI();
 			void InitDebugDisplay();
             void InitFlyCamera(const Vec3& InitPos = Vec3(0,5,0));
+            void InitSSAO();
+            void SetSSAORadius(Scalar Radius);
+            void SetSSAOIntensity(Scalar Intensity);
+            void SetSSAONoiseScale(i32 Scale);
         
             UIManager   * GetUI   () const { return m_UIManager   ; }
             InputManager* GetInput() const { return m_InputManager; }
@@ -103,6 +107,9 @@ namespace TestClient
             Ray m_CursorRay;
         
             i32 m_RTTIndex;
+        
+            PostProcessingEffect* m_SSAO;
+            Texture* m_SSAORandomTex;
         
             ObjLoader* m_ObjLoader;
             vector<UIElement   *> m_UIElements ;

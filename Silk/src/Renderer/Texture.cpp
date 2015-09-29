@@ -44,6 +44,8 @@ namespace Silk
 	
     void Texture::CreateTexture(i32 Width,i32 Height,PIXEL_TYPE Type)
     {
+        if(Width == 0 || Height == 0) return;
+        
         if(Type < 0 || Type >= Texture::PT_COUNT) { ERROR("Invalid pixel type.\n"); return; }
         if(m_Pixels)
         {

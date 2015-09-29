@@ -2,8 +2,6 @@
 #include <Test.h>
 #include <Renderer/DeferredRenderer.h>
 
-#define SSAO_KERNEL_SIZE 128
-
 namespace TestClient
 {
     class ObjLoader;
