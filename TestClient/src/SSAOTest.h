@@ -1,6 +1,5 @@
 #pragma once
 #include <Test.h>
-#include <Renderer/DeferredRenderer.h>
 
 namespace TestClient
 {

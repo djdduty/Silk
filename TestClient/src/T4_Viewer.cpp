@@ -209,6 +209,25 @@ namespace TestClient
         InitGUI         ();
         InitFlyCamera   ();
         //InitDebugDisplay();
+		
+        InitSSAO();
+        SetSSAORadius    (0.5f);
+        SetSSAOIntensity (1.0f);
+        SetSSAONoiseScale(4);
+		
+        Material* Pt = m_Renderer->CreateMaterial();
+        Pt->LoadMaterial(Load("Silk/PointLight.mtrl"));
+        Material* Sp = m_Renderer->CreateMaterial();
+        Sp->LoadMaterial(Load("Silk/SpotLight.mtrl"));
+		Material* Dr = m_Renderer->CreateMaterial();
+        Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
+        Material* Final = m_Renderer->CreateMaterial();
+        Final->LoadMaterial(Load("Silk/FinalDeferredPass.mtrl"));
+		DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
+        r->SetPointLightMaterial(Pt);
+        r->SetSpotLightMaterial(Sp);
+        r->SetDirectionalLightMaterial(Dr);
+        r->SetFinalPassMaterial(Final);
         
         ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_Rasterizer->SetClearColor(Vec4(0,0,0,1));
@@ -237,12 +256,26 @@ namespace TestClient
         m_ShaderGenerator->SetAttributeOutput (ShaderGenerator::IAT_TEXCOORD,true);
         m_ShaderGenerator->SetAttributeOutput (ShaderGenerator::IAT_NORMAL  ,true);
         
-        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_COLOR   ,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_COLOR    ,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_POSITION ,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_NORMAL   ,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_MATERIAL0,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_MATERIAL1,true);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>(
+                "[SetMaterial0]\n"
+                "vec4 sMaterial0 = vec4(u_Specular,u_Shininess,0.0,0.0);\n"
+                "[/SetMaterial0]\n"
+                ),0);
+        m_ShaderGenerator->AddFragmentModule(const_cast<CString>(
+                "[SetMaterial1]\n"
+                "vec4 sMaterial1 = u_Emissive;\n"
+                "[/SetMaterial1]\n"
+                ),1);
         
         m_ShaderGenerator->AddVertexModule  ("[PtSz]gl_PointSize = 5.0;[/PtSz]",0);
         m_ShaderGenerator->AddFragmentModule("[AlphaTest]if(sColor.a < 0.1) discard;[/AlphaTest]",0);
         
-        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_PHONG);
+        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_PASS);
         
         m_Shdr = m_ShaderGenerator->Generate();
         
