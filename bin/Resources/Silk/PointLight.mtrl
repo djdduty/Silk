@@ -19,7 +19,7 @@ Material "PointLightPass"
             float Dist = length(SurfaceToLight);
             SurfaceToLight /= Dist;
 
-            if(Dist > 1.0 / sqrt(u_Lights[0].QAtt * 0.001)) discard;
+            if(Dist > (1.0 / sqrt(u_Lights[0].QAtt))*3) discard;
 
             vec4  Normal     = texture(u_FragNormal,sTexCoord);
             float Lambertian = max(dot(Normal.xyz,SurfaceToLight),0.0);
