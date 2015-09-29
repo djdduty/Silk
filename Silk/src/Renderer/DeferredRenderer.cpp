@@ -169,7 +169,7 @@ namespace Silk
                     PointLights[i]->GetLight()->m_Direction = Vec4(T.GetZ(),1.0f);
         
 					Vec3 Color = PointLights[i]->GetLight()->m_Color.xyz();
-                    Scalar Radius = (1.0 / sqrt(PointLights[i]->GetLight()->m_Attenuation.Exponential * 0.001f));
+                    Scalar Radius = (1.0 / sqrt(PointLights[i]->GetLight()->m_Attenuation.Exponential))*3;
                     m_PointLightObj->SetTransform(T * Scale(Radius));
                     
                     if(m_DebugDrawer) m_DebugDrawer->DrawMesh(T,m_PointLightObj->GetMesh(),Vec4(Color,1.0f));

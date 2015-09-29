@@ -42,28 +42,6 @@ namespace TestClient
     {
         Light* L = 0;
         
-        L = AddLight(LT_POINT,Vec3(0,2,0))->GetLight();
-        L->m_Color                   = Vec4(1,0,1,1);
-        L->m_Power                   = 10.0f;
-        L->m_Attenuation.Constant    = 3.00f;
-        L->m_Attenuation.Linear      = 0.15f;
-        L->m_Attenuation.Exponential = 0.1f ;
-
-        RenderObject* LObj = AddLight(LT_DIRECTIONAL,Vec3(0,11,0));
-		L = LObj->GetLight();
-        L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 1.8f;
-		LObj->SetTransform(RotationX(60));
-        
-        L = AddLight(LT_SPOT,Vec3(0,8,0))->GetLight();
-        L->m_Color                   = Vec4(1,1,1,1);
-        L->m_Power                   = 10.0f;
-        L->m_Cutoff                  = 20.0f;
-        L->m_Soften                  = 0.5f ;
-        L->m_Attenuation.Constant    = 0.00f;
-        L->m_Attenuation.Linear      = 0.10f;
-        L->m_Attenuation.Exponential = 0.001f;
-        
         for(i32 x = -5; x < 5; x++)
         {
             for(i32 z = -5; z < 5; z++)
@@ -76,10 +54,10 @@ namespace TestClient
                 randb *= 0.01;
                 L = AddLight(LT_POINT,Vec3(x*10+5,5,z*10-10))->GetLight();
                 L->m_Color                   = Vec4(randr,randg,randb,1);
-                L->m_Power                   = 15.0f;
-                L->m_Attenuation.Constant    = 5.00f;
-                L->m_Attenuation.Linear      = 0.25f;
-                L->m_Attenuation.Exponential = 0.2f;
+                L->m_Power                   = 1.5f;
+                L->m_Attenuation.Constant    = 0.00f;
+                L->m_Attenuation.Linear      = 0.10f;
+                L->m_Attenuation.Exponential = 0.05f;
             }
         }
     }
@@ -88,7 +66,7 @@ namespace TestClient
         m_Meshes[AddMesh("LightingTest/Scene.object",m_Materials[0],Vec3(0,0,0))]->SetTransform(Scale(10.0f));
 
         DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
-        RenderObject* Point = m_Meshes[AddMesh("Silk/PointLight.object",r->GetPointLightMaterial(),Vec3(0,0,0))];
+        RenderObject* Point = m_Meshes[AddMesh("Silk/bsphere.object",r->GetPointLightMaterial(),Vec3(0,0,0))];
         RenderObject* Spot  = m_Meshes[AddMesh("Silk/SpotLight.object" ,r->GetSpotLightMaterial (),Vec3(0,0,0))];
         
         r->SetPointLightObject(Point);
