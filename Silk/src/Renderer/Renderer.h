@@ -94,7 +94,6 @@ namespace Silk
             FrameBuffer* GetSceneOutput() const { return m_SceneOutput; }
             void SetUsePostProcessing(bool Flag);
             i32 AddPostProcessingEffect(PostProcessingEffect* Effect);
-            
         
             void UpdateUniforms();
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);

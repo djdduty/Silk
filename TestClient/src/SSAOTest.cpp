@@ -42,8 +42,8 @@ namespace TestClient
         SetFPSPrintFrequency(0.5f);
         
         InitSSAO();
-        SetSSAORadius    (0.2f);
-        SetSSAOIntensity (1.0f);
+        SetSSAORadius    (0.5f);
+        SetSSAOIntensity (2.0f);
         SetSSAONoiseScale(4);
     }
     void SSAOTest::LoadLight()

@@ -713,7 +713,11 @@ namespace Silk
                 FragmentShader += string("") + GetFragmentOutputTypeName((ShaderGenerator::OUTPUT_FRAGMENT_TYPE)i) + " = ";
                 if(i >= OFT_POSITION && i <= OFT_TANGENT)
                 {
-                    FragmentShader += "vec4(" + AttribVarName[i] + ",1.0);\n";
+                    if(i == OFT_NORMAL && m_FragmentOutputsUsed[OFT_POSITION])
+                    {
+                        FragmentShader += "vec4(" + AttribVarName[i] + ",(length(sPosition - u_CameraPosition) - u_NearPlane) / u_FarPlane);\n";
+                    }
+                    else FragmentShader += "vec4(" + AttribVarName[i] + ",1.0);\n";
                 }
                 else
                 {

@@ -151,6 +151,7 @@ namespace Silk
     {
         m_UniformBuffer = r->GetRasterizer()->CreateUniformBuffer(ShaderGenerator::IUT_RENDERER_UNIFORMS);
         m_iProjection      = m_UniformBuffer->DefineUniform("u_Projection"     );
+        m_iInvProjection   = m_UniformBuffer->DefineUniform("u_InvProjection"  );
         m_iView            = m_UniformBuffer->DefineUniform("u_View"           );
         m_iViewport        = m_UniformBuffer->DefineUniform("u_Viewport"       );
         m_iCameraPosition  = m_UniformBuffer->DefineUniform("u_CameraPosition" );
@@ -166,6 +167,7 @@ namespace Silk
         Vec2 Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         m_UniformBuffer->SetUniform(m_iView           ,Mat4::Identity       );
         m_UniformBuffer->SetUniform(m_iProjection     ,Mat4::Identity       );
+        m_UniformBuffer->SetUniform(m_iInvProjection  ,Mat4::Identity       );
         m_UniformBuffer->SetUniform(m_iViewport       ,Vec4()               );
         m_UniformBuffer->SetUniform(m_iCameraPosition ,Vec3()               );
         m_UniformBuffer->SetUniform(m_iCameraDirection,Vec3()               );
@@ -194,7 +196,7 @@ namespace Silk
         if(DidTrans)                     m_UniformBuffer->SetUniform(m_iCameraPosition ,cPos                 );
         if(DidTrans)                     m_UniformBuffer->SetUniform(m_iCameraDirection,cFwd                 );
         if(DidTrans)                     m_UniformBuffer->SetUniform(m_iView           ,cTrans.Inverse()     );
-        if(Cam->DidProjectionUpdate  ()) m_UniformBuffer->SetUniform(m_iProjection     ,Cam->GetProjection ());
+        if(Cam->DidProjectionUpdate  ()) { m_UniformBuffer->SetUniform(m_iProjection   ,Cam->GetProjection ()); m_UniformBuffer->SetUniform(m_iInvProjection,Cam->GetProjection ().Inverse()); }
         if(Cam->DidViewportUpdate    ()) m_UniformBuffer->SetUniform(m_iViewport       ,Cam->GetViewport   ());
         if(Cam->DidExposureUpdate    ()) m_UniformBuffer->SetUniform(m_iExposire       ,Cam->GetExposure   ());
         if(Cam->DidFieldOfViewUpdate ()) m_UniformBuffer->SetUniform(m_iFieldOfView    ,Cam->GetFieldOfView());
