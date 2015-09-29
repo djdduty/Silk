@@ -45,6 +45,19 @@ namespace TestClient
         Effect->LoadEffect(Load("Common/SSAO.ppe"));
         m_Renderer->SetUsePostProcessing(true);
         m_Renderer->AddPostProcessingEffect(Effect);
+        
+        UniformBuffer* SSAOInputs = Effect->GetStage(0)->GetMaterial()->GetUserUniforms();
+        
+        vector<Vec3> SSAOKernel;
+        for(i32 i = 0;i < SSAO_KERNEL_SIZE;i++)
+        {
+            SSAOKernel.push_back(RandomVec(1.0f));
+            SSAOKernel[i].z = abs(SSAOKernel[i].z);
+        }
+        
+        SSAOInputs->SetUniform(0,SSAOKernel      );
+        SSAOInputs->SetUniform(1,SSAO_KERNEL_SIZE);
+        SSAOInputs->SetUniform(2,0.5f);
     }
     void SSAOTest::LoadLight()
     {

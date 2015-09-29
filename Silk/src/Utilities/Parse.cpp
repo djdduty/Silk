@@ -29,7 +29,7 @@ namespace Silk
                     if(NonDelimiters[i] == c) { IsNonDelim = true; break; }
                 }
                 if(IsNonDelim) Word += c;
-                else break;
+                else { Offset--; break; }
             }
         }
         
@@ -81,7 +81,7 @@ namespace Silk
                         
                         Val += c;
                     }
-                    else break;
+                    else { Offset--; break; }
                 }
                 return (IsNeg ? -1 : 1) * atoi(Val.c_str());
             }
@@ -115,7 +115,7 @@ namespace Silk
                         
                         Val += c;
                     }
-                    else break;
+                    else { Offset--; break; }
                 }
                 return (IsNeg ? -1 : 1) * atol(Val.c_str());;
             }
@@ -149,7 +149,7 @@ namespace Silk
                         
                         Val += c;
                     }
-                    else break;
+                    else { Offset--; break; }
                 }
                 return (IsNeg ? -1 : 1) * atof(Val.c_str());
             }
@@ -183,7 +183,7 @@ namespace Silk
                         
                         Val += c;
                     }
-                    else break;
+                    else { Offset--; break; }
                 }
                 return (IsNeg ? -1 : 1) * atof(Val.c_str());
             }
