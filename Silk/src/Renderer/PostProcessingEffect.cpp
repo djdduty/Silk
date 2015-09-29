@@ -19,6 +19,7 @@ namespace Silk
         m_Output = m_Renderer->GetRasterizer()->CreateTexture();
         m_Material = 0;
         m_ResolutionScale = 1.0f;
+		m_Resolution = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
         
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) m_Inputs[i] = false;
     }
