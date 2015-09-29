@@ -19,7 +19,7 @@ Effect "FXAA"
                     vec4 Pos = texture(u_FragPosition,o_TexCoord);
                     vec4 Nrm = texture(u_FragNormal  ,o_TexCoord);
                     vec4 sColor = vec4(0,0,0,0);
-                    
+
                     if(o_TexCoord.y < 0.5)
                     {
                         if(o_TexCoord.x < 0.5) sColor = Nrm;
@@ -31,7 +31,7 @@ Effect "FXAA"
                 {
                     //Uniforms
                     RenderData
-                    
+
                     //Attributes
                     a_Position
                     a_TexCoord
