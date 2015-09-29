@@ -69,9 +69,8 @@ Effect "FXAA"
                             AO += step(SampleDepth,u_FarPlane - SamplePos.z);
                         }
                     }
-                    AO = 1.0 - (AO / float(KernelSize));
-                    sColor.xyz = vec3(pow(AO,2.0));
-                    sColor.w   = 1.0;
+                    AO = (AO / float(KernelSize));
+                    sColor = vec4(0,0,0,AO);
                 }
                 Uniforms "Inputs"
                 {
