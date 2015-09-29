@@ -14,23 +14,76 @@ Effect "FXAA"
                 {
                     o_TexCoord = a_TexCoord;
                 }
+                FragmentFunction 0
+                {
+                    mat3 CreateTBN(vec3 SurfaceNormal,vec3 RandomNormal)
+                    {
+                        // Gram–Schmidt process to construct an orthogonal basis.
+                        vec3 t = normalize(RandomNormal - SurfaceNormal * dot(RandomNormal,SurfaceNormal));
+                        vec3 b = cross(SurfaceNormal,t);
+                        return mat3(t,b,SurfaceNormal);
+                    }
+                    
+                    float hash(float n)
+                    {
+                        return fract(sin(n) * 43758.5453);
+                    }
+
+                    float Noise(vec3 x)
+                    {
+                        // The noise function returns a value in the range -1.0f -> 1.0f
+                        vec3 p = floor(x);
+                        vec3 f = fract(x);
+
+                              f = f * f * (3.0 - 2.0 * f);
+                        float n = p.x + p.y * 57.0 + 113.0 * p.z;
+
+                        return mix(mix(mix(hash(n + 0.0  ), hash(n + 1.0  ),f.x),
+                                       mix(hash(n + 57.0 ), hash(n + 58.0 ),f.x),f.y),
+                                   mix(mix(hash(n + 113.0), hash(n + 114.0),f.x),
+                                       mix(hash(n + 170.0), hash(n + 171.0),f.x),f.y),f.z);
+                    }
+                }
                 FragmentModule "SetColor" 0
                 {
-                    vec4 Pos = texture(u_FragPosition,o_TexCoord);
-                    vec4 Nrm = texture(u_FragNormal  ,o_TexCoord);
+                    vec4 Pos = u_View * vec4(texture(u_FragPosition,o_TexCoord).xyz,1.0);
+                    vec3 Nrm = mat3(u_View) * texture(u_FragNormal  ,o_TexCoord).xyz;
+                    float Depth = u_FarPlane - Pos.z;
+                    
                     vec4 sColor = vec4(0,0,0,0);
-
-                    if(o_TexCoord.y < 0.5)
+                    float AO = 0.0;
+                    for(int i = 0;i < KernelSize;i++)
                     {
-                        if(o_TexCoord.x < 0.5) sColor = Nrm;
-                        else sColor = Pos;
-                        sColor.a = 1.0;
+                        mat3 TBN = CreateTBN(Nrm,normalize(vec3(Noise(u_CameraDirection),Noise(u_CameraDirection),Noise(u_CameraDirection))));
+                        
+                        vec3 SamplePos = Pos.xyz + (TBN * Kernel[i]) * SampleRadius;
+                        vec4 Offset = vec4(SamplePos,1.0);
+                        Offset = u_Projection * Offset;
+                        Offset.xy /= Offset.w;
+                        Offset.xy = Offset.xy * 0.5 + vec2(0.5);
+
+                        float SampleDepth = u_FarPlane - (u_View * vec4(texture(u_FragPosition,Offset.xy).xyz,1.0)).z;
+
+                        if(abs(Depth - SampleDepth) < SampleRadius)
+                        {
+                            AO += step(SampleDepth,u_FarPlane - SamplePos.z);
+                        }
                     }
+                    AO = 1.0 - (AO / float(KernelSize));
+                    sColor.xyz = vec3(pow(AO,2.0));
+                    sColor.w   = 1.0;
+                }
+                Uniforms "Inputs"
+                {
+                    vec3  Kernel[32]
+                    int   KernelSize   = 32
+                    float SampleRadius = 5.0
                 }
                 Requires
                 {
                     //Uniforms
                     RenderData
+                    Inputs
 
                     //Attributes
                     a_Position
