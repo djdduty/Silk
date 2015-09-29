@@ -50,12 +50,12 @@ Effect "FXAA"
                     vec3 Nrm = mat3(u_View) * texture(u_FragNormal  ,o_TexCoord).xyz;
                     float Depth = u_FarPlane - Pos.z;
                     
+                    mat3 TBN = CreateTBN(Nrm,Kernel[int(max(0,Noise(gl_FragCoord.xyz))) * KernelSize]);
+                    
                     vec4 sColor = vec4(0,0,0,0);
                     float AO = 0.0;
                     for(int i = 0;i < KernelSize;i++)
                     {
-                        mat3 TBN = CreateTBN(Nrm,normalize(vec3(Noise(u_CameraDirection),Noise(u_CameraDirection),Noise(u_CameraDirection))));
-                        
                         vec3 SamplePos = Pos.xyz + (TBN * Kernel[i]) * SampleRadius;
                         vec4 Offset = vec4(SamplePos,1.0);
                         Offset = u_Projection * Offset;
@@ -70,13 +70,14 @@ Effect "FXAA"
                         }
                     }
                     AO = (AO / float(KernelSize));
-                    sColor = vec4(0,0,0,AO);
+                    sColor = vec4(0,0,0,AO * Strength);
                 }
                 Uniforms "Inputs"
                 {
-                    vec3  Kernel[32]
-                    int   KernelSize   = 32
+                    vec3  Kernel[128]
+                    int   KernelSize   = 128
                     float SampleRadius = 5.0
+                    float Strength     = 1.0
                 }
                 Requires
                 {
@@ -104,6 +105,76 @@ Effect "FXAA"
                 }
             }
         }
+        
+        Iterations 1
+        OutputType ubyte
+
+        Requires
+        {
+            f_Color
+        }
+    }
+    Stage
+    {
+        Material "SSAO_Blur"
+        {
+            Shader
+            {
+                VertexModule "SetGLPosition" 0
+                {
+                    gl_Position = vec4(a_Position,1.0);
+                }
+                VertexModule "SetTexCoords" 1
+                {
+                    o_TexCoord = a_TexCoord;
+                }
+                FragmentModule "SetColor" 0
+                {
+                    vec4 sColor = vec4(0,0,0,0);
+                    if(o_TexCoord.x < 0.5)
+                    {
+                        vec2 TexelSize = 1.0 / vec2(textureSize(u_PostProcessOut,0));
+                        float Result = 0.0;
+                        int BlurRadius = 10;
+                        vec2 hlim = vec2(-float(BlurRadius) * 0.5 + 0.5);
+                        
+                        for(int i = 0;i < BlurRadius;i++)
+                        {
+                            for(int j = 0;j < BlurRadius;j++)
+                            {
+                                 vec2 Offset = (hlim + vec2(float(i),float(j))) * TexelSize;
+                                 Result += texture(u_PostProcessOut,o_TexCoord + Offset).a;
+                            }
+                        }
+
+                        sColor = vec4(0,0,0,Result / float(BlurRadius * BlurRadius));
+                    }
+                    
+                }
+                Requires
+                {
+                    //Uniforms
+                    RenderData
+
+                    //Attributes
+                    a_Position
+                    a_TexCoord
+                }
+                VertexOutputs
+                {
+                    a_TexCoord
+                }
+                TextureMaps
+                {
+                    u_PostProcessOut
+                }
+                Outputs
+                {
+                    f_Color
+                }
+            }
+        }
+        
         Iterations 1
         OutputType ubyte
 

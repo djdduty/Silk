@@ -191,13 +191,26 @@ namespace Silk
     }
     void PrintShader(const string& Code)
     {
+        vector<string>Lines;
         string l;
         bool LineStarted = false;
         for(i32 i = 0;i < Code.length();i++)
         {
             if(Code[i] != ' ') LineStarted = true;
             if(Code[i] != '\t' && LineStarted) l += Code[i];
-            if(Code[i] == '\n') { printf("%d|%s",i + 1,l.c_str()); l.clear(); LineStarted = false; }
+            if(Code[i] == '\n') { Lines.push_back(l); l.clear(); LineStarted = false; }
+        }
+        
+        i32 Level = 0;
+        for(i32 i = 0;i < Lines.size();i++)
+        {
+            for(i32 t = Lines[i][0] == '}' ? 1 : 0;t < Level;t++) Lines[i].insert(0,"\t");
+            for(i32 c = 0;c < Lines[i].length();c++)
+            {
+                if(Lines[i][c] == '{') Level++;
+                else if(Lines[i][c] == '}') Level--;
+            }
+            printf("%d|%s",i + 1,Lines[i].c_str());
         }
     }
     Shader* ShaderGenerator::Generate()
