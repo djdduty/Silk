@@ -89,7 +89,7 @@ Effect "FXAA"
                 }
             }
         }
-        ResolutionScale 0.01
+        ResolutionScale 0.375
         Iterations 1
         OutputType ubyte
 
@@ -158,7 +158,7 @@ Effect "FXAA"
                 }
             }
         }
-        ResolutionScale 0.01
+        ResolutionScale 0.375
         Iterations 1
         OutputType ubyte
 
