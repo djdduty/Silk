@@ -41,3 +41,28 @@ bin/Debug/*.*
 bin/Release/*.*
 
 
+ALL_BUILD.vcxproj.filters
+ALL_BUILD.vcxproj.user
+*.rule
+Dependencies/CMakeFiles/generate.stamp
+*.depend
+Dependencies/glew/Glew.dir/Debug/CL.write.1.tlog
+*.tlog
+Dependencies/glew/Glew.dir/Debug/Glew.Build.CppClean.log
+*.filters
+Dependencies/glew/INSTALL.vcxproj
+*.lastbuildstate
+Win32/Release/ZERO_CHECK/ZERO_CHECK.log
+*.log
+TestClient/INSTALL.vcxproj
+*.pdb
+*.user
+Win32/Release/ALL_BUILD/ALL_BUILD.vcxprojResolveAssemblyReference.cache
+*.cache
+*.vcxproj
+Silk/CMakeFiles/generate.stamp
+*.stamp
+lib/Debug/TestClient.exp
+Silk.opensdf
+*.sdf
+Silk.v11.suo

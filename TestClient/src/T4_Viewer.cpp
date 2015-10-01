@@ -244,8 +244,7 @@ namespace TestClient
         InitGUI         ();
         InitFlyCamera   ();
         InitDebugDisplay();
-        
-        ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
         m_Rasterizer->SetClearColor(Vec4(0,0,0,1));
         SetFPSPrintFrequency(0.5f);
         SetTargetFrameRate(100000);

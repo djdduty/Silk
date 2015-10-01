@@ -56,8 +56,8 @@ Effect "FXAA"
                 }
                 Uniforms "Inputs"
                 {
-                    vec3  Kernel[16]
-                    int   KernelSize   = 16
+                    vec3  Kernel[32]
+                    int   KernelSize   = 32
                     float SampleRadius = 5.0
                     float Strength     = 1.0
                     int   NoiseStretch = 4
@@ -89,7 +89,7 @@ Effect "FXAA"
                 }
             }
         }
-        ResolutionScale 1.0
+        ResolutionScale 0.375
         Iterations 1
         OutputType ubyte
 
@@ -158,7 +158,7 @@ Effect "FXAA"
                 }
             }
         }
-        ResolutionScale 1.0
+        ResolutionScale 0.375
         Iterations 1
         OutputType ubyte
 

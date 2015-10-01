@@ -51,8 +51,8 @@ namespace Silk
         if(Type != m_Output->GetPixelType())
         {
             m_OutputType = Type;
-            if(m_OutputType == Texture::PT_FLOAT) m_Output->CreateTexturef(m_Resolution.x,m_Resolution.y,0);
-            else m_Output->CreateTextureb(m_Resolution.x,m_Resolution.y,0);
+			if(m_OutputType == Texture::PT_FLOAT) m_Output->CreateTexturef(m_Resolution.x * m_ResolutionScale,m_Resolution.y * m_ResolutionScale,0);
+            else m_Output->CreateTextureb(m_Resolution.x * m_ResolutionScale,m_Resolution.y * m_ResolutionScale,0);
             m_Output->UpdateTexture();
         }
     }
