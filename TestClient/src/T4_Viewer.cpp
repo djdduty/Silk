@@ -40,13 +40,14 @@ namespace TestClient
             return false;
         }
     }
-    void T4_Viewer::AddActorToScene(Actor *a)
+    void T4_Viewer::AddActorToScene(Actor *a,bool IsStatic)
     {
         string fn = a->GetFilename();
         cout << "Adding actor to scene <" << fn << ">." << endl;
         ActorMesh* m = a->GetMesh();
         if(!m) return;
         
+        m_Actors.push_back(SilkObjectVector());
         for(i32 s = 0;s < m->GetSubMeshCount();s++)
         {
             Texture* t = 0;
@@ -132,6 +133,9 @@ namespace TestClient
                     Obj->SetMesh(M,Mat);
                     m_Renderer->GetScene()->AddRenderObject(Obj);
                     
+                    m_Actors[m_ActorDefs.size()].push_back(Obj);
+                    Obj->SetObjectID(m_ActorDefs.size());
+                    
                     m_Meshes.push_back(Obj);
                 }
                 else if(sm->GetChunkCount() != 0)
@@ -199,16 +203,47 @@ namespace TestClient
                         m_Renderer->GetScene()->AddRenderObject(Obj);
                         
                         m_Meshes.push_back(Obj);
+                        
+                        m_Actors[m_ActorDefs.size()].push_back(Obj);
+                        Obj->SetObjectID(m_ActorDefs.size());
                     }
                 }
             }
         }
+        
+        m_ActorDefs.push_back(a);
+        m_ActorIsStatic.push_back(IsStatic);
+    }
+    Mat4 T4_Viewer::GetActorTransform(i32 AID) const
+    {
+        Mat4 T = Translation(*(Vec3*)&m_ActorDefs[AID]->Position);
+        Mat4 R = Rotation(m_ActorDefs[AID]->Rotation.y,m_ActorDefs[AID]->Rotation.z,m_ActorDefs[AID]->Rotation.x);
+        Mat4 S = Scale(*(Vec3*)&m_ActorDefs[AID]->Scale);
+        return T * R * S;
+    }
+    void T4_Viewer::SetActorPosition(i32 AID,const Vec3& Pos)
+    {
+        m_ActorDefs[AID]->Position = *(ActorVec3*)&Pos;
+        Mat4 t = GetActorTransform(AID);
+        for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
+    }
+    void T4_Viewer::SetActorRotation(i32 AID,const Vec3& Rot)
+    {
+        m_ActorDefs[AID]->Rotation = *(ActorVec3*)&Rot;
+        Mat4 t = GetActorTransform(AID);
+        for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
+    }
+    void T4_Viewer::SetActorScale   (i32 AID,const Vec3& Scl)
+    {
+        m_ActorDefs[AID]->Scale    = *(ActorVec3*)&Scl;
+        Mat4 t = GetActorTransform(AID);
+        for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
     }
     void T4_Viewer::Initialize()
     {
         InitGUI         ();
         InitFlyCamera   ();
-        //InitDebugDisplay();
+        InitDebugDisplay();
         
         ((OpenGLRasterizer*)m_Rasterizer)->SetClearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_Rasterizer->SetClearColor(Vec4(0,0,0,1));
@@ -238,20 +273,57 @@ namespace TestClient
         m_ShaderGenerator->SetAttributeOutput (ShaderGenerator::IAT_NORMAL  ,true);
         
         m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_COLOR   ,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_POSITION,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_NORMAL  ,true);
+        m_ShaderGenerator->SetFragmentOutput  (ShaderGenerator::OFT_CUSTOM0 ,true);
+        
         
         m_ShaderGenerator->AddVertexModule  ("[PtSz]gl_PointSize = 5.0;[/PtSz]",0);
         m_ShaderGenerator->AddFragmentModule("[AlphaTest]if(sColor.a < 0.1) discard;[/AlphaTest]",0);
+        m_ShaderGenerator->AddFragmentModule(
+        "[SetCustom0]"
+        "int x = (u_ObjectID & int(0xff000000)) >> 24;\n"
+        "int y = (u_ObjectID & int(0x00ff0000)) >> 16;\n"
+        "int z = (u_ObjectID & int(0x0000ff00)) >>  8;\n"
+        "int w = (u_ObjectID & int(0x000000ff)) >>  0;\n"
+        "float Inv255 = 1.0 / 255.0;\n"
+        "vec4 sCustom0 = vec4(float(w) * Inv255,float(z) * Inv255,float(y) * Inv255,float(x) * Inv255);\n"
+        "[/SetCustom0]",1);
         
-        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_PHONG);
+        m_ShaderGenerator->SetLightingMode(ShaderGenerator::LM_PASS);
         
         m_Shdr = m_ShaderGenerator->Generate();
+        
+        //Light pass materials
+        DeferredRenderer* r = (DeferredRenderer*)m_Renderer;
+        
+        Material* Pt = m_Renderer->CreateMaterial();
+        Pt->LoadMaterial(Load("Silk/PointLight.mtrl"));
+        Material* Sp = m_Renderer->CreateMaterial();
+        Sp->LoadMaterial(Load("Silk/SpotLight.mtrl"));
+		Material* Dr = m_Renderer->CreateMaterial();
+        Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
+        Material* Final = m_Renderer->CreateMaterial();
+        Final->LoadMaterial(Load("Silk/FinalDeferredPassNoFxaa.mtrl"));
+        
+        /*
+        InitSSAO();
+        SetSSAOIntensity(1.0f);
+        SetSSAONoiseScale(4.0f);
+        SetSSAORadius(0.1f);
+        */
+        
+        r->SetPointLightMaterial(Pt);
+        r->SetSpotLightMaterial(Sp);
+        r->SetDirectionalLightMaterial(Dr);
+        r->SetFinalPassMaterial(Final);
         
         glEnable(GL_PROGRAM_POINT_SIZE);
         
         /*
          * Load static meshes
          */
-        for(i32 i = 0;i < m_ATR.GetActorCount();i++) AddActorToScene(m_ATR.GetActor(i));
+        for(i32 i = 0;i < m_ATR.GetActorCount();i++) AddActorToScene(m_ATR.GetActor(i),true);
         
         /*
          * Load dynamic meshes
@@ -259,10 +331,10 @@ namespace TestClient
         ActorInstances* ATI = m_ATR.GetActors();
         if(ATI)
         {
-            for(i32 i = 0;i < ATI->m_Actors.size();i++) AddActorToScene(ATI->m_Actors[i]);
+            for(i32 i = 0;i < ATI->m_Actors.size();i++) AddActorToScene(ATI->m_Actors[i],false);
         }
         
-        
+        //m_DebugDraw->SetDebugDisplay(DebugDrawer::DD_OBB,true);
         
         Light* L = AddLight(LT_DIRECTIONAL,Vec3(0,10,0))->GetLight();
         L->m_Color = Vec4(1,1,1,1);
@@ -275,11 +347,64 @@ namespace TestClient
         m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
         
         Scalar a = 12.0f;
+        i32 SelectedIdx = -1;
+        Scalar sDist = 0.0f;
+        bool BtnDown = false;
         while(IsRunning())
         {
+            Mat4 T = (m_Camera->GetTransform() * m_Camera->GetProjection().Inverse()).Transpose();
+            
+            Vec3 t[4] = { Vec3(-0.01,0.0,0.0), Vec3(0.01,0.0,0.0), Vec3(0.0,-0.01,0.0), Vec3(0.0,0.01,0.0) };
+            m_DebugDraw->Line(T * t[0],T * t[1],Vec4(1,1,1,1));
+            m_DebugDraw->Line(T * t[2],T * t[3],Vec4(1,1,1,1));
+            if(m_InputManager->IsButtonDown(BTN_LEFT_MOUSE))
+            {
+                if(!BtnDown)
+                {
+                    Texture* t = m_Renderer->GetSceneOutput()->GetAttachment(ShaderGenerator::OFT_CUSTOM0);
+                    t->AcquireFromVRAM();
+                    Vec4 ObjID = t->GetPixel(m_Renderer->GetRasterizer()->GetContext()->GetResolution() * 0.5f);
+                    char v[4] =
+                    {
+                        (char)(i32)(ObjID.x * 255.0f),
+                        (char)(i32)(ObjID.y * 255.0f),
+                        (char)(i32)(ObjID.z * 255.0f),
+                        (char)(i32)(ObjID.w * 255.0f),
+                    };
+                    memcpy(&SelectedIdx,&v,sizeof(i32));
+                    if(SelectedIdx >= 0)
+                    {
+                        sDist = (GetActorTransform(SelectedIdx).GetTranslation() - m_CamPos).Magnitude();
+                    }
+                }
+                
+                if(SelectedIdx >= 0)
+                {
+                    Vec4 mColor = Vec4(1,0,0,1);
+                    if(!m_ActorIsStatic[SelectedIdx])
+                    {
+                        mColor = Vec4(0.5f,0.5f,1.0f,1.0f);
+                        SetActorPosition(SelectedIdx,m_CamPos + m_Camera->GetTransform().GetZ() * -sDist);
+                    }
+                    
+                    for(i32 i = 0;i < m_Actors[SelectedIdx].size();i++)
+                    {
+                        m_Renderer->GetDebugDrawer()->OBB(m_Actors[SelectedIdx][i]->GetBoundingBox(),Vec4(1,0,0,1));
+                        m_Renderer->GetDebugDrawer()->DrawMesh(m_Actors[SelectedIdx][i]->GetTransform(),m_Actors[SelectedIdx][i]->GetMesh(),mColor);
+                    }
+                }
+                BtnDown = true;
+            }
+            else BtnDown = false;
+            
             a += GetDeltaTime() * 0.01f;
             //m_DebugDraw->Line(Vec3(0,0,0),Vec3(0,10,0),Vec4(1,1,1,1));
             m_Lights[0]->SetTransform(Rotation(Vec3(0,0,1),90 + (a * 7.5f)) * Rotation(Vec3(1,0,0),-90.0f));
+        }
+        
+        for(i32 i = 0;i < m_ActorDefs.size();i++)
+        {
+            m_ActorDefs[i]->SaveTransform();
         }
     }
     void T4_Viewer::Shutdown()

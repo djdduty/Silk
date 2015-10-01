@@ -13,6 +13,7 @@ namespace Silk
         
             virtual void InitializeTexture();
             virtual void UpdateTexture();
+            virtual void AcquireFromVRAM();
         
             GLuint GetTextureID() const { return m_TexID; }
         

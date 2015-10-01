@@ -16,7 +16,7 @@ Material "FinalLightPass"
             {
                 vec4 Diffuse  = texture(u_FragColor     ,texCoord);
                 vec4 Lighting = texture(u_FragLightAccum,texCoord);
-                return /*Diffuse * */Lighting;
+                return Diffuse * Lighting;
             }
         }
         FragmentModule "SetColor" 0

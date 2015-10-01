@@ -10,6 +10,11 @@ namespace Silk
     }
     Mesh::~Mesh()
     {
+        for(i32 i = 0;i < m_Attributes.size();i++)
+        {
+            if(m_Attributes[i].Pointer) delete [] ((Byte*)m_Attributes[i].Pointer);
+        }
+        m_Attributes.clear();
     }
     
     void Mesh::Destroy()
@@ -88,7 +93,8 @@ namespace Silk
         a.ComponentCount = ComponentCount;
         a.Count          = Count         ;
         a.Stride         = Stride        ;
-        a.Pointer        = Pointer       ;
+        a.Pointer        = new Byte[Size];
+        memcpy(a.Pointer,Pointer,Size);
         a.IsStatic       = IsStatic      ;
         
         m_Attributes.push_back(a);

@@ -1,5 +1,6 @@
 #include <Utilities/BoundingBox.h>
 #include <Renderer/RenderObject.h>
+#include <Renderer/Renderer.h>
 #include <cmath>
 
 namespace Silk
@@ -34,6 +35,55 @@ namespace Silk
 
 		return true;
 	}
+    bool AABB::Intersects(const Ray& r)
+    {
+        f32 t0 = -100000000.0f;
+        f32 t1 =  100000000.0f;
+        
+        Vec3 bounds[2];
+        bounds[0] = -m_HalfExtents;
+        bounds[1] =  m_HalfExtents;
+        float tmin, tmax, tymin, tymax, tzmin, tzmax;
+        if (r.Dir.x >= 0)
+        {
+            tmin = (bounds[0].x - r.Point.x) / r.Dir.x;
+            tmax = (bounds[1].x - r.Point.x) / r.Dir.x;
+        }
+        else {
+            tmin = (bounds[1].x - r.Point.x) / r.Dir.x;
+            tmax = (bounds[0].x - r.Point.x) / r.Dir.x;
+        }
+        if (r.Dir.y >= 0) {
+            tymin = (bounds[0].y - r.Point.y) / r.Dir.y;
+            tymax = (bounds[1].y - r.Point.y) / r.Dir.y;
+        }
+        else {
+            tymin = (bounds[1].y - r.Point.y) / r.Dir.y;
+            tymax = (bounds[0].y - r.Point.y) / r.Dir.y;
+        }
+        if ( (tmin > tymax) || (tymin > tmax) )
+        return false;
+        
+        if (tymin > tmin)
+        tmin = tymin;
+        if (tymax < tmax)
+        tmax = tymax;
+        if (r.Dir.z >= 0) {
+        tzmin = (bounds[0].z - r.Point.z) / r.Dir.z;
+        tzmax = (bounds[1].z - r.Point.z) / r.Dir.z;
+        }
+        else {
+        tzmin = (bounds[1].z - r.Point.z) / r.Dir.z;
+        tzmax = (bounds[0].z - r.Point.z) / r.Dir.z;
+        }
+        if ( (tmin > tzmax) || (tzmin > tmax) )
+        return false;
+        if (tzmin > tmin)
+        tmin = tzmin;
+        if (tzmax < tmax)
+        tmax = tzmax;
+        return ( (tmin < t1) && (tmax > t0) );
+    }
     
     OBB::OBB(RenderObject* Obj) : m_Obj(Obj), m_ModelSpaceBounds(Vec3(),Vec3())
     {
@@ -92,5 +142,19 @@ namespace Silk
                         m_ModelSpaceBounds.GetCenter() + m_ModelSpaceBounds.GetExtents());
         Ret.m_HalfExtents *= m_Obj->GetTransform().GetScale();
         return Ret;
+    }
+    bool OBB::IntersectsRay(const Ray &r,f32 &IntersectionDistance)
+    {
+        while(true) { printf("Warning: doesn't work.\n"); }
+        Ray tRay;
+        Mat4 iTrans = m_Obj->GetTransform().Inverse();
+        tRay.Point = iTrans * r.Point;
+        iTrans.x.w = iTrans.y.w = iTrans.z.w = 0.0f; iTrans.w.w = 1.0f;
+        tRay.Dir   = iTrans * r.Dir;
+        
+        if(!ComputeWorldAABB().Intersects(tRay)) return false;
+        m_Obj->GetRenderer()->GetDebugDrawer()->Line(tRay.Point,tRay.Point + (tRay.Dir * 1000.0f),Vec4(1,0,0,1));
+        m_Obj->GetRenderer()->GetDebugDrawer()->Line(m_Obj->GetTransform().GetTranslation(),tRay.Point,Vec4(0,0,1,1));
+        return true;
     }
 }

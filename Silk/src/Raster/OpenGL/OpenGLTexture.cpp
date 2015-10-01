@@ -40,4 +40,16 @@ namespace Silk
         auto err = glGetError();
         glBindTexture(GL_TEXTURE_2D,0);
     }
+    void OpenGLTexture::AcquireFromVRAM()
+    {
+        if(m_TexID == 0) return;
+        GLenum pType = GL_UNSIGNED_BYTE;
+        GLenum cType = GL_RGBA;
+        if(m_Type == PT_FLOAT) { pType = GL_FLOAT; cType = GL_RGBA32F; }
+        if(!m_Pixels) CreateTexture(m_Width,m_Height,m_Type);
+        
+        glBindTexture(GL_TEXTURE_2D,m_TexID);
+        glGetTexImage(GL_TEXTURE_2D,0,cType,pType,m_Pixels);
+        glBindTexture(GL_TEXTURE_2D,0);
+    }
 };

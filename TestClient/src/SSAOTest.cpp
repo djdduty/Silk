@@ -43,7 +43,7 @@ namespace TestClient
         
         InitSSAO();
         SetSSAORadius    (0.5f);
-        SetSSAOIntensity (2.0f);
+        SetSSAOIntensity (4.0f);
         SetSSAONoiseScale(4);
     }
     void SSAOTest::LoadLight()

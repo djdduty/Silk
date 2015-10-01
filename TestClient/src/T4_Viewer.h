@@ -29,7 +29,12 @@ namespace TestClient
             virtual void Shutdown();
         
             bool LoadATR(const string& TurokDir,const string& File);
-            void AddActorToScene(Actor* a);
+            void AddActorToScene(Actor* a,bool IsStatic);
+        
+            Mat4 GetActorTransform(i32 AID) const;
+            void SetActorPosition(i32 AID,const Vec3& Pos);
+            void SetActorRotation(i32 AID,const Vec3& Rot);
+            void SetActorScale   (i32 AID,const Vec3& Scl);
         
             virtual const char* GetTestName() const { return "Turok: Evolution Viewer"; }
 #ifdef __APPLE__
@@ -38,8 +43,13 @@ namespace TestClient
             virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
 #endif
         
+            virtual Renderer* GetPreferredRenderer(Rasterizer* Raster,TaskManager* TaskMng) const { return new DeferredRenderer(Raster,TaskMng); }
+        
         protected:
             ATRFile m_ATR;
+            vector<SilkObjectVector> m_Actors;
+            vector<Actor*>   m_ActorDefs;
+            vector<bool  >   m_ActorIsStatic;
             Shader* m_Shdr;
     };
 };

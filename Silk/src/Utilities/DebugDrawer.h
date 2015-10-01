@@ -13,8 +13,18 @@ namespace Silk
     class DebugDrawer
     {
         public:
+            enum DEBUG_DISPLAY
+            {
+                DD_TRANSFORM,
+                DD_AABB     ,
+                DD_OBB      ,
+                DD_COUNT    ,
+            };
             DebugDrawer(Renderer* r);
             virtual ~DebugDrawer();
+        
+            void SetDebugDisplay(DEBUG_DISPLAY Opt,bool Flag)       { m_DisplayOptions[Opt] = Flag; }
+            bool GetDebugDisplay(DEBUG_DISPLAY Opt          ) const { return m_DisplayOptions[Opt]; }
         
             virtual void Line(const Vec3& a,const Vec3& b,const Vec4& Color);
             virtual void Transform(const Mat4& t,const Vec4& ColorX = Vec4(1,0,0,1),
@@ -41,6 +51,8 @@ namespace Silk
         
             vector<Vec3> m_Verts;
             vector<Vec4> m_Colors;
+        
+            bool m_DisplayOptions[DD_COUNT];
     };
 };
 

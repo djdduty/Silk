@@ -14,7 +14,7 @@ namespace Silk
     Vec3 Plane::GetIntersectionPoint(const Ray& r) const
     {
         Vec3 v1 = r.Point;
-        Vec3 v2 = r.Point + (r.Dir * FLT_MAX);
+        Vec3 v2 = r.Point + (r.Dir * 10000000.0f);
         Vec3 Diff = r.Dir;
         
         Scalar Denominator = Normal.Dot(Diff);

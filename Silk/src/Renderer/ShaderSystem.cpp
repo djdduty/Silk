@@ -522,12 +522,13 @@ namespace Silk
          * Fragment outputs
          */
         FragmentShader += "\n";
-        if(m_FragmentOutputsUsed[OFT_POSITION ]) FragmentShader += string("out vec4 ") + FragmentPositionOutputName  + ";\n";
-        if(m_FragmentOutputsUsed[OFT_NORMAL   ]) FragmentShader += string("out vec4 ") + FragmentNormalOutputName    + ";\n";
-        if(m_FragmentOutputsUsed[OFT_TANGENT  ]) FragmentShader += string("out vec4 ") + FragmentTangentOutputName   + ";\n";
-        if(m_FragmentOutputsUsed[OFT_COLOR    ]) FragmentShader += string("out vec4 ") + FragmentColorOutputName     + ";\n";
-        if(m_FragmentOutputsUsed[OFT_MATERIAL0]) FragmentShader += string("out vec4 ") + FragmentMaterial0OutputName + ";\n";
-        if(m_FragmentOutputsUsed[OFT_MATERIAL1]) FragmentShader += string("out vec4 ") + FragmentMaterial1OutputName + ";\n";
+        for(i32 i = 0;i < OFT_COUNT;i++)
+        {
+            if(m_FragmentOutputsUsed[i])
+            {
+                FragmentShader += string("out vec4 ") + GetFragmentOutputTypeName((OUTPUT_FRAGMENT_TYPE)i) + ";\n";
+            }
+        }
         
         /*
          * Fragment calculation functions

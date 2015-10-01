@@ -33,6 +33,7 @@ Material "DirectionalLightPass"
             vec4 GammaCorrected = pow(ColorLinear,vec4(vec3(1.0 / u_Gamma), 1));
 
             vec4 sColor = GammaCorrected + (u_Lights[0].Position * 0.000000001); //TODO: remove hacky fix to nvidia shader optimizing out the array of struct
+            sColor = vec4(1,1,1,1);
         }
         Requires
         {

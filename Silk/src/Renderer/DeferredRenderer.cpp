@@ -100,11 +100,9 @@ namespace Silk
             Shader->Disable();
         }
         
-        for(i32 i = 0;i < MeshesRendered.size();i++)
+        if(m_DebugDrawer)
         {
-            MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
-            
-            if(m_DebugDrawer)
+            for(i32 i = 0;i < MeshesRendered.size();i++)
             {
                 if(MeshesRendered[i]->IsInstanced())
                 {
@@ -114,16 +112,17 @@ namespace Silk
                     {
                         if((*iList)[c]->m_CulledInstanceIndex == -1) continue;
                         
-                        m_DebugDrawer->Transform((*iList)[c]->GetTransform());
-                        m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),(*iList)[c]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
+                        if(m_DebugDrawer->GetDebugDisplay(DebugDrawer::DD_TRANSFORM))m_DebugDrawer->Transform((*iList)[c]->GetTransform());
+                        if(m_DebugDrawer->GetDebugDisplay(DebugDrawer::DD_AABB     ))m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),(*iList)[c]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
+                        if(m_DebugDrawer->GetDebugDisplay(DebugDrawer::DD_OBB      ))m_DebugDrawer->OBB      ((*iList)[c]->GetBoundingBox(),Vec4(1,1,1,1));
                         ic++;
                     }
                 }
                 else
                 {
-                    m_DebugDrawer->Transform(MeshesRendered[i]->GetTransform());
-					m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),MeshesRendered[i]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
-					m_DebugDrawer->OBB      (MeshesRendered[i]->GetBoundingBox(),Vec4(1,0,0,1));
+                    if(m_DebugDrawer->GetDebugDisplay(DebugDrawer::DD_TRANSFORM)) m_DebugDrawer->Transform(MeshesRendered[i]->GetTransform());
+                    if(m_DebugDrawer->GetDebugDisplay(DebugDrawer::DD_AABB     )) m_DebugDrawer->AABB     (MeshesRendered[i]->GetTransform(),MeshesRendered[i]->GetBoundingBox().ComputeWorldAABB(),Vec4(1,1,1,1));
+                    if(m_DebugDrawer->GetDebugDisplay(DebugDrawer::DD_OBB      )) m_DebugDrawer->OBB      (MeshesRendered[i]->GetBoundingBox(),Vec4(1,0,0,1));
                 }
             }
         }

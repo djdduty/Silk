@@ -42,6 +42,7 @@ namespace Silk
             const Mat4&   GetTransform       () { return m_Uniforms->GetModelMatrix  (); }
             const Mat4&   GetNormalTransform () { return m_Uniforms->GetNormalMatrix (); }
             const Mat4&   GetTextureTransform() { return m_Uniforms->GetTextureMatrix(); }
+            Renderer  *   GetRenderer        () { return m_Renderer;                     }
         
             void SetAlwaysVisible(bool Flag) { m_AlwaysVisible = Flag; }
             void SetEnabled(bool Flag) { m_Enabled = Flag; }
@@ -60,6 +61,9 @@ namespace Silk
         
             void SetTransform(Mat4 Transform);
             void SetTextureTransform(Mat4 Transform);
+        
+            void SetObjectID(i32 ID) { m_Uniforms->SetObjectID(ID); }
+            i32  GetObjectID() const { return m_Uniforms->GetObjectID(); }
         
             OBB GetBoundingBox() { return m_BoundingBox; }
             void UpdateOBB();

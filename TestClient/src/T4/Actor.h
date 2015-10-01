@@ -37,6 +37,8 @@ class Actor
     
         bool LoadBlock(const string& TurokDir,ATRBlock* Block);
     
+        bool SaveTransform();
+    
         char ID;
         ActorVec3 Position;
         ActorVec3 Rotation;
@@ -44,6 +46,10 @@ class Actor
         
     protected:
         friend class ATRFile;
+        friend class ActorInstances;
+        vector<int> m_ATIOffset;
+        string m_ATIFile;
+    
         ActorMesh* m_Mesh;
         ATRFile* m_File;
 };

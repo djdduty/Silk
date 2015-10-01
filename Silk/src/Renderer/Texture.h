@@ -25,6 +25,7 @@ namespace Silk
         
             void EnableRTT(bool UseDepth);
             void DisableRTT();
+            virtual void AcquireFromVRAM() = 0;
         
             void CreateTexture(i32 Width,i32 Height,PIXEL_TYPE Type = PT_UNSIGNED_BYTE);
 			void CreateTextureb(i32 Width,i32 Height,Byte* Data);

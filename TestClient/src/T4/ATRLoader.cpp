@@ -11,6 +11,9 @@
 #include <iostream>
 using namespace std;
 
+#define printf(...) 
+#define cout clog
+
 static string BlockTypeIDStrings[] =
 {
     "ACTOR",

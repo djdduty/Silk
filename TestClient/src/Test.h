@@ -35,7 +35,7 @@ namespace TestClient
             void Init();
             void InitGUI();
 			void InitDebugDisplay();
-            void InitFlyCamera(const Vec3& InitPos = Vec3(0,5,0));
+            void InitFlyCamera(const Vec3& InitPos = Vec3(0,0,0));
             void InitSSAO();
             void SetSSAORadius(Scalar Radius);
             void SetSSAOIntensity(Scalar Intensity);

@@ -15,6 +15,7 @@ namespace Silk
         m_iIsInstanced         = m_UniformBuffer->DefineUniform("u_IsInstanced");
         m_iLightInfluences     = m_UniformBuffer->DefineUniform("u_Lights"     );
         m_iLightInfluenceCount = m_UniformBuffer->DefineUniform("u_LightCount" );
+        m_iObjectID            = m_UniformBuffer->DefineUniform("u_ObjectID"   );
         
         m_NullLight = new Light();
         m_NullLight->m_Power = 0.0f;
@@ -39,6 +40,7 @@ namespace Silk
         m_UniformBuffer->SetUniform(m_iIsInstanced        ,0           );
         m_UniformBuffer->SetUniform(m_iLightInfluenceCount,m_LightCount);
         m_UniformBuffer->SetUniform(m_iLightInfluences    ,m_Lights    );
+        m_UniformBuffer->SetUniform(m_iObjectID           ,m_ObjectID  );
     }
     ModelUniformSet::~ModelUniformSet()
     {
@@ -123,6 +125,7 @@ namespace Silk
             m_MV = m_MVP = m_Model;
             m_ModelMatrixUpdated = false;
         }
+        if(m_ObjectIDUpdated) { m_UniformBuffer->SetUniform(m_iObjectID,m_ObjectID); m_ObjectIDUpdated = false; }
         
         if(m_TexMatrixUpdated)
         {

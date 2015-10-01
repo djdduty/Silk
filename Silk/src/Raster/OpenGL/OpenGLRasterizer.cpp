@@ -450,7 +450,7 @@ namespace Silk
             }
             else
             {
-                m_DrawBuffers.push_back(GL_NONE);
+                //m_DrawBuffers.push_back(GL_NONE);
             }
         }
         glDrawBuffers((i32)m_DrawBuffers.size(),&m_DrawBuffers[0]);

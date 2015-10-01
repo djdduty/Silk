@@ -11,6 +11,9 @@
 #include <iostream>
 using namespace std;
 
+#define printf(...) 
+#define cout clog
+
 ActorInstances::~ActorInstances()
 {
     for(int i = 0;i < m_Actors.size();i++) delete m_Actors[i];
@@ -61,6 +64,7 @@ bool ActorInstances::Load(const string& TurokDir,const string& File)
         //Null byte (always exists after strings)
         getc(fp);
         
+        size_t dOffset = ftell(fp);
         char* Data = new char[BlockSize];
         if(fread(Data,BlockSize,1,fp) != 1)
         {
@@ -101,6 +105,9 @@ bool ActorInstances::Load(const string& TurokDir,const string& File)
             while(dPos != BlockSize)
             {
                 ATRBlock* blk = new ATRBlock();
+                
+                ATR->GetActor(0)->m_ATIOffset.push_back(dOffset + dPos);
+                
                 size_t Offset = 0;
                 if(!blk->Load(TurokDir,&Data[dPos],Offset))
                 {
@@ -116,6 +123,7 @@ bool ActorInstances::Load(const string& TurokDir,const string& File)
                 
                 delete blk;
             }
+            ATR->GetActor(0)->m_ATIFile   = File;
         
             m_Actors.push_back(ATR->GetActor(0));
         }

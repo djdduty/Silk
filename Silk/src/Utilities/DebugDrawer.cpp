@@ -34,6 +34,8 @@ namespace Silk
         m_Display->SetMesh(m,m_Material);
         m->Destroy();
         
+        for(i32 i = 0;i < DD_COUNT;i++) m_DisplayOptions[i] = false;
+        
         m_Renderer->GetScene()->AddRenderObject(m_Display);
     }
     DebugDrawer::~DebugDrawer()
@@ -149,18 +151,43 @@ namespace Silk
         if(Indices)
         {
             const Mesh::MeshAttribute* Vertices = m->GetVertexAttribute();
-            for(i32 i = 0;i < Indices->Count;i += 3)
+            if(m->PrimitiveType == PT_TRIANGLES)
             {
-                u16 Idx0 = ((u16*)Indices->Pointer)[i + 0];
-                u16 Idx1 = ((u16*)Indices->Pointer)[i + 1];
-                u16 Idx2 = ((u16*)Indices->Pointer)[i + 2];
+                for(i32 i = 0;Indices->Count - i > 3;i += 3)
+                {
+                    u32 Idx0 = ((u32*)Indices->Pointer)[i + 0];
+                    u32 Idx1 = ((u32*)Indices->Pointer)[i + 1];
+                    u32 Idx2 = ((u32*)Indices->Pointer)[i + 2];
+                    Vec3 Vtx0 = t * ((Vec3*)Vertices->Pointer)[Idx0];
+                    Vec3 Vtx1 = t * ((Vec3*)Vertices->Pointer)[Idx1];
+                    Vec3 Vtx2 = t * ((Vec3*)Vertices->Pointer)[Idx2];
+                    
+                    Line(Vtx0,Vtx1,Color);
+                    Line(Vtx0,Vtx2,Color);
+                    Line(Vtx1,Vtx2,Color);
+                }
+            }
+            else if(m->PrimitiveType == PT_TRIANGLE_STRIP)
+            {
+                u32  Idx0 = ((u32*)Indices->Pointer)[0];
+                u32  Idx1 = ((u32*)Indices->Pointer)[1];
                 Vec3 Vtx0 = t * ((Vec3*)Vertices->Pointer)[Idx0];
                 Vec3 Vtx1 = t * ((Vec3*)Vertices->Pointer)[Idx1];
-                Vec3 Vtx2 = t * ((Vec3*)Vertices->Pointer)[Idx2];
-                
                 Line(Vtx0,Vtx1,Color);
-                Line(Vtx0,Vtx2,Color);
-                Line(Vtx1,Vtx2,Color);
+                
+                Vec3 lVtx0 = Vtx0;
+                Vec3 lVtx1 = Vtx1;
+                for(i32 i = 2;i < Indices->Count;i++)
+                {
+                    u32  Idx = ((u32*)Indices->Pointer)[i + 0];
+                    Vec3 Vtx = t * ((Vec3*)Vertices->Pointer)[Idx];
+                    
+                    Line(lVtx0,Vtx,Color);
+                    Line(lVtx1,Vtx,Color);
+                    
+                    lVtx0 = lVtx1;
+                    lVtx1 =  Vtx;
+                }
             }
         }
         else

@@ -52,6 +52,8 @@ namespace Silk
             Scalar Angle() const;
             void ClampMagnitude(Scalar Magnitude);
             Vec2 ClampMagnitude(Scalar Magnitude) const;
+            
+            Scalar& operator[](i32 cIdx) { return (&x)[cIdx]; }
         
             Scalar x;
             Scalar y;
@@ -107,6 +109,8 @@ namespace Silk
             Vec2 zx() const;
             Vec2 zy() const;
             Vec2 zz() const;
+        
+            Scalar& operator[](i32 cIdx) { return (&x)[cIdx]; }
         
             Scalar x;
             Scalar y;
@@ -253,6 +257,7 @@ namespace Silk
             Vec3 GetTranslation() const;
             Vec3 GetScale      () const;
             Quat GetRotation   () const;
+            Vec3 GetAxis(i32 AID) const;
             Vec3 GetX          () const { return Vec3(x.x,y.x,z.x).Normalized(); }
             Vec3 GetY          () const { return Vec3(x.y,y.y,z.y).Normalized(); }
             Vec3 GetZ          () const { return Vec3(x.z,y.z,z.z).Normalized(); }

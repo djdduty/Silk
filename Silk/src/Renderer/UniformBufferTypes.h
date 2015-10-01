@@ -25,6 +25,8 @@ namespace Silk
             void SetTextureMatrix(const Mat4& T);
             const Mat4& GetTextureMatrix() const { return m_Texture; }
             const Mat4& GetNormalMatrix () const { return m_Normal;  }
+            void SetObjectID(i32 ID) { m_ObjectID = ID; m_ObjectIDUpdated = true; }
+            i32  GetObjectID() const { return m_ObjectID; }
         
             void SetIsInstanced(bool Flag);
         
@@ -35,7 +37,9 @@ namespace Silk
             Light* m_NullLight;
             vector<Light*>m_Lights;
             i32 m_LightCount;
+            i32 m_ObjectID;
         
+            bool m_ObjectIDUpdated   ;
             bool m_ModelMatrixUpdated;
             bool m_TexMatrixUpdated  ;
             bool m_LightsChanged     ;
@@ -56,6 +60,7 @@ namespace Silk
             i32 m_iTexture;              //Mat4
             i32 m_iIsInstanced;          //int
             i32 m_iLightInfluenceCount;  //int
+            i32 m_iObjectID;             //int
             i32 m_iLightInfluences;      //Light[]
         
             Renderer* m_Renderer;

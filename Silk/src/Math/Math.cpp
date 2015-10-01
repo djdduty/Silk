@@ -761,6 +761,13 @@ namespace Silk
         }
         return q;
     }
+    Vec3 Mat4::GetAxis(i32 AID) const
+    {
+        if(AID == 0) return GetX();
+        if(AID == 1) return GetY();
+        if(AID == 2) return GetZ();
+        return Vec3(0,0,0);
+    }
 
     Mat4 Mat4::Transpose() const
     {

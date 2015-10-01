@@ -14,6 +14,7 @@ namespace Silk
 
             bool Contains(const AABB& Other);
             bool Intersects(const AABB& Other);
+            bool Intersects(const Ray& r);
 
             Vec3 GetCenter    () const { return m_Center            ; }
             Vec3 GetExtents   () const { return m_HalfExtents       ; }
@@ -36,6 +37,8 @@ namespace Silk
         
             AABB GetLocalAABB() const;
             RenderObject* GetObject() const { return m_Obj; }
+        
+            bool IntersectsRay(const Ray& r,f32& IntersectionDistance);
         
         protected:
             friend class RenderObject;
