@@ -589,7 +589,7 @@ namespace TestClient
 		if(m_UsingRenderUI) {
 			m_UIFrameID     ->SetText("Frame ID: "    +to_string(Stats.FrameID));
 			m_UIRunTime     ->SetText("Run Time: "    +ftostr(m_ElapsedTime)+"s");
-			m_UIFrameRate   ->SetText("Avg Frame Rate: "+to_string((i32)afr)+"hz (" + ftostr((1000.0 / fr)) + "ms)");
+			m_UIFrameRate   ->SetText("Avg Frame Rate: "+to_string((i32)afr)+"hz (" + ftostr((1000.0 / afr)) + "ms)");
 			m_UIDrawCalls   ->SetText("Avg Draw Calls: "+to_string((i32)adc));
 			m_UIVertices    ->SetText("Avg Vertices: "  +to_string((i32)avc));
 			m_UITriangles   ->SetText("Avg Triangles: " +to_string((i32)atc));
