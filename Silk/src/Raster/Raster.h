@@ -256,6 +256,7 @@ namespace Silk
             virtual bool SupportsInstanceTextureTransforms() = 0;
         
             void SetClearColor(const Vec4& c) { m_ClearColor = c; }
+			Vec4 GetClearColor() { return m_ClearColor; }
         
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;

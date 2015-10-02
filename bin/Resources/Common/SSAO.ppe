@@ -29,11 +29,11 @@ Effect "FXAA"
                     vec4 Pos = u_View * vec4(texture(u_FragPosition,o_TexCoord).xyz,1.0);
                     vec3 Nrm = mat3(u_View) * texture(u_FragNormal  ,o_TexCoord).xyz;
                     float Depth = u_FarPlane - Pos.z;
-                    
+
                     vec2 NoiseScale = u_Resolution / float(NoiseStretch);
                     vec3 RandomVec = texture(u_CustomMap0,o_TexCoord * NoiseScale).xyz;
                     mat3 TBN = CreateTBN(Nrm,RandomVec);
-                    
+
                     vec4 sColor = vec4(0,0,0,0);
                     float AO = 0.0;
                     for(int i = 0;i < KernelSize;i++)
@@ -118,7 +118,7 @@ Effect "FXAA"
                     vec2 TexelSize = 1.0 / vec2(textureSize(u_PostProcessOut,0));
                     float Result = 0.0;
                     vec2 hlim = vec2(-float(BlurRadius) * 0.5 + 0.5);
-                    
+
                     for(int i = 0;i < BlurRadius;i++)
                     {
                         for(int j = 0;j < BlurRadius;j++)

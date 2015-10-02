@@ -3,6 +3,7 @@
 #include <Renderer/Renderer.h>
 #include <Renderer/UniformBufferTypes.h>
 #include <Raster/Raster.h>
+#include <Raster/OpenGL/OpenGLRasterizer.h>
 
 namespace Silk
 {
@@ -87,7 +88,10 @@ namespace Silk
         if(m_Elements.size() == 0) return;
         
         //Update texture and projection if resolution changes
-        Vec2 cRes = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
+		glEnable(GL_BLEND);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
         if(m_ViewNeedsUpdate == true)
         {
             //Update texture and projection if resolution changes
@@ -108,9 +112,12 @@ namespace Silk
 
             //TODO: Depth Sorting
 
-            //Render all UI to texture
+            //Render all UI to texture Hacky solution to clear alpha of ui rtt to completely translucent
+			Vec4 oldClear = m_Renderer->GetRasterizer()->GetClearColor();
+			m_Renderer->GetRasterizer()->SetClearColor(Vec4(0,0,0,0));
             m_View->EnableRTT(false);
-        
+			m_Renderer->GetRasterizer()->ClearActiveFramebuffer();
+			m_Renderer->GetRasterizer()->SetClearColor(oldClear);
             SilkObjectVector MeshesRendered;
             for(i32 i = m_Elements.size() - 1; i >= 0; i--)
             {
@@ -121,13 +128,14 @@ namespace Silk
             {
                 MeshesRendered[i]->GetUniformSet()->GetUniforms()->ClearUpdatedUniforms();
             }
-        
             m_View->DisableRTT();
         
             m_Renderer->GetScene()->SetActiveCamera(Cam);
             m_ViewNeedsUpdate = false;
         }
         m_Renderer->RenderTexture(m_View);
+		glEnable(GL_DEPTH);
+		glDisable(GL_BLEND);
         
         //Do some other stuff with the view
     }

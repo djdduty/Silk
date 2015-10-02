@@ -242,11 +242,12 @@ namespace TestClient
     void T4_Viewer::Initialize()
     {
         InitGUI         ();
+		InitRenderGUI   ();
         InitFlyCamera   ();
         InitDebugDisplay();
 		
         m_Rasterizer->SetClearColor(Vec4(0,0,0,1));
-        SetFPSPrintFrequency(0.5f);
+        SetFPSPrintFrequency(10.0f);
         SetTargetFrameRate(100000);
         
         /*
@@ -303,15 +304,15 @@ namespace TestClient
 		Material* Dr = m_Renderer->CreateMaterial();
         Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
         Material* Final = m_Renderer->CreateMaterial();
-        Final->LoadMaterial(Load("Silk/FinalDeferredPassNoFxaa.mtrl"));
+        Final->LoadMaterial(Load("Silk/FinalDeferredPass.mtrl"));
         
-        /*
+		/*
         InitSSAO();
         SetSSAOIntensity(1.0f);
         SetSSAONoiseScale(4.0f);
-        SetSSAORadius(0.1f);
+        SetSSAORadius(0.2f);
         */
-        
+
         r->SetPointLightMaterial(Pt);
         r->SetSpotLightMaterial(Sp);
         r->SetDirectionalLightMaterial(Dr);

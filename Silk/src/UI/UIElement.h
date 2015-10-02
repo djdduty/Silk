@@ -92,6 +92,7 @@ namespace Silk
         protected:
             friend class UIManager;
             friend class UIElement;
+			friend class UIText;
 
             virtual void OnInitialize() {}
 

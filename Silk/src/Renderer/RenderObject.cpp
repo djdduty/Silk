@@ -6,7 +6,7 @@ namespace Silk {
     RenderObject::RenderObject(RENDER_OBJECT_TYPE Type, Renderer* Renderer, RasterObject* Object) : 
         m_Object(Object), m_BoundingBox(this), m_Type(Type), m_Enabled(true), m_IsCulled(false), m_Renderer(Renderer),
         m_Material(0), m_Mesh(0), m_Light(0), m_Uniforms(0), m_ShaderListIndex(-1), m_MeshListIndex(-1), m_ListIndex(0),
-        m_List(0), m_InstanceList(0), m_InstanceIndex(-1), m_CulledInstanceIndex(-1)
+        m_List(0), m_InstanceList(0), m_InstanceIndex(-1), m_CulledInstanceIndex(-1), m_AlwaysVisible(false)
     {
         m_Uniforms = new ModelUniformSet(m_Renderer,this);
     }
