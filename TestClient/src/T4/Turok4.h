@@ -19,6 +19,11 @@ namespace Turok4
     string TransformPseudoPathToRealPath(const string& PseudoPath);
     string TransformRealPathToPseudoPath(const string& RealPath  );
 
+    class SubMesh;
+    class ATRFile;
+    class ATIFile;
+    class Block;
+    
     class ByteStream
     {
         public:
@@ -124,7 +129,6 @@ namespace Turok4
             BLOCK_TYPE m_Type;
     };
 
-    class SubMesh;
     class MeshChunk
     {
         public:
@@ -207,7 +211,6 @@ namespace Turok4
             vector<TSNR    > m_TSNRs;
             vector<TXST    > m_TXSTs;
     };
-    
 
     struct ActorVec3
     {
@@ -215,9 +218,6 @@ namespace Turok4
         float y;
         float z;
     };
-    
-    class ATRFile;
-    class ATIFile;
     
     struct ActorDef
     {
@@ -234,6 +234,19 @@ namespace Turok4
         ActorVec3  Rotation ;
         ActorVec3  Scale    ;
         string     Name     ;
+    };
+    
+    class ActorVariables
+    {
+        public:
+            ActorVariables();
+            ~ActorVariables();
+        
+            void Load(ByteStream* Data);
+            void Save(ByteStream* Data);
+        
+        protected:
+            vector<Block*> m_Blocks;
     };
 
     class Actor
@@ -256,7 +269,6 @@ namespace Turok4
             ATRFile* m_File;
     };
 
-    class Block;
     class ATRFile
     {
         public:
