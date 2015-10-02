@@ -21,6 +21,11 @@ namespace TestClient
         BTN_MOVE_LEFT    ,  //A
         BTN_MOVE_RIGHT   ,  //D
         
+        BTN_UP_ARROW     ,
+        BTN_DOWN_ARROW   ,
+        BTN_LEFT_ARROW   ,
+        BTN_RIGHT_ARROW  ,
+        
         BTN_QUIT         ,  //Escape
         
         BTN_COUNT,
@@ -98,6 +103,7 @@ namespace TestClient
             Quat m_xCamRot;
             Quat m_yCamRot;
             Quat m_CamRot;
+            Scalar m_CamSpeed;
             bool m_FlyCameraEnabled;
         
             UIElement   * m_Cursor;

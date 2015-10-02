@@ -1,3 +1,4 @@
+
 /*
  *  T4_Viewer.cpp
  *  Silk
@@ -7,10 +8,7 @@
  */
 
 #include <T4_Viewer.h>
-#include <T4/ATRLoader.h>
-
 #include <T4/SOIL/SOIL.h>
-
 #include <UI/UIText.h>
 
 namespace TestClient
@@ -21,7 +19,7 @@ namespace TestClient
         if(ArgC < 3)
         {
 			//-d currently does nothing
-            cout << "Usage: T4_ATR <Turok base folder> <ATR file> (Optional -d <Output folder>)" << endl;
+            printf("Usage: T4_ATR <Turok base folder> <ATR file> (Optional -d <Output folder>)");
             m_DoShutdown = true;
             return;
         }
@@ -34,154 +32,88 @@ namespace TestClient
     
     bool T4_Viewer::LoadATR(const string &TurokDir,const string &File)
     {
-        if(!m_ATR.Load(TurokDir,File))
-        {
-            cout << "Unable to load ATR file <" << File << ">. " << m_ATR.GetErrorString() << "." << endl;
-            return false;
-        }
+        Turok4::SetTurokDirectory(TurokDir);
+        m_ATR = new Turok4::ATRFile();
+        if(!m_ATR->Load(File)) { delete m_ATR; return false; }
+        m_Filename = m_ATR->GetActors()->GetFile();
+        return true;
     }
-    void T4_Viewer::AddActorToScene(Actor *a,bool IsStatic)
+    void T4_Viewer::AddActorsToScene()
     {
-        string fn = a->GetFilename();
-        cout << "Adding actor to scene <" << fn << ">." << endl;
-        ActorMesh* m = a->GetMesh();
-        if(!m) return;
-        
-        m_Actors.push_back(SilkObjectVector());
-        for(i32 s = 0;s < m->GetSubMeshCount();s++)
+        for(i32 i = 0;i < m_ActorDefs.size();i++)
         {
-            Texture* t = 0;
-            if(s < m->m_MeshInfos.size())
-            {
-                int w,h,ch;
-                if(m->m_MeshInfos[s].TSNR_ID != -1)
-                {
-                    int TexID = m->m_TXSTs[m->m_TSNRs[m->m_MeshInfos[s].TSNR_ID].TXST_ID].TextureID;
-                    if(TexID < m->m_Textures.size())
-                    {
-                        Byte* Data = (Byte*)SOIL_load_image(m->m_Textures[TexID].c_str(),&w,&h,&ch,4);
-                        
-                        if(Data)
-                        {
-                            t = m_Renderer->GetRasterizer()->CreateTexture();
-                            t->CreateTextureb(w,h,Data);
-                            for(int x = 0;x < w;x++)
-                            {
-                                for(int y = 0;y < h;y++)
-                                {
-                                    Vec4 c = t->GetPixel(Vec2(x,y));
-                                    if(c.w < 1.0f && c.w != 0.0f) c.w = 1.0f;
-                                    t->SetPixel(Vec2(x,y),c);
-                                }
-                            }
-                            t->UpdateTexture();
-                        }
-                        
-                        delete [] Data;
-                    }
-                }
-            }
+            Turok4::Actor* a = m_ActorDefs[i];
+            string fn = a->GetFilename();
+            Turok4::ActorMesh* m = a->GetMesh();
+            m_Actors.push_back(SilkObjectVector());
+            if(!m) continue;
             
-            SubMesh* sm = m->GetSubMesh(s);
-            if(sm->GetVertexCount() != 0)
-            {
-                //printf("Mesh[%d]: %lu, %lu.\n",s,sm->m_Vertices.size(),sm->m_Indices.size());
-                
-                vector<Vec2> TexCs;
-                vector<Vec3> Verts,Norms;
-                vector<Vec4> Colors;
-                vector<i32 > Indices;
             
-                for(i32 vIdx = 0;vIdx < sm->GetVertexCount();vIdx++)
+            for(i32 s = 0;s < m->GetSubMeshCount();s++)
+            {
+                Texture* t = 0;
+                if(s < m->m_MeshInfos.size())
                 {
-                    Vec2 t0;
-                    Vec3 v0,n0;
-                    sm->GetTexCoord(vIdx,&t0.x);
-                    sm->GetVertex(vIdx,&v0.x);
-                    sm->GetNormal(vIdx,&n0.x);
-                    
-                    TexCs .push_back(t0);
-                    Verts .push_back(v0);
-                    Norms .push_back(n0);
-                    Colors.push_back(Vec4(1,1,1,1));
-                }
-                if(sm->GetIndexCount() != 0)
-                {
-                    for(i32 idx = 0;idx < sm->GetIndexCount();idx++)
+                    int w,h,ch;
+                    if(m->m_MeshInfos[s].TSNR_ID != -1)
                     {
-                        i32 I = sm->GetIndex(idx);
-                        Indices.push_back(I);
-                    }
-                    
-                    Mesh* M = new Mesh();
-                    if(Indices.size() != 0) M->SetIndexBuffer   (Indices.size(),&Indices[0]  );
-                    M->SetVertexBuffer  (Verts  .size(),&Verts  [0].x);
-                    M->SetNormalBuffer  (Norms  .size(),&Norms  [0].x);
-                    M->SetTexCoordBuffer(TexCs  .size(),&TexCs  [0].x);
-                    M->PrimitiveType = PT_TRIANGLE_STRIP;
-                    
-                    RenderObject* Obj = m_Renderer->CreateRenderObject(ROT_MESH);
-                    
-                    Mat4 T = Translation(*(Vec3*)&a->Position);
-                    Mat4 R = Rotation(a->Rotation.y,a->Rotation.z,a->Rotation.x);
-                    Mat4 S = Scale(*(Vec3*)&a->Scale);
-                    Obj->SetTransform(T * R * S);
-                
-                    Material* Mat = m_Renderer->CreateMaterial();
-                    Mat->SetShader(m_Shdr);
-                    Mat->SetMap(Material::MT_DIFFUSE,t);
-                    Obj->SetMesh(M,Mat);
-                    m_Renderer->GetScene()->AddRenderObject(Obj);
-                    
-                    m_Actors[m_ActorDefs.size()].push_back(Obj);
-                    Obj->SetObjectID(m_ActorDefs.size());
-                    
-                    m_Meshes.push_back(Obj);
-                }
-                else if(sm->GetChunkCount() != 0)
-                {
-                    for(i32 ch = 0;ch < sm->GetChunkCount();ch++)
-                    {
-                        MeshChunk* Chunk = sm->GetChunk(ch);
-                        
-                        if(ch < m->m_MTRLs.size())
+                        int TexID = m->m_TXSTs[m->m_TSNRs[m->m_MeshInfos[s].TSNR_ID].TXST_ID].TextureID;
+                        if(TexID < m->m_Textures.size())
                         {
-                            int w,h,chnl;
-                            if(m->m_MTRLs[ch].Unk4 >= 0 && m->m_MTRLs[ch].Unk4 < m->m_TSNRs.size())
+                            Byte* Data = (Byte*)SOIL_load_image(m->m_Textures[TexID].c_str(),&w,&h,&ch,4);
+                            
+                            if(Data)
                             {
-                                int TexID = m->m_TXSTs[m->m_TSNRs[m->m_MTRLs[ch].Unk4].TXST_ID].TextureID;
-                                if(TexID < m->m_Textures.size())
+                                t = m_Renderer->GetRasterizer()->CreateTexture();
+                                t->CreateTextureb(w,h,Data);
+                                for(int x = 0;x < w;x++)
                                 {
-                                    Byte* Data = (Byte*)SOIL_load_image(m->m_Textures[TexID].c_str(),&w,&h,&chnl,4);
-                                    
-                                    if(Data)
+                                    for(int y = 0;y < h;y++)
                                     {
-                                        t = m_Renderer->GetRasterizer()->CreateTexture();
-                                        t->CreateTextureb(w,h,Data);
-                                        for(int x = 0;x < w;x++)
-                                        {
-                                            for(int y = 0;y < h;y++)
-                                            {
-                                                Vec4 c = t->GetPixel(Vec2(x,y));
-                                                if(c.w < 1.0f && c.w != 0.0f) c.w = 1.0f;
-                                                t->SetPixel(Vec2(x,y),c);
-                                            }
-                                        }
-                                        t->UpdateTexture();
+                                        Vec4 c = t->GetPixel(Vec2(x,y));
+                                        if(c.w < 1.0f && c.w != 0.0f) c.w = 1.0f;
+                                        t->SetPixel(Vec2(x,y),c);
                                     }
-                                    
-                                    delete [] Data;
                                 }
+                                t->UpdateTexture();
                             }
+                            
+                            delete [] Data;
                         }
+                    }
+                }
+                
+                Turok4::SubMesh* sm = m->GetSubMesh(s);
+                if(sm->GetVertexCount() != 0)
+                {
+                    //printf("Mesh[%d]: %lu, %lu.\n",s,sm->m_Vertices.size(),sm->m_Indices.size());
+                    
+                    vector<Vec2> TexCs;
+                    vector<Vec3> Verts,Norms;
+                    vector<Vec4> Colors;
+                    vector<i32 > Indices;
+                
+                    for(i32 vIdx = 0;vIdx < sm->GetVertexCount();vIdx++)
+                    {
+                        Vec2 t0;
+                        Vec3 v0,n0;
+                        sm->GetTexCoord(vIdx,&t0.x);
+                        sm->GetVertex(vIdx,&v0.x);
+                        sm->GetNormal(vIdx,&n0.x);
                         
-                        Indices.clear();
-                        for(i32 idx = 0;idx < Chunk->GetIndexCount();idx++)
+                        TexCs .push_back(t0);
+                        Verts .push_back(v0);
+                        Norms .push_back(n0);
+                        Colors.push_back(Vec4(1,1,1,1));
+                    }
+                    if(sm->GetIndexCount() != 0)
+                    {
+                        for(i32 idx = 0;idx < sm->GetIndexCount();idx++)
                         {
-                            i32 I = Chunk->GetIndex(idx);
+                            i32 I = sm->GetIndex(idx);
                             Indices.push_back(I);
                         }
-                    
+                        
                         Mesh* M = new Mesh();
                         if(Indices.size() != 0) M->SetIndexBuffer   (Indices.size(),&Indices[0]  );
                         M->SetVertexBuffer  (Verts  .size(),&Verts  [0].x);
@@ -190,11 +122,7 @@ namespace TestClient
                         M->PrimitiveType = PT_TRIANGLE_STRIP;
                         
                         RenderObject* Obj = m_Renderer->CreateRenderObject(ROT_MESH);
-                        
-                        Mat4 T = Translation((*(Vec3*)&a->Position));
-                        Mat4 R = Rotation(a->Rotation.y,a->Rotation.x,a->Rotation.z);
-                        Mat4 S = Scale(*(Vec3*)&a->Scale);
-                        Obj->SetTransform(T * R * S);
+                        Obj->SetTransform(GetActorTransform(i));
                     
                         Material* Mat = m_Renderer->CreateMaterial();
                         Mat->SetShader(m_Shdr);
@@ -204,38 +132,110 @@ namespace TestClient
                         
                         m_Meshes.push_back(Obj);
                         
-                        m_Actors[m_ActorDefs.size()].push_back(Obj);
-                        Obj->SetObjectID(m_ActorDefs.size());
+                        m_Actors[i].push_back(Obj);
+                        Obj->SetObjectID(i);
+                    }
+                    else if(sm->GetChunkCount() != 0)
+                    {
+                        for(i32 ch = 0;ch < sm->GetChunkCount();ch++)
+                        {
+                            Turok4::MeshChunk* Chunk = sm->GetChunk(ch);
+                            
+                            if(ch < m->m_MTRLs.size())
+                            {
+                                int w,h,chnl;
+                                if(m->m_MTRLs[ch].Unk4 >= 0 && m->m_MTRLs[ch].Unk4 < m->m_TSNRs.size())
+                                {
+                                    int TexID = m->m_TXSTs[m->m_TSNRs[m->m_MTRLs[ch].Unk4].TXST_ID].TextureID;
+                                    if(TexID < m->m_Textures.size())
+                                    {
+                                        Byte* Data = (Byte*)SOIL_load_image(m->m_Textures[TexID].c_str(),&w,&h,&chnl,4);
+                                        
+                                        if(Data)
+                                        {
+                                            t = m_Renderer->GetRasterizer()->CreateTexture();
+                                            t->CreateTextureb(w,h,Data);
+                                            for(int x = 0;x < w;x++)
+                                            {
+                                                for(int y = 0;y < h;y++)
+                                                {
+                                                    Vec4 c = t->GetPixel(Vec2(x,y));
+                                                    if(c.w < 1.0f && c.w != 0.0f) c.w = 1.0f;
+                                                    t->SetPixel(Vec2(x,y),c);
+                                                }
+                                            }
+                                            t->UpdateTexture();
+                                        }
+                                        
+                                        delete [] Data;
+                                    }
+                                }
+                            }
+                            
+                            Indices.clear();
+                            for(i32 idx = 0;idx < Chunk->GetIndexCount();idx++)
+                            {
+                                i32 I = Chunk->GetIndex(idx);
+                                Indices.push_back(I);
+                            }
+                        
+                            Mesh* M = new Mesh();
+                            if(Indices.size() != 0) M->SetIndexBuffer   (Indices.size(),&Indices[0]  );
+                            M->SetVertexBuffer  (Verts  .size(),&Verts  [0].x);
+                            M->SetNormalBuffer  (Norms  .size(),&Norms  [0].x);
+                            M->SetTexCoordBuffer(TexCs  .size(),&TexCs  [0].x);
+                            M->PrimitiveType = PT_TRIANGLE_STRIP;
+                            
+                            RenderObject* Obj = m_Renderer->CreateRenderObject(ROT_MESH);
+                            
+                            Obj->SetTransform(GetActorTransform(i));
+                        
+                            Material* Mat = m_Renderer->CreateMaterial();
+                            Mat->SetShader(m_Shdr);
+                            Mat->SetMap(Material::MT_DIFFUSE,t);
+                            Obj->SetMesh(M,Mat);
+                            m_Renderer->GetScene()->AddRenderObject(Obj);
+                            
+                            m_Meshes.push_back(Obj);
+                            m_Actors[i].push_back(Obj);
+                            Obj->SetObjectID(i);
+                        }
                     }
                 }
             }
+            
+            m_ActorIsStatic.push_back(a->GetDef() == 0);
         }
-        
-        m_ActorDefs.push_back(a);
-        m_ActorIsStatic.push_back(IsStatic);
     }
     Mat4 T4_Viewer::GetActorTransform(i32 AID) const
     {
-        Mat4 T = Translation(*(Vec3*)&m_ActorDefs[AID]->Position);
-        Mat4 R = Rotation(m_ActorDefs[AID]->Rotation.y,m_ActorDefs[AID]->Rotation.z,m_ActorDefs[AID]->Rotation.x);
-        Mat4 S = Scale(*(Vec3*)&m_ActorDefs[AID]->Scale);
+        if(!m_ActorDefs[AID]->GetDef()) return Mat4::Identity;
+        
+        Mat4 T = Translation(*(Vec3*)&m_ActorDefs[AID]->GetDef()->Position);
+        Mat4 R = Rotation(m_ActorDefs[AID]->GetDef()->Rotation.y,
+                          m_ActorDefs[AID]->GetDef()->Rotation.z,
+                          m_ActorDefs[AID]->GetDef()->Rotation.x);
+        Mat4 S = Scale(*(Vec3*)&m_ActorDefs[AID]->GetDef()->Scale);
         return T * R * S;
     }
     void T4_Viewer::SetActorPosition(i32 AID,const Vec3& Pos)
     {
-        m_ActorDefs[AID]->Position = *(ActorVec3*)&Pos;
+        if(!m_ActorDefs[AID]->GetDef()) return;
+        m_ActorDefs[AID]->GetDef()->Position = *(Turok4::ActorVec3*)&Pos;
         Mat4 t = GetActorTransform(AID);
         for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
     }
     void T4_Viewer::SetActorRotation(i32 AID,const Vec3& Rot)
     {
-        m_ActorDefs[AID]->Rotation = *(ActorVec3*)&Rot;
+        if(!m_ActorDefs[AID]->GetDef()) return;
+        m_ActorDefs[AID]->GetDef()->Rotation = *(Turok4::ActorVec3*)&Rot;
         Mat4 t = GetActorTransform(AID);
         for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
     }
     void T4_Viewer::SetActorScale   (i32 AID,const Vec3& Scl)
     {
-        m_ActorDefs[AID]->Scale    = *(ActorVec3*)&Scl;
+        if(!m_ActorDefs[AID]->GetDef()) return;
+        m_ActorDefs[AID]->GetDef()->Scale    = *(Turok4::ActorVec3*)&Scl;
         Mat4 t = GetActorTransform(AID);
         for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
     }
@@ -320,18 +320,22 @@ namespace TestClient
         glEnable(GL_PROGRAM_POINT_SIZE);
         
         /*
-         * Load static meshes
+         * Load meshes
          */
-        for(i32 i = 0;i < m_ATR.GetActorCount();i++) AddActorToScene(m_ATR.GetActor(i),true);
         
-        /*
-         * Load dynamic meshes
-         */
-        ActorInstances* ATI = m_ATR.GetActors();
+        Turok4::ATIFile* ATI = m_ATR->GetActors();
+        m_ActorDefs.push_back(m_ATR->GetActor());
         if(ATI)
         {
-            for(i32 i = 0;i < ATI->m_Actors.size();i++) AddActorToScene(ATI->m_Actors[i],false);
+            for(i32 i = 0;i < ATI->GetActorCount();i++) m_ActorDefs.push_back(ATI->GetActorDef(i)->Actor->GetActor());
         }
+        else
+        {
+            printf("Not a level ATR file.\n");
+            m_DoShutdown = true;
+        }
+        
+        AddActorsToScene();
         
         //m_DebugDraw->SetDebugDisplay(DebugDrawer::DD_OBB,true);
         
@@ -401,10 +405,7 @@ namespace TestClient
             m_Lights[0]->SetTransform(Rotation(Vec3(0,0,1),90 + (a * 7.5f)) * Rotation(Vec3(1,0,0),-90.0f));
         }
         
-        for(i32 i = 0;i < m_ActorDefs.size();i++)
-        {
-            m_ActorDefs[i]->SaveTransform();
-        }
+        m_ATR->GetActors()->Save(m_Filename);
     }
     void T4_Viewer::Shutdown()
     {

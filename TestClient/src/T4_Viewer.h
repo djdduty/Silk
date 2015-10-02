@@ -8,7 +8,7 @@
 
 #pragma once
 #include <Test.h>
-#include <T4/ATRLoader.h>
+#include <T4/Turok4.h>
 
 #define BUTTON_COLOR 0.5,0.5,0.5,1.0
 
@@ -29,7 +29,7 @@ namespace TestClient
             virtual void Shutdown();
         
             bool LoadATR(const string& TurokDir,const string& File);
-            void AddActorToScene(Actor* a,bool IsStatic);
+            void AddActorsToScene();
         
             Mat4 GetActorTransform(i32 AID) const;
             void SetActorPosition(i32 AID,const Vec3& Pos);
@@ -45,9 +45,10 @@ namespace TestClient
             virtual Renderer* GetPreferredRenderer(Rasterizer* Raster,TaskManager* TaskMng) const { return new DeferredRenderer(Raster,TaskMng); }
         
         protected:
-            ATRFile m_ATR;
+            Turok4::ATRFile* m_ATR;
+            string m_Filename;
             vector<SilkObjectVector> m_Actors;
-            vector<Actor*>   m_ActorDefs;
+            vector<Turok4::Actor*>   m_ActorDefs;
             vector<bool  >   m_ActorIsStatic;
             Shader* m_Shdr;
     };

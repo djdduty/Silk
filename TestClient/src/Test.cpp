@@ -51,6 +51,10 @@ namespace TestClient
             else if(Key == GLFW_KEY_A     ) g_Test->GetInput()->OnButtonDown(BTN_MOVE_LEFT    );
             else if(Key == GLFW_KEY_D     ) g_Test->GetInput()->OnButtonDown(BTN_MOVE_RIGHT   );
             else if(Key == GLFW_KEY_ESCAPE) g_Test->GetInput()->OnButtonDown(BTN_QUIT         );
+            else if(Key == GLFW_KEY_UP    ) g_Test->GetInput()->OnButtonDown(BTN_UP_ARROW     );
+            else if(Key == GLFW_KEY_DOWN  ) g_Test->GetInput()->OnButtonDown(BTN_DOWN_ARROW   );
+            else if(Key == GLFW_KEY_LEFT  ) g_Test->GetInput()->OnButtonDown(BTN_LEFT_ARROW   );
+            else if(Key == GLFW_KEY_RIGHT ) g_Test->GetInput()->OnButtonDown(BTN_RIGHT_ARROW  );
         }
         else if(Action == GLFW_RELEASE)
         {
@@ -59,6 +63,10 @@ namespace TestClient
             else if(Key == GLFW_KEY_A     ) g_Test->GetInput()->OnButtonUp(BTN_MOVE_LEFT    );
             else if(Key == GLFW_KEY_D     ) g_Test->GetInput()->OnButtonUp(BTN_MOVE_RIGHT   );
             else if(Key == GLFW_KEY_ESCAPE) g_Test->GetInput()->OnButtonUp(BTN_QUIT         );
+            else if(Key == GLFW_KEY_UP    ) g_Test->GetInput()->OnButtonUp(BTN_UP_ARROW     );
+            else if(Key == GLFW_KEY_DOWN  ) g_Test->GetInput()->OnButtonUp(BTN_DOWN_ARROW   );
+            else if(Key == GLFW_KEY_LEFT  ) g_Test->GetInput()->OnButtonUp(BTN_LEFT_ARROW   );
+            else if(Key == GLFW_KEY_RIGHT ) g_Test->GetInput()->OnButtonUp(BTN_RIGHT_ARROW  );
         }
     }
     
@@ -183,6 +191,7 @@ namespace TestClient
         m_xCamRot = Quat(0,1,0,0);
         m_yCamRot = Quat(1,0,0,0);
         m_CamRot  = Quat(0,1,0,0);
+        m_CamSpeed = CAMERA_MOVE_SPEED;
         m_FlyCameraEnabled = true;
     }
 	void Test::InitDebugDisplay()
@@ -609,10 +618,12 @@ namespace TestClient
                     m_yCamRot *= Quat(Vec3(1,0,0),-CursorDelta.y * CAMERA_TURN_SPEED);
                     m_CamRot = m_xCamRot * m_yCamRot;
                 }
-                if(m_InputManager->IsButtonDown(BTN_MOVE_FORWARD )) m_CamPos += m_CamRot * Vec3(0,0,-CAMERA_MOVE_SPEED) * GetDeltaTime();
-                if(m_InputManager->IsButtonDown(BTN_MOVE_BACKWARD)) m_CamPos += m_CamRot * Vec3(0,0, CAMERA_MOVE_SPEED) * GetDeltaTime();
-                if(m_InputManager->IsButtonDown(BTN_MOVE_LEFT    )) m_CamPos += m_CamRot * Vec3(-CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
-                if(m_InputManager->IsButtonDown(BTN_MOVE_RIGHT   )) m_CamPos += m_CamRot * Vec3( CAMERA_MOVE_SPEED,0,0) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_UP_ARROW     )) m_CamSpeed += 50.0f * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_DOWN_ARROW   )) m_CamSpeed -= 50.0f * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_FORWARD )) m_CamPos += m_CamRot * Vec3(0,0,-m_CamSpeed) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_BACKWARD)) m_CamPos += m_CamRot * Vec3(0,0, m_CamSpeed) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_LEFT    )) m_CamPos += m_CamRot * Vec3(-m_CamSpeed,0,0) * GetDeltaTime();
+                if(m_InputManager->IsButtonDown(BTN_MOVE_RIGHT   )) m_CamPos += m_CamRot * Vec3( m_CamSpeed,0,0) * GetDeltaTime();
                 
                 m_Camera->SetTransform(Translation(m_CamPos) * m_CamRot.ToMat());
             }
