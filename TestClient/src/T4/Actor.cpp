@@ -12,8 +12,8 @@
 #include <iostream>
 using namespace std;
 
-#define printf(...) 
-#define cout clog
+//#define printf(...) 
+//#define cout clog
 
 Actor::~Actor()
 {

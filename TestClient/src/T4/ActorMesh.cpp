@@ -12,8 +12,8 @@
 using namespace std;
 
 #include "SOIL/SOIL.h"
-#define printf(...) 
-#define cout clog
+//#define printf(...) 
+//#define cout clog
 
 static string MTFBlockTypeIDStrings[MTFBlock::BT_COUNT] =
 {

@@ -46,6 +46,8 @@ namespace Silk
             void OnKeyDown()   {}
             void OnKeyHeld()   {}
             void OnKeyUp()     {}
+
+			void SetViewNeedsUpdate(bool needsUpdate) { m_ViewNeedsUpdate = needsUpdate; }
         
         protected:
             friend class UIElement;

@@ -15,6 +15,7 @@ namespace TestClient
     void SSAOTest::Initialize()
     {
         InitGUI();
+		InitRenderGUI();
         InitFlyCamera();
 
         m_ShaderGenerator->Reset();
@@ -39,11 +40,11 @@ namespace TestClient
         m_Camera->SetZClipPlanes(0.001f,200.0f);
         m_CamPos = Vec3(0,60,20);
 
-        SetFPSPrintFrequency(0.5f);
+        SetFPSPrintFrequency(10.0f);
         
         InitSSAO();
         SetSSAORadius    (0.5f);
-        SetSSAOIntensity (4.0f);
+        SetSSAOIntensity (1.0f);
         SetSSAONoiseScale(4);
     }
     void SSAOTest::LoadLight()

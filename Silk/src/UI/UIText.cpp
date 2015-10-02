@@ -219,6 +219,7 @@ namespace Silk
         m_Render->SetMesh(m,m_Material);
         m->Destroy();
         m_TextChanged = false;
+		m_Manager->SetViewNeedsUpdate(true);
     }
     void UIText::SetTextSize(f32 Size)
     {

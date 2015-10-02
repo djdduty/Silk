@@ -6,6 +6,9 @@
 #include <InputManager.h>
 #include <Renderer/Renderer.h>
 
+#include <UI/UIText.h>
+#include <UI/UIPanel.h>
+
 #define CAMERA_MOVE_SPEED 15.0f
 #define CAMERA_TURN_SPEED 0.6f
 
@@ -34,6 +37,9 @@ namespace TestClient
         
             void Init();
             void InitGUI();
+			UIText* CreateRenderText(Vec3 Position, std::string Text, UIPanel* Panel);
+
+			void InitRenderGUI();
 			void InitDebugDisplay();
             void InitFlyCamera(const Vec3& InitPos = Vec3(0,0,0));
             void InitSSAO();
@@ -105,6 +111,15 @@ namespace TestClient
             Material    * m_CursorMat;
             i32 m_CursorTexIndex;
             Ray m_CursorRay;
+
+			UIText* m_UIFrameID;
+			UIText* m_UIRunTime;
+			UIText* m_UIFrameRate;
+			UIText* m_UIDrawCalls;
+			UIText* m_UIVertices;
+			UIText* m_UITriangles;
+			UIText* m_UIObjectcount;
+			bool m_UsingRenderUI;
         
             i32 m_RTTIndex;
         
