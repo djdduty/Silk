@@ -40,12 +40,12 @@ namespace Silk
 
             void OnMouseMove() {}
             void OnMouseOver() {}
-            void OnMouseDown() {}
-            void OnMouseOut()  {}
-            void OnMouseUp()   {}
-            void OnKeyDown()   {}
-            void OnKeyHeld()   {}
-            void OnKeyUp()     {}
+            void OnMouseDown();
+            void OnMouseOut () {}
+            void OnMouseUp  ();
+            void OnKeyDown  () {}
+            void OnKeyHeld  () {}
+            void OnKeyUp    () {}
 
 			void SetViewNeedsUpdate(bool needsUpdate) { m_ViewNeedsUpdate = needsUpdate; }
         

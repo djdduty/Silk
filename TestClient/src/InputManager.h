@@ -20,18 +20,17 @@ namespace TestClient
         
             void Update(Scalar dt);
     
-            void SetCursorPosition(const Vec2& p);
-            Vec2 GetCursorPosition() const { return m_CursorPosition; }
-            Vec2 GetCursorDelta   () const { return m_CursorPosition - m_LastCursorPosition; }
-            Vec2 GetUnBoundedCursorPosition() const { return m_UnBoundedCursorPosition; }
-            Vec2 GetUnBoundedCursorDelta   () const { return m_UnBoundedCursorPosition - m_LastUnBoundedCursorPosition; }
-            void ResetCursorDelta ()       { m_LastCursorPosition = m_CursorPosition; m_LastUnBoundedCursorPosition = m_UnBoundedCursorPosition; }
+            void SetCursorPosition (const Vec2& p);
+            Vec2 GetCursorPosition () const { return m_CursorPosition; }
+            Vec2 GetCursorDelta    () const { return m_CursorPosition - m_LastCursorPosition; }
+            Vec2 GetRealCursorDelta() const { return m_RealCursorDelta; }
+            void ResetCursorDelta  ()       { m_RealCursorDelta = Vec2(0,0); }
         
             void OnButtonDown(i32 ButtonID);
             void OnButtonUp  (i32 ButtonID);
             bool IsButtonDown(i32 ButtonID) const { return m_ButtonDurations[ButtonID] != -1.0f; }
             Scalar GetButtonDownDuration(i32 ButtonID) const { return m_ButtonDurations[ButtonID]; }
-            void SetMouseButtonIDs(i32 Left,i32 Right,i32 Middle = -1);
+            void SetMouseButtonIDs(i32 Left,i32 Right,i32 Middle = -1) { m_MouseLeftID = Left; m_MouseRightID = Right; m_MouseMiddleID = Middle; }
         
         protected:
             vector<Scalar> m_ButtonDurations;
@@ -41,11 +40,11 @@ namespace TestClient
             
             Vec2 m_Resolution;
 
-            Vec2 m_LastUnBoundedCursorPosition;
-            Vec2 m_UnBoundedCursorPosition;
             Vec2 m_LastCursorPosition;
             Vec2 m_CursorPosition;
             Vec2 m_RealCursorPosition;
+            Vec2 m_VirtualCursorPosition;
+            Vec2 m_RealCursorDelta;
             Renderer* m_Renderer;
     };
 };

@@ -57,6 +57,9 @@ namespace TestClient
             else if(Key == GLFW_KEY_DOWN  ) g_Test->GetInput()->OnButtonDown(BTN_DOWN_ARROW   );
             else if(Key == GLFW_KEY_LEFT  ) g_Test->GetInput()->OnButtonDown(BTN_LEFT_ARROW   );
             else if(Key == GLFW_KEY_RIGHT ) g_Test->GetInput()->OnButtonDown(BTN_RIGHT_ARROW  );
+            else if(Key == GLFW_KEY_I     ) g_Test->GetInput()->OnButtonDown(BTN_TOGGLE_STATS );
+            else if(Key == GLFW_KEY_P     ) g_Test->GetInput()->OnButtonDown(BTN_P            );
+            else if(Key == GLFW_KEY_WORLD_1) g_Test->GetInput()->OnButtonDown(BTN_TOGGLE      );
         }
         else if(Action == GLFW_RELEASE)
         {
@@ -69,6 +72,9 @@ namespace TestClient
             else if(Key == GLFW_KEY_DOWN  ) g_Test->GetInput()->OnButtonUp(BTN_DOWN_ARROW   );
             else if(Key == GLFW_KEY_LEFT  ) g_Test->GetInput()->OnButtonUp(BTN_LEFT_ARROW   );
             else if(Key == GLFW_KEY_RIGHT ) g_Test->GetInput()->OnButtonUp(BTN_RIGHT_ARROW  );
+            else if(Key == GLFW_KEY_I     ) g_Test->GetInput()->OnButtonUp(BTN_TOGGLE_STATS );
+            else if(Key == GLFW_KEY_P     ) g_Test->GetInput()->OnButtonUp(BTN_P            );
+            else if(Key == GLFW_KEY_WORLD_1) g_Test->GetInput()->OnButtonUp(BTN_TOGGLE      );
         }
     }
     
@@ -130,6 +136,7 @@ namespace TestClient
             
             m_InputManager = new InputManager(m_Renderer);
             m_InputManager->Initialize(BTN_COUNT);
+            m_InputManager->SetMouseButtonIDs(BTN_LEFT_MOUSE,BTN_RIGHT_MOUSE);
         
             m_ShaderGenerator = m_Renderer->GetShaderGenerator();
             
@@ -156,8 +163,6 @@ namespace TestClient
             m_ObjLoader = new ObjLoader();
             m_UIManager = 0;
             m_Cursor    = 0;
-            m_CursorMat = 0;
-            m_CursorObj = 0;
             
             m_RTTIndex = -1;
             
@@ -188,6 +193,12 @@ namespace TestClient
         Fnt->SetFontImage(LoadTexture("Common/font24px/Font.png"));
         m_UIManager->SetFont(Fnt);
         
+        UIPanel* p = new UIPanel(Vec2(20,20));
+        p->SetBackgroundColor(Vec4(1,1,1,1));
+        p->SetBackgroundImage(LoadTexture("Common/Cursor.png"));
+        m_Cursor = p;
+        m_UIManager->AddElement(m_Cursor);
+        
         glfwSetInputMode          (m_Window->GetWindow(),GLFW_CURSOR,GLFW_CURSOR_DISABLED);
         glfwSetMouseButtonCallback(m_Window->GetWindow(),OnClick     );
         glfwSetCursorPosCallback  (m_Window->GetWindow(),OnCursorMove);
@@ -216,6 +227,7 @@ namespace TestClient
         RPanel->SetBackgroundColor(Vec4(0,0,0,0.75));
         RPanel->SetPosition(Vec3(100,100,0));
         m_UIElements.push_back(RPanel);
+        m_StatsPanel = RPanel;
         
 		m_UIFrameID     = CreateRenderText(Vec3(0,0  ,0), "Frame ID:"    , RPanel);
 		m_UIRunTime     = CreateRenderText(Vec3(0,24 ,0), "Run Time:"    , RPanel);
@@ -225,6 +237,8 @@ namespace TestClient
 		m_UITriangles   = CreateRenderText(Vec3(0,120,0), "# Triangles:" , RPanel);
 		m_UIObjectcount = CreateRenderText(Vec3(0,144,0), "# Objects:"   , RPanel);
 
+        m_StatsVelocity    = -1.0f;
+        m_StatsTranslation = 0.0f;
 		m_UsingRenderUI = true;
 	}
     void Test::InitFlyCamera(const Vec3& InitPos)
@@ -523,7 +537,6 @@ namespace TestClient
         m_Materials.push_back(Mat);
         return Mat;
     }
-    
     f64 ConvertUnit(f64 n)
     {
              if(n >= 1000.0          && n < 1000000.0         ) return n * 0.001         ;
@@ -566,12 +579,21 @@ namespace TestClient
         m_FreeFLOPSSamples     .AddSample(m_FLOPSPerFrame );
         m_FLOPSPerSecondSamples.AddSample(m_FLOPSPerSecond);
     }
-	std::string ftostr(f32 val)
+	string ftostr(f32 val)
 	{
 		std::stringstream ss;
 		ss << std::fixed << std::setprecision(2) << val;
 		return ss.str();
 	}
+    string SecondsToTimeString(Scalar s)
+    {
+        i32 Hours   =  s / 60.0f / 60.0f;
+        i32 Minutes = (s / 60.0f) - (Hours * 60 * 60);
+        i32 Seconds = s - (Hours * 60 * 60) - (Minutes * 60);
+        return FormatString("%s%d:%s%d:%s%d",Hours   <= 9 ? "0" : "",Hours,
+                                             Minutes <= 9 ? "0" : "",Minutes,
+                                             Seconds <= 9 ? "0" : "",Seconds);
+    }
     void Test::PrintDebugInfo()
     {
         const Renderer::RenderStats& Stats = m_Renderer->GetRenderStatistics();
@@ -595,14 +617,46 @@ namespace TestClient
 		if(ceff  < 0.0f) ceff = 0.0f;
 		if(aceff < 0.0f) aceff = 0.0f;
 
-		if(m_UsingRenderUI) {
-			m_UIFrameID     ->SetText("Frame ID: "    +to_string(Stats.FrameID));
-			m_UIRunTime     ->SetText("Run Time: "    +ftostr(m_ElapsedTime)+"s");
-			m_UIFrameRate   ->SetText("Avg Frame Rate: "+to_string((i32)afr)+"hz (" + ftostr((1000.0 / afr)) + "ms)");
-			m_UIDrawCalls   ->SetText("Avg Draw Calls: "+to_string((i32)adc));
-			m_UIVertices    ->SetText("Avg Vertices: "  +to_string((i32)avc));
-			m_UITriangles   ->SetText("Avg Triangles: " +to_string((i32)atc));
-			m_UIObjectcount ->SetText("Avg Objects: "   +to_string((i32)avo));
+		if(m_UsingRenderUI)
+        {
+            if(m_StatsPanel->IsEnabled())
+            {
+                m_UIFrameID     ->SetText("Frame ID: "       + to_string(Stats.FrameID));
+                m_UIRunTime     ->SetText("Run Time: "       + SecondsToTimeString(m_ElapsedTime));
+                m_UIFrameRate   ->SetText("Avg Frame Rate: " + to_string((i32)afr)+"Hz (" + ftostr((1000.0 / afr)) + "ms)");
+                m_UIDrawCalls   ->SetText("Avg Draw Calls: " + to_string((i32)adc));
+                m_UIVertices    ->SetText("Avg Vertices: "   + to_string((i32)avc));
+                m_UITriangles   ->SetText("Avg Triangles: "  + to_string((i32)atc));
+                m_UIObjectcount ->SetText("Avg Objects: "    + to_string((i32)avo));
+            }
+            
+            if(m_InputManager->GetButtonDownDuration(BTN_TOGGLE_STATS) > 0.0f && !m_StatsButtonHeld)
+            {
+                m_StatsButtonHeld = true;
+                if(m_StatsTranslation == 1.0f || m_StatsVelocity > 0.0f) m_StatsVelocity = -4.5f;
+                else if(m_StatsTranslation == 0.0f || m_StatsVelocity < 0.0f) { m_StatsVelocity = 4.5f; m_StatsPanel->SetEnabled(true); }
+            }
+            else if(m_InputManager->GetButtonDownDuration(BTN_TOGGLE_STATS) == -1.0f) m_StatsButtonHeld = false;
+        
+            if(m_StatsVelocity != 0.0f)
+            {
+                m_StatsTranslation += m_StatsVelocity * GetDeltaTime();
+                if(m_StatsTranslation > 1.0f)
+                {
+                    m_StatsVelocity = 0.0f;
+                    m_StatsTranslation = 1.0f;
+                }
+                else if(m_StatsTranslation < 0.0f)
+                {
+                    m_StatsVelocity = 0.0f;
+                    m_StatsTranslation = 0.0f;
+                    m_StatsPanel->SetEnabled(false);
+                }
+                
+                UIRect* r = m_StatsPanel->GetBounds();
+                Vec2 res = m_Rasterizer->GetContext()->GetResolution();
+                m_StatsPanel->SetPosition(Vec3(res.x - (r->GetDimensions().x * m_StatsTranslation),res.y - r->GetDimensions().y,0.0f));
+            }
 		} else {
 			printf("+--------------(Render Statistics)--------------+\n");
 			printf("| Frame ID    : %10lld f  " "                  |\n",Stats.FrameID);
@@ -661,18 +715,14 @@ namespace TestClient
             /* Clear screen */
             m_Rasterizer->ClearActiveFramebuffer();
             
-            /* Adjust aspect ratio (in case window resized) */
-            Scalar Aspect = m_Rasterizer->GetContext()->GetResolution().y / m_Rasterizer->GetContext()->GetResolution().x;
-            m_Camera->SetFieldOfView(Vec2(60.0f,60.0f * Aspect));
-            
             /* Transform camera */
             if(m_FlyCameraEnabled && m_UIManager)
             {
-                Vec2 CursorDelta = m_InputManager->GetUnBoundedCursorDelta() * 0.5f;
+                Vec2 CursorDelta = m_InputManager->GetRealCursorDelta() * 0.5f;
                 
                 if(CursorDelta.Magnitude() > 0.01f)
                 {
-                    m_xCamRot *= Quat(Vec3(0,1,0), CursorDelta.x * CAMERA_TURN_SPEED);
+                    m_xCamRot *= Quat(Vec3(0,1,0),-CursorDelta.x * CAMERA_TURN_SPEED);
                     m_yCamRot *= Quat(Vec3(1,0,0),-CursorDelta.y * CAMERA_TURN_SPEED);
                     m_CamRot = m_xCamRot * m_yCamRot;
                 }
@@ -695,11 +745,15 @@ namespace TestClient
             Mat4 p = m_Camera->GetProjection();
             m_CursorRay = UnProject(Vec3(x,y,0),v,p,Vec4(Viewport[0],Viewport[1],Viewport[2],Viewport[3]));
             
+            /* Adjust aspect ratio (in case window resized) */
+            Scalar Aspect = Scalar(Viewport[3]) / Scalar(Viewport[2]);
+            m_Camera->SetFieldOfView(Vec2(60.0f,60.0f * Aspect));
+            
             /* Update cursor position */
-            if(m_UIManager && m_CursorObj)
+            if(m_UIManager && m_Cursor)
             {
                 Vec2 cPos = m_InputManager->GetCursorPosition();
-                m_CursorObj->SetTransform(Translation(Vec3(cPos.x,cPos.y,-99.0f)));
+                m_Cursor->SetPosition(Vec3(cPos.x,cPos.y,-99.0f));
             }
             
             /* Update UI */
@@ -711,7 +765,7 @@ namespace TestClient
             if(m_RTTIndex != -1) m_Textures[m_RTTIndex]->DisableRTT();
             
             m_FramePrintTime += m_DeltaTime;
-            if(m_FramePrintTime > m_FramePrintInterval)
+            if(m_FramePrintTime > m_FramePrintInterval || m_UsingRenderUI)
             {
                 PrintDebugInfo();
                 m_FramePrintTime  = 0.0f;

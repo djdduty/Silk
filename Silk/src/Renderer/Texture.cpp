@@ -41,7 +41,15 @@ namespace Silk
     {
         if(m_FrameBuffer) m_FrameBuffer->Disable();
     }
-	
+	void Texture::FreePixels()
+    {
+        if(m_Pixels)
+        {
+            if(m_Type == PT_UNSIGNED_BYTE) delete [] (u32*)m_Pixels;
+            else delete [] (Vec4*)m_Pixels;
+        }
+        m_Pixels = 0;
+    }
     void Texture::CreateTexture(i32 Width,i32 Height,PIXEL_TYPE Type)
     {
         if(Width == 0 || Height == 0) return;

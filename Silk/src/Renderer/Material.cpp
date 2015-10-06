@@ -69,11 +69,13 @@ namespace Silk
     }
     void Material::SetMap(MAP_TYPE Type,Texture *Map)
     {
-        if(!Map) return;
         if(m_Maps[Type]) m_Maps[Type]->Destroy();
         m_Maps[Type] = Map;
-        Map->AddRef();
         m_HasUpdated = true;
+        if(!Map) { m_Uniforms->SetTextureMapUsed(Type,false); return; }
+        
+        m_Uniforms->SetTextureMapUsed(Type,true);
+        Map->AddRef();
     }
     void Material::SetShader(Shader *Shdr)
     {

@@ -45,9 +45,14 @@ namespace Silk
         Gen->SetAttributeOutput(ShaderGenerator::IAT_TEXCOORD,true);
         Gen->SetFragmentOutput (ShaderGenerator::OFT_COLOR   ,true);
         
+        Gen->SetTextureInput(Material::MT_DIFFUSE,true);
+        
         Gen->SetLightingMode(ShaderGenerator::LM_FLAT);
-        Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = u_Diffuse;[/SetColor]"),2);
+        Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor  = u_Diffuse;\n"
+                                                             "if(u_DiffuseMapUsed == 1) sColor *= texture(u_DiffuseMap,sTexCoord);\n"
+                                                             "[/SetColor]"),2);
         m_DefaultShader = Gen->Generate();
+        
         Gen->Reset();
 
         Gen->SetShaderVersion(330);
@@ -71,9 +76,11 @@ namespace Silk
         Gen->SetTextureInput(Material::MT_DIFFUSE,true);
         m_DefaultTextureShader = Gen->Generate();
         
-        Gen->AddFragmentModule(const_cast<CString>("[Alpha]float Alpha = smoothstep(0.5 - 0.25,0.5 + 0.25,texture(u_DiffuseMap,sTexCoord).a) * o_Color.a;[/Alpha]"),0);
+        Gen->AddFragmentModule(const_cast<CString>("[Alpha]vec4 DiffMap = texture(u_DiffuseMap,sTexCoord);\n"
+                                                          "float Alpha = smoothstep(0.5 - 0.25,0.5 + 0.25,DiffMap.a) * o_Color.a;\n"
+                                                   "[/Alpha]"),0);
         Gen->AddFragmentModule(const_cast<CString>("[AlphaTest]if(Alpha < 0.0001) discard;[/AlphaTest]"),1);
-        Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(o_Color.rgb,Alpha);[/SetColor]"),2);
+        Gen->AddFragmentModule(const_cast<CString>("[SetColor]vec4 sColor = vec4(DiffMap.rgb * o_Color.rgb,Alpha);[/SetColor]"),2);
         m_DefaultTextShader = Gen->Generate();
         
         Gen->Reset();
@@ -119,9 +126,10 @@ namespace Silk
 			m_Renderer->GetRasterizer()->ClearActiveFramebuffer();
 			m_Renderer->GetRasterizer()->SetClearColor(oldClear);
             SilkObjectVector MeshesRendered;
-            for(i32 i = m_Elements.size() - 1; i >= 0; i--)
+            for(i32 i = m_Elements.size() - 1;i >= 0;i--)
             {
-                m_Elements[i]->_Render(PrimType, &MeshesRendered);
+                if(!m_Elements[i]->m_Enabled && !m_Elements[i]->HasParent()) continue;
+                m_Elements[i]->_Render(PrimType,&MeshesRendered);
             }
         
             for(i32 i = 0;i < MeshesRendered.size();i++)
@@ -133,8 +141,13 @@ namespace Silk
             m_Renderer->GetScene()->SetActiveCamera(Cam);
             m_ViewNeedsUpdate = false;
         }
+        
+        Vec4 SavedViewport = m_Renderer->GetRasterizer()->GetViewport();
+        m_Renderer->GetRasterizer()->SetViewport(0,0,m_Renderer->GetRasterizer()->GetContext()->GetResolution().x,m_Renderer->GetRasterizer()->GetContext()->GetResolution().y);
         m_Renderer->RenderTexture(m_View);
-		glEnable(GL_DEPTH);
+        m_Renderer->GetRasterizer()->SetViewport(SavedViewport.x,SavedViewport.y,SavedViewport.z,SavedViewport.w);
+        
+        glEnable(GL_DEPTH);
 		glDisable(GL_BLEND);
         
         //Do some other stuff with the view
@@ -157,6 +170,14 @@ namespace Silk
         }
         Element->m_ID = -1;
         m_ViewNeedsUpdate = true;
+    }
+    void UIManager::OnMouseDown()
+    {
+        for(i32 i = 0;i < m_Elements.size();i++) if(m_Elements[i]->IsEnabled()) { m_Elements[i]->OnMouseDown(); }
+    }
+    void UIManager::OnMouseUp()
+    {
+        for(i32 i = 0;i < m_Elements.size();i++) if(m_Elements[i]->IsEnabled()) { m_Elements[i]->OnMouseUp(); }
     }
     void UIManager::SetTransform(Mat4 M)
     {

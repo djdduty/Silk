@@ -242,23 +242,32 @@ namespace Turok4
             ActorVariables();
             ~ActorVariables();
         
-            void Load(ByteStream* Data);
-            void Save(ByteStream* Data);
+            bool Load(ByteStream* Data);
+            bool Save(ByteStream* Data);
+        
+            int GetBlockCount() const { return m_Blocks.size(); }
+            const Block* GetBlock(int Idx) const { return m_Blocks[Idx]; }
+        
+            ActorVec3 Spin;
         
         protected:
+            void ProcessBlocks();
             vector<Block*> m_Blocks;
     };
 
     class Actor
     {
         public:
-            Actor(ATRFile* File = 0) : m_Mesh(0), m_Def(0), m_File(File) { }
+            Actor(ATRFile* File = 0) : m_Mesh(0), m_Def(0), m_Variables(0), m_File(File) { }
             ~Actor();
 
             ActorMesh* GetMesh() const { return m_Mesh; }
             string GetFilename() const;
         
             ActorDef* GetDef() const { return m_Def; }
+        
+            void SetActorVariables(ActorVariables* v) { m_Variables = v; }
+            ActorVariables* GetActorVariables() const { return m_Variables; }
             
         protected:
             friend class ATRFile;
@@ -266,6 +275,7 @@ namespace Turok4
         
             ActorMesh* m_Mesh;
             ActorDef* m_Def;
+            ActorVariables* m_Variables;
             ATRFile* m_File;
     };
 
@@ -339,6 +349,86 @@ namespace Turok4
         BT_ACTOR_INSTANCES,
         BT_ACTOR_PRECACHE_FILE,
         
+        //Actor variables
+        BT_AFFECTS_TARGET,
+        BT_TIME_TO_REACH_MAX_STRENGTH,
+        BT_TIME_TO_TURN_OFF,
+        BT_HIDE,
+        BT_HOLD,
+        BT_GA_GROUP_NAME,
+        BT_GA_MIN_NUMBERS,
+        BT_GA_GROUP_ATTACK,
+        BT_SXZ_ANGLE,
+        BT_SOUND_RADIUS,
+        BT_CLOSE_RANGE_DIST,
+        BT_MEDIUM_RANGE_DIST,
+        BT_AU_A,
+        BT_AU_B,
+        BT_AU_C,
+        BT_AU_D,
+        BT_HEALTH,
+        BT_MAX_HEALTH,
+        BT_TURN_ON,
+        BT_TYPE,
+        BT_COUNTERS,
+        BT_ONLY_P_TARGET,
+        BT_SPAWN_ACTOR1_CHANCE,
+        BT_CLOSE_RANGE_CHANCE,
+        BT_IGNORE_PLAYER,
+        BT_PROVOKE_ONLY,
+        BT_FD_MULT,
+        BT_COLLIDES,
+        BT_IGNORES,
+        BT_TOUCHES,
+        BT_LIGHT_COLOR,
+        BT_LIGHT_INTENSITY,
+        BT_FRICTION,
+        BT_SPIN_X,
+        BT_SPIN_Y,
+        BT_SPIN_Z,
+        BT_A_NDD,
+        BT_A_MDD,
+        BT_A_SON,
+        BT_A_FL,
+        BT_C_B,
+        BT_F_B,
+        BT_F_C,
+        BT_F_F,
+        BT_F_T,
+        BT_F_ED,
+        BT_SM_TYPE,
+        BT_LEASH_RADIUS,
+        BT_LD_SOUND,
+        BT_MD_SOUND,
+        BT_HD_SOUND,
+        BT_SIGHT_RADIUS,
+        BT_SY_ANGLE,
+        BT_ATTACK_RESET_TIME,
+        BT_USE_HEAD_TRACKING,
+        BT_INITIAL_STATE,
+        BT_TURNING_SPEED,
+        BT_FLAP_BEHAVIOR,
+        BT_UPGRADE_1_SLOT_0,
+        BT_UPGRADE_2_SLOT_0,
+        BT_WEAPON_SLOT_0,
+        BT_WEAPON_SLOT_1,
+        BT_WEAPON_SLOT_2,
+        BT_WEAPON_SLOT_3,
+        BT_WEAPON_SLOT_4,
+        BT_WEAPON_SLOT_5,
+        BT_WEAPON_SLOT_6,
+        BT_WEAPON_SLOT_7,
+        BT_STARTS_OFF_WITH_WEAPON_0,
+        BT_STARTS_OFF_WITH_WEAPON_1,
+        BT_STARTS_OFF_WITH_WEAPON_2,
+        BT_STARTS_OFF_WITH_WEAPON_3,
+        BT_STARTS_OFF_WITH_WEAPON_4,
+        BT_STARTS_OFF_WITH_WEAPON_5,
+        BT_STARTS_OFF_WITH_WEAPON_6,
+        BT_STARTS_OFF_WITH_WEAPON_7,
+        BT_ALWAYS_RUN,
+        BT_DEF_TRANS_BLEND,
+        
         //Unknown
         BT_DUMMIES,
         BT_DEFT,
@@ -367,12 +457,13 @@ namespace Turok4
             int GetChildCount() const { return m_Children.size(); }
             Block* GetChild(int Idx) const { return m_Children[Idx]; }
             BLOCK_TYPE GetType() const { return m_Type; }
+            string GetTypeString() const { return m_BlockID; }
         
             ByteStream* GetData() const { return m_Data; }
         
         protected:
             unsigned char m_PreBlockFlag;
-            char m_Hdr[6];
+            char m_Hdr[8];
             string m_BlockID;
             BLOCK_TYPE m_Type;
             ByteStream* m_Data;

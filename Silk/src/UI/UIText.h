@@ -62,8 +62,8 @@ namespace Silk
             void SetTextSize(f32 Size);
             Vec2 GetSize();
         
-        protected:
             void RebuildMesh();
+        protected:
             void RebuildCharacter(i32 Idx);
         
             Vec4                  m_Color;

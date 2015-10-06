@@ -53,14 +53,13 @@ namespace Silk
         
         glEnable(GL_CULL_FACE);
         
+        glEnable(GL_DEPTH_TEST);
         if(m_DebugDrawer)
         {
             m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Enable();
             RenderSingleObject(m_DebugDrawer->GetObject());
             m_DebugDrawer->GetObject()->GetMaterial()->GetShader()->Disable();
         }
-        
-        glEnable(GL_DEPTH_TEST);
     }
     void DeferredRenderer::GeometryPass(ObjectList *List)
     {

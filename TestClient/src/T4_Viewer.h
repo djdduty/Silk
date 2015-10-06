@@ -9,6 +9,7 @@
 #pragma once
 #include <Test.h>
 #include <T4/Turok4.h>
+#include <T4/ActorPanel.h>
 
 #define BUTTON_COLOR 0.5,0.5,0.5,1.0
 
@@ -24,6 +25,8 @@ namespace TestClient
             void LoadMeshes();
             void LoadMaterial();
             void LoadLights();
+        
+            void UpdateUI();
             
             virtual void Run();
             virtual void Shutdown();
@@ -38,7 +41,7 @@ namespace TestClient
         
             virtual const char* GetTestName() const { return "Turok: Evolution Viewer"; }
 #ifdef __APPLE__
-            virtual Vec2 GetPreferredInitResolution() const { return Vec2(800,600); }
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1200,700); }
 #else
             virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
 #endif
@@ -49,7 +52,16 @@ namespace TestClient
             string m_Filename;
             vector<SilkObjectVector> m_Actors;
             vector<Turok4::Actor*>   m_ActorDefs;
-            vector<bool  >   m_ActorIsStatic;
+            vector<bool>             m_ActorIsStatic;
             Shader* m_Shdr;
+        
+            bool     m_ActorPanelButtonDown;
+            Scalar   m_ToolbarTranslation;
+            Scalar   m_ToolbarVelocity;
+            bool     m_ToolbarButtonDown;
+            UIPanel* m_Toolbar;
+            UIPanel* m_LoadButton;
+            UIPanel* m_SaveButton;
+            ActorPanel* m_ActorPanel;
     };
 };

@@ -3,7 +3,7 @@
 
 namespace Silk
 {
-    UIPanel::UIPanel(Vec2 Size) : UIElement()
+    UIPanel::UIPanel(const Vec2& Size) : UIElement(), m_BackgroundImage(0)
     {
         SetSize(Size);
         SetChildOffset(Vec2(0,0));
@@ -15,9 +15,14 @@ namespace Silk
     }
     void UIPanel::OnInitialize()
     {
+        if(!m_Material) return;
+        m_Material->SetDiffuse(m_BackgroundColor);
+        m_Material->SetMap(Material::MT_DIFFUSE,m_BackgroundImage);
     }
     void UIPanel::Update(Scalar dt) 
     {
+        if(m_Material->GetMap(Material::MT_DIFFUSE) != m_BackgroundImage) m_Material->SetMap(Material::MT_DIFFUSE,m_BackgroundImage);
+        
         if(m_MeshNeedsUpdate)
             GenerateMesh();
 

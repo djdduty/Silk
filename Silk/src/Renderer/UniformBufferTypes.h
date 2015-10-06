@@ -1,6 +1,7 @@
 #pragma once
 #include <System/SilkTypes.h>
 #include <Math/Math.h>
+#include <Renderer/Material.h>
 
 #include <vector>
 using namespace std;
@@ -123,6 +124,8 @@ namespace Silk
             f32 GetMaxParallaxLayers() const { return m_MaxParallaxLayers; }
             f32 GetParallaxScale    () const { return m_ParallaxScale    ; }
         
+            void SetTextureMapUsed(Material::MAP_TYPE Type,bool Used) { m_TextureMapsUsed[Type] = Used; m_TextureMapsUsedUpdated[Type] = true; }
+            bool GetTextureMapUsed(Material::MAP_TYPE Type)           { return m_TextureMapsUsed[Type]; }
             void UpdateUniforms();
             UniformBuffer* GetUniforms() const { return m_UniformBuffer; }
         
@@ -137,6 +140,7 @@ namespace Silk
             i32 m_iMinParallaxLayers;
             i32 m_iMaxParallaxLayers;
             i32 m_iParallaxScale;
+            i32 m_iTextureMapsUsed[Material::MT_COUNT];
         
             f32    m_Roughness;
             bool   m_RoughnessUpdated;
@@ -156,6 +160,8 @@ namespace Silk
             bool   m_MaxParallaxLayersUpdated;
             f32    m_ParallaxScale;
             bool   m_ParallaxScaleUpdated;
+            i32    m_TextureMapsUsed[Material::MT_COUNT];
+            bool   m_TextureMapsUsedUpdated[Material::MT_COUNT];
         
             Renderer* m_Renderer;
     };

@@ -229,6 +229,14 @@ namespace Silk
         m_iMaxParallaxLayers = m_UniformBuffer->DefineUniform("u_MaxParallaxLayers");
         m_iParallaxScale     = m_UniformBuffer->DefineUniform("u_ParallaxScale"    );
         
+        for(i32 i = 0;i < Material::MT_COUNT;i++)
+        {
+            m_iTextureMapsUsed[i] = m_UniformBuffer->DefineUniform(GetShaderMapName((Material::MAP_TYPE)i) + "Used");
+            m_UniformBuffer->SetUniform(m_iTextureMapsUsed[i],0);
+            m_TextureMapsUsed[i] = false;
+            m_TextureMapsUsedUpdated[i] = false;
+        }
+        
         SetMetalness(0.5f);
         SetRoughness(0.1f);
         SetShininess(1.0f);
@@ -259,6 +267,12 @@ namespace Silk
         if(m_MinParallaxLayersUpdated) { m_UniformBuffer->SetUniform(m_iMinParallaxLayers,m_MinParallaxLayers); m_MinParallaxLayersUpdated = false; }
         if(m_MaxParallaxLayersUpdated) { m_UniformBuffer->SetUniform(m_iMaxParallaxLayers,m_MaxParallaxLayers); m_MaxParallaxLayersUpdated = false; }
         if(m_ParallaxScaleUpdated    ) { m_UniformBuffer->SetUniform(m_iParallaxScale    ,-m_ParallaxScale   ); m_ParallaxScaleUpdated     = false; }
+        
+        for(i32 i = 0;i < Material::MT_COUNT;i++)
+        {
+            if(m_TextureMapsUsedUpdated[i]) m_UniformBuffer->SetUniform(m_iTextureMapsUsed[i],m_TextureMapsUsed[i] ? 1 : 0);
+        }
+        
         //m_UniformBuffer->UpdateBuffer();
     }
 };

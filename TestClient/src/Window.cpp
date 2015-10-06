@@ -93,7 +93,7 @@ namespace TestClient {
     void Window::PollEvents()
     {
         glfwPollEvents();
-        m_Rasterizer->GetContext()->SetResolution(GetWindowSize());
+        //m_Rasterizer->GetContext()->SetResolution(GetWindowSize());
     }
 
     void Window::SwapBuffers()

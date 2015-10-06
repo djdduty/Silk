@@ -31,15 +31,21 @@ namespace TestClient
         UIManager* UI = m_Renderer->GetUIManager();
         if(!UI) return;
         
+        m_RealCursorDelta = p - m_RealCursorPosition;
         m_RealCursorPosition = p;
         
+        m_VirtualCursorPosition += m_RealCursorDelta;
+        
         //Lock cursor to window
-        Vec2 Temp0 = m_RealCursorPosition;
-        Vec2 Temp1 = m_RealCursorPosition;
-        if(p.x < 0             ) Temp0.x = 0             ;
-        if(p.x > m_Resolution.x) Temp0.x = m_Resolution.x;
-        if(p.y < 0             ) Temp0.y = 0             ;
-        if(p.y > m_Resolution.y) Temp0.y = m_Resolution.y;
+        Vec2 Temp0 = m_VirtualCursorPosition;
+        Vec2 Temp1 = m_VirtualCursorPosition;
+        
+        if(Temp0.x < 0                  ) Temp0.x = 0             ;
+        else if(Temp0.x > m_Resolution.x) Temp0.x = m_Resolution.x;
+        if(Temp0.y < 0                  ) Temp0.y = 0             ;
+        else if(Temp0.y > m_Resolution.y) Temp0.y = m_Resolution.y;
+        
+        m_VirtualCursorPosition = Temp0;
         
         //Transform to normalized window coordinates
         if(Temp0.x != 0) Temp0.x /= m_Resolution.x;
@@ -54,9 +60,6 @@ namespace TestClient
         
         m_LastCursorPosition = m_CursorPosition;
         m_CursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.zw() * Temp0);
-        
-        m_LastUnBoundedCursorPosition = m_UnBoundedCursorPosition;
-        m_UnBoundedCursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.xw() * Temp1);
     }
     void InputManager::OnButtonDown(i32 ButtonID)
     {
@@ -65,6 +68,7 @@ namespace TestClient
         //Should something go here?
         if(ButtonID == m_MouseLeftID)
         {
+            m_Renderer->GetUIManager()->OnMouseDown();
         }
         else if(ButtonID == m_MouseRightID)
         {
@@ -76,5 +80,15 @@ namespace TestClient
     void InputManager::OnButtonUp(i32 ButtonID)
     {
         m_ButtonDurations[ButtonID] = -1.0f;
+        if(ButtonID == m_MouseLeftID)
+        {
+            m_Renderer->GetUIManager()->OnMouseUp();
+        }
+        else if(ButtonID == m_MouseRightID)
+        {
+        }
+        else if(ButtonID == m_MouseMiddleID)
+        {
+        }
     }
 };

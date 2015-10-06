@@ -441,8 +441,9 @@ namespace Turok4
                 //printf("RNST: %6d %6d %6d %6d %6d %6d\n",RNST[0],RNST[1],RNST[2],RNST[3],RNST[4],RNST[5]);
                 if(b->m_DataSize != sizeof(TSNR))
                 {
-                    printf("Warning: Data block size != sizeof(TSNR).\n");
+                    //printf("Warning: Data block size != sizeof(TSNR).\n");
                 }
+                
                 TSNR t;
                 memcpy(&t,RNST,sizeof(TSNR));
                 m_TSNRs.push_back(t);
@@ -674,6 +675,86 @@ namespace Turok4
         "ACTOR_MESH",
         "ACTORINSTANCES",
         "PRECACHEFILE",
+        
+        "AFFECTSTARGET",
+        "TIMETOREACHMAXSTRENGTH",
+        "TIMETOTURNOFF",
+        "HIDE",
+        "HOLD",
+        "GAGROUPNAME",
+        "GAMINNUMBERS",
+        "GAGROUPATTACK",
+        "SXZANGLE",
+        "SOUNDRADIUS",
+        "CLOSERANGEDIST",
+        "MEDIUMRANGEDIST",
+        "AU_A",
+        "AU_B",
+        "AU_C",
+        "AU_D",
+        "HEALTH",
+        "MAXHEALTH",
+        "TURNON",
+        "TYPE",
+        "COUNTERS",
+        "ONLYPTARGET",
+        "SPAWNACTOR1CHANCE",
+        "CLOSERANGECHANCE",
+        "IGNOREPLAYER",
+        "PROVOKEONLY",
+        "FDMULT",
+        "COLLIDES",
+        "IGNORES",
+        "TOUCHES",
+        "LIGHTCOLOR",
+        "LIGHTINTENSITY",
+        "FRICTION",
+        "SPINX",
+        "SPINY",
+        "SPINZ",
+        "A_NDD",
+        "A_MDD",
+        "A_SON",
+        "A_FL",
+        "C_B",
+        "F_B",
+        "F_C",
+        "F_F",
+        "F_T",
+        "F_ED",
+        "SMTYPE",
+        "LEASHRADIUS",
+        "LDSOUND",
+        "MDSOUND",
+        "HDSOUND",
+        "SIGHTRADIUS",
+        "SYANGLE",
+        "ATTACKRESETTIME",
+        "USEHEADTRACKING",
+        "INITIALSTATE",
+        "TURNINGSPEED",
+        "FLAPBEHAVIOR",
+        "UPGRADE1SLOT0",
+        "UPGRADE2SLOT0",
+        "WEAPONSLOT0",
+        "WEAPONSLOT1",
+        "WEAPONSLOT2",
+        "WEAPONSLOT3",
+        "WEAPONSLOT4",
+        "WEAPONSLOT5",
+        "WEAPONSLOT6",
+        "WEAPONSLOT7",
+        "STARTSOFFWITHWEAPON0",
+        "STARTSOFFWITHWEAPON1",
+        "STARTSOFFWITHWEAPON2",
+        "STARTSOFFWITHWEAPON3",
+        "STARTSOFFWITHWEAPON4",
+        "STARTSOFFWITHWEAPON5",
+        "STARTSOFFWITHWEAPON6",
+        "STARTSOFFWITHWEAPON7",
+        "ALWAYSRUN",
+        "DEFTRANSBLEND",
+        
         "DUMMIES",
         "DEFT",
         "COLS",
@@ -692,6 +773,223 @@ namespace Turok4
         }
         printf("Encountered new block type (%s).\n",ID.c_str());
         return BT_COUNT;
+    }
+    
+    
+    ActorVariables::ActorVariables()
+    {
+    }
+    ActorVariables::~ActorVariables()
+    {
+    }
+
+    bool ActorVariables::Load(ByteStream* Data)
+    {
+        Data->SetOffset(0);
+        while(!Data->AtEnd(1))
+        {
+            Block* b = new Block();
+            if(!b->Load(Data)) { delete b; return false; }
+            m_Blocks.push_back(b);
+        }
+        
+        ProcessBlocks();
+        
+        return true;
+    }
+    bool ActorVariables::Save(ByteStream* Data)
+    {
+    }
+    void ActorVariables::ProcessBlocks()
+    {
+        for(int i = 0;i < m_Blocks.size();i++)
+        {
+            Block* b = m_Blocks[i];
+            ByteStream* d = b->GetData();
+            d->SetOffset(0);
+            switch(b->GetType())
+            {
+                case BT_AFFECTS_TARGET:
+                {
+                    break;
+                }
+                case BT_TIME_TO_REACH_MAX_STRENGTH:
+                {
+                    break;
+                }
+                case BT_TIME_TO_TURN_OFF:
+                {
+                    break;
+                }
+                case BT_HIDE:
+                {
+                    break;
+                }
+                case BT_GA_GROUP_NAME:
+                {
+                    break;
+                }
+                case BT_GA_MIN_NUMBERS:
+                {
+                    break;
+                }
+                case BT_GA_GROUP_ATTACK:
+                {
+                    break;
+                }
+                case BT_SXZ_ANGLE:
+                {
+                    break;
+                }
+                case BT_SOUND_RADIUS:
+                {
+                    break;
+                }
+                case BT_CLOSE_RANGE_DIST:
+                {
+                    break;
+                }
+                case BT_AU_A:
+                {
+                    break;
+                }
+                case BT_AU_B:
+                {
+                    break;
+                }
+                case BT_AU_C:
+                {
+                    break;
+                }
+                case BT_AU_D:
+                {
+                    break;
+                }
+                case BT_HEALTH:
+                {
+                    break;
+                }
+                case BT_MAX_HEALTH:
+                {
+                    break;
+                }
+                case BT_TURN_ON:
+                {
+                    break;
+                }
+                case BT_TYPE:
+                {
+                    break;
+                }
+                case BT_COUNTERS:
+                {
+                    break;
+                }
+                case BT_ONLY_P_TARGET:
+                {
+                    break;
+                }
+                case BT_SPAWN_ACTOR1_CHANCE:
+                {
+                    break;
+                }
+                case BT_IGNORE_PLAYER:
+                {
+                    break;
+                }
+                case BT_PROVOKE_ONLY:
+                {
+                    break;
+                }
+                case BT_FD_MULT:
+                {
+                    break;
+                }
+                case BT_COLLIDES:
+                {
+                    break;
+                }
+                case BT_IGNORES:
+                {
+                    break;
+                }
+                case BT_TOUCHES:
+                {
+                    break;
+                }
+                case BT_LIGHT_COLOR:
+                {
+                    break;
+                }
+                case BT_LIGHT_INTENSITY:
+                {
+                    break;
+                }
+                case BT_FRICTION:
+                {
+                    break;
+                }
+                case BT_SPIN_X:
+                {
+                    Spin.x = *((float*)d->Ptr());
+                    break;
+                }
+                case BT_SPIN_Y:
+                {
+                    Spin.y = 10.0f;//*((float*)d->Ptr());
+                    break;
+                }
+                case BT_SPIN_Z:
+                {
+                    Spin.z = *((float*)d->Ptr());
+                    break;
+                }
+                case BT_A_NDD:
+                {
+                    break;
+                }
+                case BT_A_MDD:
+                {
+                    break;
+                }
+                case BT_A_SON:
+                {
+                    break;
+                }
+                case BT_A_FL:
+                {
+                    break;
+                }
+                case BT_SM_TYPE:
+                {
+                    break;
+                }
+                case BT_LEASH_RADIUS:
+                {
+                    break;
+                }
+                case BT_LD_SOUND:
+                {
+                    break;
+                }
+                case BT_MD_SOUND:
+                {
+                    break;
+                }
+                case BT_HD_SOUND:
+                {
+                    break;
+                }
+                default:
+                {
+                    //printf("Unsupported actor variable (%s).\n",m_Blocks[i]->GetTypeString().c_str());
+                }
+            }
+            if(m_Blocks[i]->GetType() == BT_COUNT)
+            {
+                printf("Unsupported actor variable (%s).\n",m_Blocks[i]->GetTypeString().c_str());
+            }
+        }
     }
     
     Actor::~Actor()
@@ -851,11 +1149,12 @@ namespace Turok4
             case 0x61: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 0; break; }
             case 0xA1: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 1; break; }
             case 0xC2: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 2; break; }
+            case 0xE1: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 3; break; }
             default  : { Data->Offset(-1); }
         }
         
         size_t Size = 0;
-        printf("[%3d]",(int)(unsigned char)m_PreBlockFlag);
+        //printf("[%3d]",(int)(unsigned char)m_PreBlockFlag);
         //Basic block information
         if(!HasUnkBlockHeaderType) //"Normal" block header
         {
@@ -867,7 +1166,7 @@ namespace Turok4
             
             //Read block header
             Data->GetData(4,m_Hdr);
-            printf("HDR   [0]: %3d, %3d      (",(int)(unsigned char)m_Hdr[0],(unsigned char)m_Hdr[1]);
+            //printf("HDR   [0]: %3d, %3d      (",(int)(unsigned char)m_Hdr[0],(unsigned char)m_Hdr[1]);
             
             //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
             m_BlockID = Data->GetString();
@@ -898,7 +1197,7 @@ namespace Turok4
                     
                     //Read block header
                     Data->GetData(5,m_Hdr);
-                    printf("UNKHDR[1]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[2],(int)(unsigned char)m_Hdr[3]);
+                    //printf("UNKHDR[1]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[2],(int)(unsigned char)m_Hdr[3]);
                     
                     //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
                     m_BlockID = Data->GetString();
@@ -920,7 +1219,7 @@ namespace Turok4
                     
                     //Read block header
                     Data->GetData(6,m_Hdr);
-                    printf("UNKHDR[2]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
+                    //printf("UNKHDR[2]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
                     
                     //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
                     m_BlockID = Data->GetString();
@@ -943,7 +1242,32 @@ namespace Turok4
                     
                     //Read block header
                     Data->GetData(6,m_Hdr);
-                    printf("UNKHDR[3]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
+                    //printf("UNKHDR[3]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
+                    
+                    //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
+                    m_BlockID = Data->GetString();
+                    
+                    //Establish block size
+                    Size = (size_t)*((uint32_t*)&m_Hdr[1]);
+                    
+                    //printf("Block:(?: %d | Sz: %zu | ?: %d, %d): %s\n",(int)(unsigned char)Hdr[0],BlockSize,(int)(unsigned char)Hdr[2],(int)(unsigned char)Hdr[3],BlockID.c_str());
+                    
+                    break;
+                }
+                case 3:
+                {
+                    //Hdr[0] = Unknown
+                    //Hdr[1] = First  8 bits of 32 bit integer representing block size
+                    //Hdr[2] = Second 8 bits of 32 bit integer representing block size
+                    //Hdr[3] = Third  8 bits of 32 bit integer representing block size
+                    //Hdr[4] = Last   8 bits of 32 bit integer representing block size
+                    //Hdr[5] = Unknown
+                    //Hdr[6] = Unknown
+                    //Hdr[7] = Block ID string length
+                    
+                    //Read block header
+                    Data->GetData(8,m_Hdr);
+                    //printf("UNKHDR[3]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
                     
                     //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
                     m_BlockID = Data->GetString();
@@ -957,7 +1281,7 @@ namespace Turok4
                 }
             }
         }
-        printf("%5zu : %s).\n",Size,m_BlockID.c_str());
+        //printf("%5zu : %s).\n",Size,m_BlockID.c_str());
         m_Type = GetBlockTypeFromID(m_BlockID);
         
         m_Data = Data->SubData(Size);
@@ -977,6 +1301,7 @@ namespace Turok4
             case 0x61: { Data->WriteByte(m_PreBlockFlag); HasUnkBlockHeaderType = true; UnkBlockHeaderType = 0; break; }
             case 0xA1: { Data->WriteByte(m_PreBlockFlag); HasUnkBlockHeaderType = true; UnkBlockHeaderType = 1; break; }
             case 0xC2: { Data->WriteByte(m_PreBlockFlag); HasUnkBlockHeaderType = true; UnkBlockHeaderType = 2; break; }
+            case 0xE1: { Data->WriteByte(m_PreBlockFlag); HasUnkBlockHeaderType = true; UnkBlockHeaderType = 3; break; }
         }
         
         if(!HasUnkBlockHeaderType)
@@ -1000,6 +1325,11 @@ namespace Turok4
                 case 2:
                 {
                     if(!Data->WriteData(6,m_Hdr)) return false;
+                    break;
+                }
+                case 3:
+                {
+                    if(!Data->WriteData(8,m_Hdr)) return false;
                     break;
                 }
             }
@@ -1133,11 +1463,6 @@ namespace Turok4
             b->AddChildBlock(aBlock);
         }
         
-        if(Idx == 111)
-        {
-            printf("");
-        }
-        
         ActorDef* d = new ActorDef();
         d->ActorFile = Path;
         d->BlockIdx  = Idx ;
@@ -1195,11 +1520,9 @@ namespace Turok4
                 }
                 case BT_ACTOR_VARIABLES:
                 {
-                    //To do
-                    if(Data->GetSize() > 0)
-                    {
-                        
-                    }
+                    ActorVariables* v = new ActorVariables();
+                    if(!v->Load(Data)) { printf("Unable to load actor variables.\n"); }
+                    d->Actor->GetActor()->SetActorVariables(v);
                     break;
                 }
                 case BT_ACTOR_LINK:

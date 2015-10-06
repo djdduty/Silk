@@ -26,7 +26,8 @@ namespace Silk
     
     
     UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(-1), m_Parent(0), m_Manager(0), m_Bounds(new UIRect(0,0,0,0)), m_MeshNeedsUpdate(true),
-                        m_Render(0), m_Material(0), m_Initialized(false), m_ChildOffset(Vec2(0,0)), m_ScissorEnabled(false), m_OuterBounds(new UIRect(0,0,0,0))
+                        m_Render(0), m_Material(0), m_Initialized(false), m_ChildOffset(Vec2(0,0)), m_ScissorEnabled(false), m_OuterBounds(new UIRect(0,0,0,0)),
+                        m_Enabled(true)
     {
 
     }
@@ -109,10 +110,11 @@ namespace Silk
         {
             glEnable(GL_SCISSOR_TEST); // TODO: Abstract this
 
+            Vec2 Offset = m_Parent ? m_Parent->GetAbsolutePosition().xy() : Vec2(0,0);
             Vec2 Resolution = m_Manager->GetResolution();
             Vec2 CamTrans = m_Manager->GetCamera()->GetTransform().GetTranslation().xy();
             Vec2 HalfRes = Resolution * 0.5;
-            Vec3 Position = Vec3(m_Bounds->GetPosition(), 0);
+            Vec3 Position = Vec3(m_Bounds->GetPosition() + Offset, 0);
             Vec2 Size = m_Bounds->GetDimensions();
             Vec3 SSPosition = Vec3(Position.x + HalfRes.x - CamTrans.x, Resolution.y - HalfRes.y - Position.y - Size.y + CamTrans.y, Position.z);
         
@@ -123,25 +125,31 @@ namespace Silk
     void UIElement::_Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {
         _PreRender();
+        
+        //Must offset element positions here
+        Vec3 Pos = GetPosition();
+        SetPosition(GetAbsolutePosition());
+        
         Render(PrimType, ObjectsRendered);
-        for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Render(PrimType, ObjectsRendered);
+        
+        //And also return them to their relative positions
+        SetPosition(Pos);
+        
+        for(i32 i = 0;i < m_Children.size();i++)
+        {
+            if(m_Children[i]->IsEnabled()) m_Children[i]->_Render(PrimType,ObjectsRendered);
+        }
         _PostRender();
     }
     void UIElement::_PostRender()
     {
-        if(m_ScissorEnabled)
-            glDisable(GL_SCISSOR_TEST); // TODO: Abstract this
+        if(m_ScissorEnabled) glDisable(GL_SCISSOR_TEST); // TODO: Abstract this
         PostRender();
     }
     void UIElement::SetPosition(Vec3 Pos)
     {
         Vec3 Position = Pos;
-        if(m_Parent)
-        {
-            Vec3 ParentPosition = m_Parent->GetPosition();
-            Position += Vec3(ParentPosition.xy() + m_Parent->GetChildOffset(), ParentPosition.z);
-        }
-
+        
         if(m_Render)
             m_Render->SetTransform(Translation(Position));
 
@@ -153,12 +161,17 @@ namespace Silk
         UpdateOuterBounds();
         m_MeshNeedsUpdate = true;
     }
+    Vec3 UIElement::GetAbsolutePosition() const
+    {
+        if(m_Parent) return m_Parent->GetAbsolutePosition() + GetPosition();
+        else return GetPosition();
+    }
     void UIElement::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {
         if(!m_Render)
             return;
 
-        Material* Mat = m_Render->GetMaterial();
+        Material* Mat = m_Material;
         Shader* Shader = Mat->GetShader();
         Shader->Enable();
         RenderObject* Obj = m_Render;

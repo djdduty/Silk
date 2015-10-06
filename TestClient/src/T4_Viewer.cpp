@@ -11,6 +11,8 @@
 #include <T4/SOIL/SOIL.h>
 #include <UI/UIText.h>
 
+#include <UIElements/TabPanel.h>
+
 namespace TestClient
 {
     T4_Viewer::T4_Viewer(i32 ArgC,char* ArgV[])
@@ -44,6 +46,8 @@ namespace TestClient
         {
             Turok4::Actor* a = m_ActorDefs[i];
             string fn = a->GetFilename();
+            
+            
             Turok4::ActorMesh* m = a->GetMesh();
             m_Actors.push_back(SilkObjectVector());
             if(!m) continue;
@@ -304,7 +308,7 @@ namespace TestClient
 		Material* Dr = m_Renderer->CreateMaterial();
         Dr->LoadMaterial(Load("Silk/DirectionalLight.mtrl"));
         Material* Final = m_Renderer->CreateMaterial();
-        Final->LoadMaterial(Load("Silk/FinalDeferredPass.mtrl"));
+        Final->LoadMaterial(Load("Silk/FinalDeferredPassNoFXAA.mtrl"));
         
 		/*
         InitSSAO();
@@ -343,6 +347,16 @@ namespace TestClient
         Light* L = AddLight(LT_DIRECTIONAL,Vec3(0,10,0))->GetLight();
         L->m_Color = Vec4(1,1,1,1);
         L->m_Power = 1.3f;
+        
+        m_Toolbar = new UIPanel(Vec2(m_Renderer->GetRasterizer()->GetContext()->GetResolution().x,20.0f));
+        m_Toolbar->SetBackgroundColor(Vec4(0.25f,0.25f,0.25f,0.5f));
+        m_Toolbar->SetPosition(Vec3(0,0,0));
+        m_UIManager->AddElement(m_Toolbar);
+        m_ToolbarVelocity = -1.0f;
+        m_ToolbarTranslation = 0.0f;
+        m_ToolbarButtonDown = m_ActorPanelButtonDown = false;
+        
+        m_ActorPanel = new ActorPanel(m_UIManager,m_InputManager);
     }
 
     void T4_Viewer::Run()
@@ -350,12 +364,28 @@ namespace TestClient
         m_TaskManager->GetTaskContainer()->SetAverageTaskDurationSampleCount(10);
         m_TaskManager->GetTaskContainer()->SetAverageThreadTimeDifferenceSampleCount(10);
         
-        Scalar a = 12.0f;
+        Scalar rt = 12.0f;
         i32 SelectedIdx = -1;
         Scalar sDist = 0.0f;
         bool BtnDown = false;
+        bool APButtonDown = false;
+        
         while(IsRunning())
         {
+            for(i32 a = 0;a < m_ActorDefs.size();a++)
+            {
+                ActorVariables* v = m_ActorDefs[a]->GetActorVariables();
+                if(v)
+                {
+                    for(i32 r = 0;r < m_Actors[a].size();r++)
+                    {
+                        RenderObject* obj = m_Actors[a][r];
+                        obj->SetTransform(GetActorTransform(a) * Rotation(v->Spin.y * rt,v->Spin.x * rt,v->Spin.z * rt));
+                        if(v->Spin.y > 0.0f) m_DebugDraw->OBB(obj->GetBoundingBox(),Vec4(1,1,0,1));
+                    }
+                }
+            }
+        
             Mat4 T = (m_Camera->GetTransform() * m_Camera->GetProjection().Inverse()).Transpose();
             
             Vec3 t[4] = { Vec3(-0.01,0.0,0.0), Vec3(0.01,0.0,0.0), Vec3(0.0,-0.01,0.0), Vec3(0.0,0.01,0.0) };
@@ -367,46 +397,117 @@ namespace TestClient
                 {
                     Texture* t = m_Renderer->GetSceneOutput()->GetAttachment(ShaderGenerator::OFT_CUSTOM0);
                     t->AcquireFromVRAM();
-                    Vec4 ObjID = t->GetPixel(m_Renderer->GetRasterizer()->GetContext()->GetResolution() * 0.5f);
-                    char v[4] =
-                    {
-                        (char)(i32)(ObjID.x * 255.0f),
-                        (char)(i32)(ObjID.y * 255.0f),
-                        (char)(i32)(ObjID.z * 255.0f),
-                        (char)(i32)(ObjID.w * 255.0f),
-                    };
-                    memcpy(&SelectedIdx,&v,sizeof(i32));
-                    if(SelectedIdx >= 0)
-                    {
-                        sDist = (GetActorTransform(SelectedIdx).GetTranslation() - m_CamPos).Magnitude();
-                    }
-                }
-                
-                if(SelectedIdx >= 0)
-                {
-                    Vec4 mColor = Vec4(1,0,0,1);
-                    if(!m_ActorIsStatic[SelectedIdx])
-                    {
-                        mColor = Vec4(0.5f,0.5f,1.0f,1.0f);
-                        SetActorPosition(SelectedIdx,m_CamPos + m_Camera->GetTransform().GetZ() * -sDist);
-                    }
                     
-                    for(i32 i = 0;i < m_Actors[SelectedIdx].size();i++)
+                    Vec2 cPos = m_Renderer->GetRasterizer()->GetContext()->GetResolution() * 0.5f;
+                    if(m_Toolbar->IsEnabled())
                     {
-                        m_Renderer->GetDebugDrawer()->OBB(m_Actors[SelectedIdx][i]->GetBoundingBox(),Vec4(1,0,0,1));
-                        m_Renderer->GetDebugDrawer()->DrawMesh(m_Actors[SelectedIdx][i]->GetTransform(),m_Actors[SelectedIdx][i]->GetMesh(),mColor);
+                        cPos = m_InputManager->GetCursorPosition();
+                        if(m_ActorPanel->IsEnabled())
+                        {
+                            if(cPos.x < m_ActorPanel->GetPosition().x) cPos.x = -1.0f;
+                            else
+                            {
+                                Vec2   r = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
+                                Scalar p = m_ActorPanel->GetPosition().x + m_ActorPanel->GetBounds()->GetDimensions().x;
+                                cPos.x = r.x * ((cPos.x - p) / (r.x - p));
+                            }
+                        }
+                        cPos.y = m_Rasterizer->GetContext()->GetResolution().y - cPos.y;
+                    }
+                    if(cPos.x >= 0.0f)
+                    {
+                        Vec4 ObjID = t->GetPixel(cPos);
+                        char v[4] =
+                        {
+                            (char)(i32)(ObjID.x * 255.0f),
+                            (char)(i32)(ObjID.y * 255.0f),
+                            (char)(i32)(ObjID.z * 255.0f),
+                            (char)(i32)(ObjID.w * 255.0f),
+                        };
+                        memcpy(&SelectedIdx,&v,sizeof(i32));
+                        if(SelectedIdx >= 0)
+                        {
+                            sDist = (GetActorTransform(SelectedIdx).GetTranslation() - m_CamPos).Magnitude();
+                            m_ActorPanel->SetActor(m_ActorDefs[SelectedIdx]);
+                        }
                     }
                 }
                 BtnDown = true;
             }
             else BtnDown = false;
+            if(SelectedIdx >= 0)
+            {
+                Vec4 mColor = Vec4(1,0,0,1);
+                if(!m_ActorIsStatic[SelectedIdx])
+                {
+                    mColor = Vec4(0.5f,0.5f,1.0f,1.0f);
+                    if(!m_Toolbar->IsEnabled()) SetActorPosition(SelectedIdx,m_CamPos + m_Camera->GetTransform().GetZ() * -sDist);
+                }
+                
+                for(i32 i = 0;i < m_Actors[SelectedIdx].size();i++)
+                {
+                    //m_Renderer->GetDebugDrawer()->OBB(m_Actors[SelectedIdx][i]->GetBoundingBox(),Vec4(1,0,0,1));
+                    m_Renderer->GetDebugDrawer()->DrawMesh(m_Actors[SelectedIdx][i]->GetTransform(),m_Actors[SelectedIdx][i]->GetMesh(),mColor);
+                }
+            }
             
-            a += GetDeltaTime() * 0.01f;
+            rt += GetDeltaTime();
             //m_DebugDraw->Line(Vec3(0,0,0),Vec3(0,10,0),Vec4(1,1,1,1));
-            m_Lights[0]->SetTransform(Rotation(Vec3(0,0,1),90 + (a * 7.5f)) * Rotation(Vec3(1,0,0),-90.0f));
+            m_Lights[0]->SetTransform(Rotation(Vec3(0,0,1),90 + (rt * 7.5f)) * Rotation(Vec3(1,0,0),-90.0f));
+            
+            UpdateUI();
         }
         
         m_ATR->GetActors()->Save(m_Filename);
+    }
+    void T4_Viewer::UpdateUI()
+    {
+        Scalar dt = GetDeltaTime();
+        
+        if(m_InputManager->GetButtonDownDuration(BTN_TOGGLE) > 0.0f && !m_ToolbarButtonDown)
+        {
+            m_ToolbarButtonDown = true;
+            if(m_ToolbarTranslation == 1.0f) m_ToolbarVelocity = -2.0f;
+            else if(m_ToolbarTranslation == 0.0f)
+            {
+                m_ToolbarVelocity = 2.0f;
+                m_Cursor->SetEnabled(true);
+                m_Toolbar->SetEnabled(true);
+                m_FlyCameraEnabled = false;
+            }
+        }
+        else if(m_InputManager->GetButtonDownDuration(BTN_TOGGLE) != -1.0f) m_ToolbarButtonDown = false;
+        
+        if(m_InputManager->GetButtonDownDuration(BTN_P) > 0.0f && !m_ActorPanelButtonDown)
+        {
+            m_ActorPanelButtonDown = true;
+            m_ActorPanel->Toggle();
+        }
+        else if(m_InputManager->GetButtonDownDuration(BTN_P) != -1.0f) m_ActorPanelButtonDown = false;
+        
+        if(m_ToolbarVelocity != 0.0f)
+        {
+            m_ToolbarTranslation += m_ToolbarVelocity * dt;
+            
+            if(m_ToolbarTranslation > 1.0f)
+            {
+                m_ToolbarTranslation = 1.0f;
+                m_ToolbarVelocity = 0.0f;
+            }
+            
+            if(m_ToolbarTranslation < 0.0f)
+            {
+                m_ToolbarTranslation = 0.0f;
+                m_ToolbarVelocity = 0.0f;
+                
+                m_FlyCameraEnabled = true;
+                m_Cursor->SetEnabled(false);
+                m_Toolbar->SetEnabled(false);
+            }
+            
+            m_Toolbar->SetPosition(Vec3(0.0f,-20.0f + (m_ToolbarTranslation * 20.0f),0.0f));
+            m_ActorPanel->SetPosition(Vec3(m_ActorPanel->GetPosition().x,m_Toolbar->GetPosition().y + m_Toolbar->GetBounds()->GetDimensions().y,0.0f));
+        }
     }
     void T4_Viewer::Shutdown()
     {

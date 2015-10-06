@@ -260,6 +260,7 @@ namespace Silk
         
             virtual void ClearActiveFramebuffer() = 0;
             virtual void SetViewport(i32 x,i32 y,i32 w,i32 h) = 0;
+            virtual Vec4 GetViewport() = 0;
 
             virtual UniformBuffer* CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type) = 0;
             virtual RasterObject * CreateObject     () = 0;

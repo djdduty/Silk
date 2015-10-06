@@ -6,9 +6,6 @@
 #include <InputManager.h>
 #include <Renderer/Renderer.h>
 
-#include <UI/UIText.h>
-#include <UI/UIPanel.h>
-
 #define CAMERA_MOVE_SPEED 15.0f
 #define CAMERA_TURN_SPEED 0.6f
 
@@ -28,6 +25,11 @@ namespace TestClient
         BTN_DOWN_ARROW   ,
         BTN_LEFT_ARROW   ,
         BTN_RIGHT_ARROW  ,
+        
+        BTN_TOGGLE       ,
+        BTN_TOGGLE_STATS ,
+        
+        BTN_P            ,
         
         BTN_QUIT         ,  //Escape
         
@@ -113,11 +115,13 @@ namespace TestClient
             bool m_FlyCameraEnabled;
         
             UIElement   * m_Cursor;
-            RenderObject* m_CursorObj;
-            Material    * m_CursorMat;
             i32 m_CursorTexIndex;
             Ray m_CursorRay;
 
+            Scalar m_StatsTranslation;
+            Scalar m_StatsVelocity;
+            bool m_StatsButtonHeld;
+            UIElement* m_StatsPanel;
 			UIText* m_UIFrameID;
 			UIText* m_UIRunTime;
 			UIText* m_UIFrameRate;

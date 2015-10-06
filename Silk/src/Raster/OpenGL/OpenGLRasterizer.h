@@ -95,6 +95,7 @@ namespace Silk
             GLuint m_Buffer;
             GLuint m_DepthBuffer;
             vector<GLuint> m_DrawBuffers;
+            Vec4 m_StoredViewport;
     };
     
     class OpenGLUniformBuffer : public UniformBuffer
@@ -133,7 +134,8 @@ namespace Silk
             /* Rasterizer functionality */
             virtual void ClearActiveFramebuffer()               { glClearColor(m_ClearColor.x,m_ClearColor.y,m_ClearColor.z,m_ClearColor.w);
                                                                   glClear(m_ClearBuffers); }
-            virtual void SetViewport(i32 x,i32 y,i32 w,i32 h)   { glViewport(x,y,w,h);     }
+            virtual void SetViewport(i32 x,i32 y,i32 w,i32 h);
+            virtual Vec4 GetViewport();
             virtual RasterContext* CreateContext()              { return new OpenGLRasterizerContext(this); }
 
             virtual Shader        * CreateShader();
@@ -151,6 +153,7 @@ namespace Silk
         protected:
             GLuint m_ColorFormat;
             GLuint m_ClearBuffers;
+            Vec4 m_Viewport;
             
             bool m_SupportsInstanceTTrans;
     };

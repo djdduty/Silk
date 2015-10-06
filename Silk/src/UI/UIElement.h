@@ -80,9 +80,13 @@ namespace Silk
 
             void SetPosition(Vec3 Pos);
             void SetSize(Vec2 Size);
-            Vec3 GetPosition() { return m_Render->GetTransform().GetTranslation(); };
+            Vec3 GetPosition() const { return m_Render->GetTransform().GetTranslation(); };
+            Vec3 GetAbsolutePosition() const;
             UIRect* GetBounds()   const { return m_Bounds; }
             Vec2 GetChildOffset() const { return m_ChildOffset; }
+        
+            void SetEnabled(bool Flag) { m_Enabled = Flag; }
+            bool IsEnabled() const { return m_Enabled; }
 
             void    EnableScissor(bool Enable) { m_ScissorEnabled = Enable; }
             void    UpdateOuterBounds();
@@ -116,6 +120,7 @@ namespace Silk
             UIElement*         m_Parent;
             UIManager*         m_Manager;
             bool               m_Initialized;
+            bool               m_Enabled;
     };
 };
 

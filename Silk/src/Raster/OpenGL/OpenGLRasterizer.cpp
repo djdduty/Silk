@@ -468,7 +468,8 @@ namespace Silk
     void OpenGLFrameBuffer::EnableTarget()
     {
         glBindFramebuffer(GL_FRAMEBUFFER,m_Buffer);
-        glViewport(0,0,m_Resolution.x,m_Resolution.y);
+        m_StoredViewport = m_Renderer->GetRasterizer()->GetViewport();
+        m_Renderer->GetRasterizer()->SetViewport(0,0,m_Resolution.x,m_Resolution.y);
         glClear(m_UseDepthBuffer ? GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT : GL_COLOR_BUFFER_BIT);
         glDrawBuffers((i32)m_DrawBuffers.size(),&m_DrawBuffers[0]);
     }
@@ -482,8 +483,7 @@ namespace Silk
     void OpenGLFrameBuffer::Disable()
     {
         glBindFramebuffer(GL_FRAMEBUFFER,0);
-        Vec2 r = m_Renderer->GetRasterizer()->GetContext()->GetResolution();
-        m_Renderer->GetRasterizer()->SetViewport(0,0,r.x,r.y);
+        m_Renderer->GetRasterizer()->SetViewport(m_StoredViewport.x,m_StoredViewport.y,m_StoredViewport.z,m_StoredViewport.w);
     }
     
     OpenGLUniformBuffer::~OpenGLUniformBuffer()
@@ -649,6 +649,15 @@ namespace Silk
     bool OpenGLRasterizer::SupportsInstanceTextureTransforms()
     {
         return m_SupportsInstanceTTrans;
+    }
+    void OpenGLRasterizer::SetViewport(i32 x,i32 y,i32 w,i32 h)
+    {
+        glViewport(x,y,w,h);
+        m_Viewport = Vec4(x,y,w,h);
+    }
+    Vec4 OpenGLRasterizer::GetViewport()
+    {
+        return m_Viewport;
     }
 
     UniformBuffer* OpenGLRasterizer::CreateUniformBuffer(ShaderGenerator::INPUT_UNIFORM_TYPE Type)
