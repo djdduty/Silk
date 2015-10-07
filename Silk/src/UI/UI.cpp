@@ -162,7 +162,10 @@ namespace Silk
     }
     void UIManager::RemoveElement(UIElement *Element)
     {
-        if(!Element->m_Manager) return;
+        if(!Element->m_Manager
+        ||  Element->m_ID >= m_Elements.size()
+        ||  m_Elements[Element->m_ID] != Element) return;
+        
         m_Elements.erase(m_Elements.begin() + Element->m_ID);
         for(i32 i = Element->m_ID;i < m_Elements.size();i++)
         {
@@ -171,13 +174,17 @@ namespace Silk
         Element->m_ID = -1;
         m_ViewNeedsUpdate = true;
     }
+    void UIManager::OnMouseMove()
+    {
+        for(i32 i = 0;i < m_Elements.size();i++) if(m_Elements[i]->IsEnabled()) { m_Elements[i]->_OnMouseMove(); }
+    }
     void UIManager::OnMouseDown()
     {
-        for(i32 i = 0;i < m_Elements.size();i++) if(m_Elements[i]->IsEnabled()) { m_Elements[i]->OnMouseDown(); }
+        for(i32 i = 0;i < m_Elements.size();i++) if(m_Elements[i]->IsEnabled()) { m_Elements[i]->_OnMouseDown(); }
     }
     void UIManager::OnMouseUp()
     {
-        for(i32 i = 0;i < m_Elements.size();i++) if(m_Elements[i]->IsEnabled()) { m_Elements[i]->OnMouseUp(); }
+        for(i32 i = 0;i < m_Elements.size();i++) if(m_Elements[i]->IsEnabled()) { m_Elements[i]->_OnMouseUp(); }
     }
     void UIManager::SetTransform(Mat4 M)
     {

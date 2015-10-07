@@ -6,22 +6,12 @@
  *
  */
 
-#include "TabPanel.h"
+#include <UIElements/TabPanel.h>
+#include <UIElements/Common.h>
 #include <InputManager.h>
 
 namespace TestClient
 {
-    UIText* AddText(UIManager* Mgr,Scalar Sz,const Vec2& Pos,const string& Text,UIPanel* Panel)
-    {
-        UIText* Tex = new UIText();
-        Tex->SetFont(Mgr->GetFont());
-        Tex->SetText(Text);
-        Tex->SetTextSize(Sz);
-        Tex->SetPosition(Vec3(Pos,0.0f));
-        Panel->AddChild(Tex);
-        return Tex;
-    }
-    
     TabPanel::TabPanel(const Vec2& Size,InputManager* Input) : UIPanel(Size), m_Input(Input)
     {
         SetBackgroundColor(Vec4(0,0,0,0.75f));
@@ -57,15 +47,15 @@ namespace TestClient
     i32 TabPanel::AddTab(const string& TabName)
     {
         UIPanel* Tab = new UIPanel(Vec2(0,0));
-        m_Manager->AddElement(Tab );
+        //m_Manager->AddElement(Tab );
         AddChild(Tab);
         
         UIPanel* View = new UIPanel(Vec2(0,0));
-        m_Manager->AddElement(View);
+        //m_Manager->AddElement(View);
         AddChild(View);
         
         UIText * Label = AddText(m_Manager,m_TextSize,Vec2(2,2),TabName,Tab);
-        m_Manager->AddElement(Label);
+        //m_Manager->AddElement(Label);
         Tab->AddChild(Label);
         
         Tab ->SetBackgroundColor(Vec4(0.325f,0.325f,0.325f,0.9f));

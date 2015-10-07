@@ -60,6 +60,8 @@ namespace TestClient
         
         m_LastCursorPosition = m_CursorPosition;
         m_CursorPosition = CamPos.xy() + Ortho.xy() + (Ortho.zw() * Temp0);
+        
+        UI->OnMouseMove();
     }
     void InputManager::OnButtonDown(i32 ButtonID)
     {

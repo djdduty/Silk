@@ -38,7 +38,7 @@ namespace Silk
             void SetFont(Font* Fnt) { m_Font = Fnt; }
             Font* GetFont() { return m_Font; }
 
-            void OnMouseMove() {}
+            void OnMouseMove();
             void OnMouseOver() {}
             void OnMouseDown();
             void OnMouseOut () {}

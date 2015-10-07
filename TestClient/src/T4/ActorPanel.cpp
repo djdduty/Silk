@@ -38,6 +38,12 @@ ActorPanel::ActorPanel(UIManager* Mgr,InputManager* Input) : UIPanel(Vec2(0,0))
     m_TabPanel->AddTab("Info");
     m_TabPanel->AddTab("Variables");
     
+    m_VarTable = new TablePanel(m_Manager,m_TabPanel->GetTabView(1)->GetBounds()->GetDimensions() - Vec2(4.0f,4.0f),Input);
+    m_TabPanel->GetTabView(1)->AddChild(m_VarTable);
+    m_VarTable->SetMinSeparatorFactor(0.22f);
+    m_VarTable->SetMaxSeparatorFactor(0.82f);
+    m_VarTable->SetPosition(Vec3(2.0f,2.0f,0.0f));
+    
     m_ActorName = AddText(Mgr,Vec2(2,2 + (TEXT_HEIGHT * 0.0f)),"Name: ",m_TabPanel->GetTabView(0));
     m_ActorFile = AddText(Mgr,Vec2(2,2 + (TEXT_HEIGHT * 2.0f)),"File: ",m_TabPanel->GetTabView(0));
     m_ActorID   = AddText(Mgr,Vec2(2,2 + (TEXT_HEIGHT * 4.0f)),"ID:   ",m_TabPanel->GetTabView(0));
@@ -86,20 +92,45 @@ void ActorPanel::SetActor(Actor* a)
         m_ActorFile->SetText(string("File: \n") + fn);
         m_ActorID->SetText(FormatString("ID: %d",a->GetDef()->ID));
         
-        for(i32 i = 0;i < m_Vars.size();i++)
-        {
-            m_TabPanel->GetTabView(1)->RemoveChild(m_Vars[i]);
-            m_Vars[i]->Destroy();
-        }
-        m_Vars.clear();
-        
+        m_VarTable->Clear();
         ActorVariables* v = a->GetActorVariables();
         if(v)
         {
             for(i32 i = 0;i < v->GetBlockCount();i++)
             {
-                UIText* T = AddText(m_Manager,Vec2(2,TEXT_HEIGHT * i),v->GetBlock(i)->GetTypeString(),m_TabPanel->GetTabView(1));
-                m_Vars.push_back(T);
+                ByteStream* d = v->GetBlock(i)->GetData();
+                d->SetOffset(0);
+                ConfigValue* val = 0;
+                
+                if(d->GetSize() == 1)
+                {
+                    char c = d->GetByte();
+                    val = new ConfigValue(ConfigValue::VT_BYTE,&c);
+                }
+                else if(d->GetSize() == 2)
+                {
+                    void* ptr = d->Ptr();
+                    val = new ConfigValue(ConfigValue::VT_U16,ptr);
+                }
+                else if(d->GetSize() == 4)
+                {
+                    void* ptr = d->Ptr();
+                    float    fv = *((float   *)ptr);
+                    int      iv = *((int     *)ptr);
+                    //uint32_t uv = *((uint32_t*)ptr);
+                    //char    *cv = (char*)ptr;
+                    
+                    if(fabs(fv) < 1000000.0f && (fabs(fv) > 0.0001f || fabs(fv) == 0.0f)) val = new ConfigValue(ConfigValue::VT_F32,ptr);
+                    if(abs(iv) < 20000) val = new ConfigValue(ConfigValue::VT_I32,ptr);
+                    //if(uv < 2
+                }
+                else
+                {
+                    string str;
+                    for(i32 b = 0;b < d->GetSize();b++) str += FormatString("%02X ",(unsigned char)d->GetByte());
+                    val = new ConfigValue(ConfigValue::VT_STRING,&str);
+                }
+                if(val) m_VarTable->AddValue(v->GetBlock(i)->GetTypeString(),val);
             }
         }
     }

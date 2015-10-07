@@ -27,32 +27,55 @@ namespace Silk
     {
         switch(m_Type)
         {
-            case VT_BYTE  : { m_TypeSize = sizeof(Byte  ); break; }
-            case VT_UBYTE : { m_TypeSize = sizeof(uByte ); break; }
-            case VT_STRING: { m_TypeSize = sizeof(string); break; }
-            case VT_BOOL  : { m_TypeSize = sizeof(bool  ); break; }
-            case VT_I16   : { m_TypeSize = sizeof(i16   ); break; }
-            case VT_U16   : { m_TypeSize = sizeof(u16   ); break; }
-            case VT_I32   : { m_TypeSize = sizeof(i32   ); break; }
-            case VT_U32   : { m_TypeSize = sizeof(u32   ); break; }
-            case VT_I64   : { m_TypeSize = sizeof(i64   ); break; }
-            case VT_U64   : { m_TypeSize = sizeof(u64   ); break; }
-            case VT_F32   : { m_TypeSize = sizeof(f32   ); break; }
-            case VT_F64   : { m_TypeSize = sizeof(f64   ); break; }
-            case VT_VEC2  : { m_TypeSize = sizeof(Vec2  ); break; }
-            case VT_VEC3  : { m_TypeSize = sizeof(Vec3  ); break; }
-            case VT_VEC4  : { m_TypeSize = sizeof(Vec4  ); break; }
-            case VT_MAT4  : { m_TypeSize = sizeof(Mat4  ); break; }
+            case VT_BYTE  : { m_TypeSize = sizeof(Byte  ); Set(*( Byte *)Ptr); break; }
+            case VT_UBYTE : { m_TypeSize = sizeof(uByte ); Set(*(uByte *)Ptr); break; }
+            case VT_STRING: { m_TypeSize = sizeof(string); Set(*(string*)Ptr); break; }
+            case VT_BOOL  : { m_TypeSize = sizeof(bool  ); Set(*(bool  *)Ptr); break; }
+            case VT_I16   : { m_TypeSize = sizeof(i16   ); Set(*(i16   *)Ptr); break; }
+            case VT_U16   : { m_TypeSize = sizeof(u16   ); Set(*(u16   *)Ptr); break; }
+            case VT_I32   : { m_TypeSize = sizeof(i32   ); Set(*(i32   *)Ptr); break; }
+            case VT_U32   : { m_TypeSize = sizeof(u32   ); Set(*(u32   *)Ptr); break; }
+            case VT_I64   : { m_TypeSize = sizeof(i64   ); Set(*(i64   *)Ptr); break; }
+            case VT_U64   : { m_TypeSize = sizeof(u64   ); Set(*(u64   *)Ptr); break; }
+            case VT_F32   : { m_TypeSize = sizeof(f32   ); Set(*(f32   *)Ptr); break; }
+            case VT_F64   : { m_TypeSize = sizeof(f64   ); Set(*(f64   *)Ptr); break; }
+            case VT_VEC2  : { m_TypeSize = sizeof(Vec2  ); Set(*(Vec2  *)Ptr); break; }
+            case VT_VEC3  : { m_TypeSize = sizeof(Vec3  ); Set(*(Vec3  *)Ptr); break; }
+            case VT_VEC4  : { m_TypeSize = sizeof(Vec4  ); Set(*(Vec4  *)Ptr); break; }
+            case VT_MAT4  : { m_TypeSize = sizeof(Mat4  ); Set(*(Mat4  *)Ptr); break; }
             default:
             {
                 ERROR("Invalid value type.\n");
                 m_TypeSize = 0;
             }
-            
         }
     }
     ConfigValue::~ConfigValue()
     {
+        switch(m_Type)
+        {
+            case VT_BYTE  : { delete ( Byte *)m_TargetValue; break; }
+            case VT_UBYTE : { delete (uByte *)m_TargetValue; break; }
+            case VT_STRING: { delete (string*)m_TargetValue; break; }
+            case VT_BOOL  : { delete (bool  *)m_TargetValue; break; }
+            case VT_I16   : { delete (i16   *)m_TargetValue; break; }
+            case VT_U16   : { delete (u16   *)m_TargetValue; break; }
+            case VT_I32   : { delete (i32   *)m_TargetValue; break; }
+            case VT_U32   : { delete (u32   *)m_TargetValue; break; }
+            case VT_I64   : { delete (i64   *)m_TargetValue; break; }
+            case VT_U64   : { delete (u64   *)m_TargetValue; break; }
+            case VT_F32   : { delete (f32   *)m_TargetValue; break; }
+            case VT_F64   : { delete (f64   *)m_TargetValue; break; }
+            case VT_VEC2  : { delete (Vec2  *)m_TargetValue; break; }
+            case VT_VEC3  : { delete (Vec3  *)m_TargetValue; break; }
+            case VT_VEC4  : { delete (Vec4  *)m_TargetValue; break; }
+            case VT_MAT4  : { delete (Mat4  *)m_TargetValue; break; }
+            default:
+            {
+                ERROR("Invalid value type.\n");
+                m_TypeSize = 0;
+            }
+        }
     }
     
     #define cvSetter(Type,Enum,FMT0,...) \
@@ -63,7 +86,7 @@ namespace Silk
             ERROR("Could not set config value to " FMT0 ", invalid type. (Expected %s)\n",__VA_ARGS__,vtStrings[m_Type]); \
             return; \
         } \
-        (*(Type*)m_TargetValue) = v; \
+        m_TargetValue = new Type(v); \
         m_DidChange = true; \
     }
     
@@ -75,7 +98,7 @@ namespace Silk
             ERROR("Could not set config value to " FMT0 ", invalid type. (Expected %s)\n",__VA_ARGS__,vtStrings[m_Type]); \
             return; \
         } \
-        (*(Type*)m_TargetValue) = v; \
+        m_TargetValue = new Type(v); \
         m_DidChange = true; \
     }
     

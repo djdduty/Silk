@@ -11,6 +11,8 @@
 #include <T4/Turok4.h>
 #include <InputManager.h>
 #include <UIElements/TabPanel.h>
+#include <UIElements/TablePanel.h>
+
 using namespace TestClient;
 using namespace Turok4;
 using namespace Silk;
@@ -27,12 +29,14 @@ class ActorPanel : public UIPanel
         void SetActor(Actor* a);
     
     protected:
-        TabPanel* m_TabPanel   ;
+        TabPanel  * m_TabPanel ;
+        TablePanel* m_VarTable ;
+    
         UIText  * m_Heading    ;
         UIText  * m_ActorFile  ;
         UIText  * m_ActorName  ;
         UIText  * m_ActorID    ;
-        vector<UIText*> m_Vars ;
+    
         Scalar    m_Translation;
         Scalar    m_Velocity   ;
 };

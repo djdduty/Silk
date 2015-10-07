@@ -33,9 +33,8 @@ namespace Silk
     }
     UIElement::~UIElement()
     {
-        if(m_CID != -1 && m_Parent)
-            m_Parent->RemoveChild(this);
-        m_Manager->RemoveElement(this);
+        if(m_CID != -1 && m_Parent) m_Parent->RemoveChild(this);
+        if(m_ID != -1) m_Manager->RemoveElement(this);
         m_Manager->GetRenderer()->Destroy(m_Render);
         m_Material->Destroy();
     }
@@ -85,6 +84,7 @@ namespace Silk
             m_Children[i]->m_CID--;
         }
         E->m_CID = -1;
+        E->m_Parent = 0;
         UpdateOuterBounds();
     }
     void UIElement::_Update(Scalar dt)
