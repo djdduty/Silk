@@ -127,7 +127,8 @@ void ActorPanel::SetActor(Actor* a)
                 else
                 {
                     string str;
-                    for(i32 b = 0;b < d->GetSize();b++) str += FormatString("%02X ",(unsigned char)d->GetByte());
+                    if(((Byte*)d->Ptr())[d->GetSize() - 1] != 0) for(i32 b = 0;b < d->GetSize();b++) str += FormatString("%02X ",(unsigned char)d->GetByte());
+                    else for(i32 b = 0;b < d->GetSize() - 1;b++) str += d->GetByte();
                     val = new ConfigValue(ConfigValue::VT_STRING,&str);
                 }
                 if(val) m_VarTable->AddValue(v->GetBlock(i)->GetTypeString(),val);

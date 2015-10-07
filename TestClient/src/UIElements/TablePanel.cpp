@@ -48,7 +48,7 @@ namespace TestClient
     void TablePanel::OnMouseDown()
     {
         Vec2 cPos = m_Input->GetCursorPosition();
-        if(m_Separator->GetBounds()->Contains(cPos - GetAbsolutePosition().xy())) m_SeparatorClicked = true;
+        if(m_Separator->GetBounds()->Contains(cPos - GetAbsolutePosition().xy() - m_BorderSize)) m_SeparatorClicked = true;
     }
     void TablePanel::OnMouseMove()
     {
