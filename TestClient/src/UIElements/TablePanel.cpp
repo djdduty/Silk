@@ -29,12 +29,12 @@ namespace TestClient
         m_NamePanel = new UIPanel(Vec2((Size.x - (3.0f * m_BorderSize)) / 2.0f,m_TextSize + (m_BorderSize * 2.0f)));
         m_NamePanel->SetBackgroundColor(Vec4(0.575f,0.575f,0.575f,0.9f));
         AddChild(m_NamePanel);
-        m_Name = AddText(Mgr,m_TextSize,Vec2(m_BorderSize,m_BorderSize),"Name",m_NamePanel);
+        m_Name = AddText(Mgr,m_TextSize * 1.2f,Vec2(m_BorderSize,m_BorderSize),"Name",m_NamePanel);
         
         m_ValuePanel = new UIPanel(Vec2((Size.x - (3.0f * m_BorderSize)) / 2.0f,m_TextSize + (m_BorderSize * 2.0f)));
         m_ValuePanel->SetBackgroundColor(Vec4(0.575f,0.575f,0.575f,0.9f));
         AddChild(m_ValuePanel);
-        m_Value = AddText(Mgr,m_TextSize,Vec2(m_BorderSize,m_BorderSize),"Value",m_ValuePanel);
+        m_Value = AddText(Mgr,m_TextSize * 1.2f,Vec2(m_BorderSize,m_BorderSize),"Value",m_ValuePanel);
         
         m_Separator = new UIPanel(Vec2(m_BorderSize * 2.0f,Size.y));
         AddChild(m_Separator);
@@ -48,7 +48,7 @@ namespace TestClient
     void TablePanel::OnMouseDown()
     {
         Vec2 cPos = m_Input->GetCursorPosition();
-        if(m_Separator->GetBounds()->Contains(cPos - GetAbsolutePosition().xy() - m_BorderSize)) m_SeparatorClicked = true;
+        if(m_Separator->GetBounds()->Contains((cPos - GetAbsolutePosition().xy()) + Vec2(m_BorderSize,0.0f))) m_SeparatorClicked = true;
     }
     void TablePanel::OnMouseMove()
     {
@@ -148,12 +148,12 @@ namespace TestClient
         m_Separator->SetSize(Vec2(SepWidth,m_Bounds->GetDimensions().y));
         m_Separator->SetPosition(Vec3(SepPos - (m_BorderSize * 0.5f),0.0f,0.0f));
         
-        m_Name->SetTextSize(m_TextSize);
+        m_Name->SetTextSize(m_TextSize * 1.2f);
         m_Name->RebuildMesh();
         m_Name ->SetPosition(Vec3((m_NamePanel->GetBounds()->GetDimensions().x * 0.5f) - (m_Name->GetBounds()->GetDimensions().x * 0.5f),
                                   (m_NamePanel->GetBounds()->GetDimensions().y * 0.5f) - (m_Name->GetBounds()->GetDimensions().y * 0.5f),0.0f));
         
-        m_Value->SetTextSize(m_TextSize);
+        m_Value->SetTextSize(m_TextSize * 1.2f);
         m_Value->RebuildMesh();
         m_Value->SetPosition(Vec3((m_ValuePanel->GetBounds()->GetDimensions().x * 0.5f) - (m_Value->GetBounds()->GetDimensions().x * 0.5f),
                                   (m_ValuePanel->GetBounds()->GetDimensions().y * 0.5f) - (m_Value->GetBounds()->GetDimensions().y * 0.5f),0.0f));

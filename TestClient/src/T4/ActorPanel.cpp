@@ -115,19 +115,16 @@ void ActorPanel::SetActor(Actor* a)
                 else if(d->GetSize() == 4)
                 {
                     void* ptr = d->Ptr();
-                    float    fv = *((float   *)ptr);
-                    int      iv = *((int     *)ptr);
-                    //uint32_t uv = *((uint32_t*)ptr);
-                    //char    *cv = (char*)ptr;
+                    float    fv = *((f32*)ptr);
+                    int      iv = *((i32*)ptr);
                     
                     if(fabs(fv) < 1000000.0f && (fabs(fv) > 0.0001f || fabs(fv) == 0.0f)) val = new ConfigValue(ConfigValue::VT_F32,ptr);
                     if(abs(iv) < 20000) val = new ConfigValue(ConfigValue::VT_I32,ptr);
-                    //if(uv < 2
                 }
                 else
                 {
                     string str;
-                    if(((Byte*)d->Ptr())[d->GetSize() - 1] != 0) for(i32 b = 0;b < d->GetSize();b++) str += FormatString("%02X ",(unsigned char)d->GetByte());
+                    if(((Byte*)d->Ptr())[d->GetSize() - 1] != 0) for(i32 b = 0;b < d->GetSize();b++) str += FormatString("%02X ",(u8)d->GetByte());
                     else for(i32 b = 0;b < d->GetSize() - 1;b++) str += d->GetByte();
                     val = new ConfigValue(ConfigValue::VT_STRING,&str);
                 }

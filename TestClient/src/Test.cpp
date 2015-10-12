@@ -741,7 +741,7 @@ namespace TestClient
             glfwGetCursorPos(m_Window->GetWindow(),&x,&y);
             GLint Viewport[4];
             glGetIntegerv(GL_VIEWPORT,Viewport);
-            Mat4 v = m_Camera->GetTransform();
+            Mat4 v = m_Camera->GetTransform ();
             Mat4 p = m_Camera->GetProjection();
             m_CursorRay = UnProject(Vec3(x,y,0),v,p,Vec4(Viewport[0],Viewport[1],Viewport[2],Viewport[3]));
             

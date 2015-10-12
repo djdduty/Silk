@@ -54,14 +54,17 @@ namespace TestClient
             void SetSSAOIntensity(Scalar Intensity);
             void SetSSAONoiseScale(i32 Scale);
         
-            UIManager   * GetUI   () const { return m_UIManager   ; }
-            InputManager* GetInput() const { return m_InputManager; }
+            UIManager   * GetUI    () const { return m_UIManager   ; }
+            InputManager* GetInput () const { return m_InputManager; }
+            Camera      * GetCamera() const { return m_Camera      ; }
         
             Byte* Load(const char* File,i64 *OutSize = 0);
             bool  Save(const char* File,Byte* Data,i64 Size);
         
             RenderObject* AddLight(LightType Type,const Vec3& Pos);
             i32 AddMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count = 1);
+            RenderObject* LoadMesh(const char* Path,Material* Mat,const Vec3& Pos,i32 Count = 1) { return m_Meshes[AddMesh(Path,Mat,Pos,Count)]; }
+        
             Texture * LoadTexture(const char *Path);
             Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,const char* Diffuse = 0,const char* Normal = 0,const char* Parallax = 0);
             Material* AddMaterial(ShaderGenerator::LIGHTING_MODES LightingMode,Texture* Diffuse,Texture* Normal,Texture* Parallax);
@@ -80,6 +83,9 @@ namespace TestClient
             virtual Vec2 GetPreferredInitResolution() const;
 			virtual CullingAlgorithm* GetPreferredCullingAlgorithm() const { return new BruteForceCullingAlgorithm(m_Renderer->GetScene(),m_TaskManager); }
             virtual Renderer* GetPreferredRenderer(Rasterizer* Raster, TaskManager* TaskMng) const { return new Renderer(Raster,TaskMng); }
+        
+            Renderer* GetRenderer() const { return m_Renderer; }
+            Rasterizer* GetRasterizer() const { return m_Rasterizer; }
         
             Window         * m_Window;
             Renderer       * m_Renderer;

@@ -936,7 +936,7 @@ namespace Turok4
                 }
                 case BT_SPIN_Y:
                 {
-                    Spin.y = 10.0f;//*((float*)d->Ptr());
+                    Spin.y = *((float*)d->Ptr());
                     break;
                 }
                 case BT_SPIN_Z:

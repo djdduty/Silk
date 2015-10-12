@@ -718,47 +718,53 @@ namespace Silk
     }
     Quat Mat4::GetRotation() const
     {
-        Vec3 iScale = Vec3(Scalar(1.0) / x.Magnitude(),Scalar(1.0) / y.Magnitude(),Scalar(1.0) / z.Magnitude());
+        Vec3 m0 = GetX();
+        Vec3 m1 = GetY();
+        Vec3 m2 = GetZ();
         
-        Vec3 m1 = x.xyz() * iScale.x;
-        Vec3 m2 = y.xyz() * iScale.y;
-        Vec3 m3 = z.xyz() * iScale.z;
+        Scalar m00 = m0.x; Scalar m10 = m1.x; Scalar m20 = m2.x;
+        Scalar m01 = m0.y; Scalar m11 = m1.y; Scalar m21 = m2.y;
+        Scalar m02 = m0.z; Scalar m12 = m1.z; Scalar m22 = m2.z;
         
-        Scalar t = Scalar(1.0) + m1.x + m2.y + m3.z;
+        Scalar qx,qy,qz,qw;
         
-        Quat q;
-        if(t > Scalar(0.001))
+        Scalar tr = m00 + m11 + m22;
+
+        if(tr > 0)
         {
-            Scalar s = sqrt(t) * Scalar(2.0);
-            q.x = (m3.y - m2.z) / s;
-            q.y = (m1.z - m3.x) / s;
-            q.z = (m2.x - m1.y) / s;
-            q.w = Scalar(0.25) * s;
+            Scalar S = sqrt(tr+1.0) * 2.0; // S=4*qw
+            qw = 0.25 * S;
+            qx = (m21 - m12) / S;
+            qy = (m02 - m20) / S; 
+            qz = (m10 - m01) / S; 
         }
-        else if(m1.x > m2.y && m1.x > m3.z)
+        else if((m00 > m11)&(m00 > m22))
         {
-            Scalar s = sqrt(Scalar(1.0) + m1.x - m2.y - m3.z) * Scalar(2.0);
-            q.x = Scalar(0.25) * s;
-            q.y = (m2.x + m1.y) / s;
-            q.z = (m1.z + m3.x) / s;
-            q.w = (m3.y - m2.z) / s;
-        } 
-        else if(m2.y > m3.z)
+            Scalar S = sqrt(1.0 + m00 - m11 - m22) * 2.0; // S=4*qx
+            qw = (m21 - m12) / S;
+            qx = 0.25 * S;
+            qy = (m01 + m10) / S;
+            qz = (m02 + m20) / S;
+        }
+        else if(m11 > m22)
         {
-            Scalar s = sqrt(Scalar(1.0) + m2.y - m1.x - m3.z) * Scalar(2.0);
-            q.x = (m2.x + m1.y) / s;
-            q.y = Scalar(0.25) * s;
-            q.z = (m3.y + m2.z) / s;
-            q.w = (m1.z - m3.x) / s;
+            Scalar S = sqrt(1.0 + m11 - m00 - m22) * 2.0; // S=4*qy
+            qw = (m02 - m20) / S;
+            qx = (m01 + m10) / S;
+            qy = 0.25 * S;
+            qz = (m12 + m21) / S;
         }
         else
         {
-            Scalar s = sqrt(Scalar(1.0) + m3.z - m1.x - m2.y) * Scalar(2.0);
-            q.x = (m1.z + m3.x) / s;
-            q.y = (m3.y + m2.z) / s;
-            q.z = Scalar(0.25) * s;
-            q.w = (m2.x - m1.y) / s;
+            Scalar S = sqrt(1.0 + m22 - m00 - m11) * 2.0; // S=4*qz
+            qw = (m10 - m01) / S;
+            qx = (m02 + m20) / S;
+            qy = (m12 + m21) / S;
+            qz = 0.25 * S;
         }
+
+        Quat q;
+        q.x = qx; q.y = qy; q.z = qz; q.w = qw;
         return q;
     }
     Vec3 Mat4::GetAxis(i32 AID) const
@@ -1218,17 +1224,59 @@ namespace Silk
 	    r.x.y = 2.0f * (x * y - w * z);
 	    r.x.z = 2.0f * (x * z + w * y);
 	    r.x.w = 0.0f;
+        
 	    r.y.x = 2.0f * (x * y + w * z);
 	    r.y.y = 1.0f - 2.0f * (x * x + z * z);
 	    r.y.z = 2.0f * (y * z - w * x);
 	    r.y.w = 0.0f;
+        
 	    r.z.x = 2.0f * (x * z - w * y);
 	    r.z.y = 2.0f * (y * z + w * x);
 	    r.z.z = 1.0f - 2.0f * (x * x + y * y);
 	    r.z.w = 0.0f;
+        
 	    r.w.x = r.w.y = r.w.z = 0;
 	    r.w.w = 1.0f;
         return r;
+    }
+    Vec3 Quat::ToEuler() const
+    {
+        Mat4 R = ToMat().Transpose();
+        
+        //check for gimbal lock
+        if(fabs(R[0][2] + 1.0f) <= 0.00001f)
+        {
+            Scalar x = 0; //gimbal lock, value of x doesn't matter
+            Scalar y = PI / 2;
+            Scalar z = x + atan2(R[1][0],R[2][0]);
+            return Vec3(x,y,z) * PI_UNDER_180;
+        }
+        else if(fabs(R[0][2] - 1.0f) <= 0.00001f)
+        {
+            Scalar x = 0;
+            Scalar y = -PI / 2;
+            Scalar z = -x + atan2(-R[1][0],-R[2][0]);
+            return Vec3(x,y,z) * PI_UNDER_180;
+        }
+        else
+        {
+            //two solutions exist
+            Scalar x1 = -asin(R[0][2]);
+            Scalar x2 = PI - x1;
+
+            Scalar y1 = atan2(R[1][2] / cos(x1), R[2][2] / cos(x1));
+            Scalar y2 = atan2(R[1][2] / cos(x2), R[2][2] / cos(x2));
+
+            Scalar z1 = atan2(R[0][1] / cos(x1), R[0][0] / cos(x1));
+            Scalar z2 = atan2(R[0][1] / cos(x2), R[0][0] / cos(x2));
+
+            //choose one solution to return
+            //for example the "shortest" rotation
+            if((std::abs(x1) + std::abs(y1) + std::abs(z1)) <= (std::abs(x2) + std::abs(y2) + std::abs(z2))) return Vec3(x1,y1,z1) * PI_UNDER_180;
+            else return Vec3(x2,y2,z2) * PI_UNDER_180;
+        }
+        
+        return Vec3(0,0,0);
     }
 
     Quat Quat::operator *(const Quat& q) const
@@ -1287,6 +1335,39 @@ namespace Silk
         r.Dir   = (Result.xyz()).Normalized();
         return r;
 	}
+    bool ClosestPointsBetweenLines(const Vec3& l0_Point,const Vec3& l0_Offset,const Vec3& l1_Point,const Vec3& l1_Offset,Vec3& Out0,Vec3& Out1)
+    {
+        //Thanks to: http://wiki.unity3d.com/index.php/3d_Math_functions
+        
+        Out0 = Out1 = Vec3(0,0,0);
+
+        f64 a = l0_Offset.Dot(l0_Offset);
+        f64 b = l0_Offset.Dot(l1_Offset);
+        f64 e = l1_Offset.Dot(l1_Offset);
+        f64 d = a * e - b * b;
+
+        //lines are not parallel
+        if(d != 0.0f)
+        {
+            Vec3 r = l0_Point - l1_Point;
+            f64 c = l0_Offset.Dot(r);
+            f64 f = l1_Offset.Dot(r);
+
+            f64 s = (b * f - c * e) / d;
+            f64 t = (a * f - c * b) / d;
+
+            Out0 = l0_Point + l0_Offset * s;
+            Out1 = l1_Point + l1_Offset * t;
+
+            return true;
+        }
+        
+        return false;
+    }
+    bool ClosestPointsBetweenRays(const Ray& r0,const Ray& r1,Vec3& Out0,Vec3& Out1)
+    {
+        return ClosestPointsBetweenLines(r0.Point,r0.Dir * 10000.0f,r1.Point,r1.Dir * 10000.0f,Out0,Out1);
+    }
     
     static std::minstd_rand0 gen;
     void SeedRandom(i32 Seed) { if(Seed == -1) { gen.seed((i32)time(0)); } else gen.seed(Seed); }

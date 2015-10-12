@@ -20,11 +20,12 @@ namespace TestClient
         
             void Update(Scalar dt);
     
-            void SetCursorPosition (const Vec2& p);
-            Vec2 GetCursorPosition () const { return m_CursorPosition; }
-            Vec2 GetCursorDelta    () const { return m_CursorPosition - m_LastCursorPosition; }
-            Vec2 GetRealCursorDelta() const { return m_RealCursorDelta; }
-            void ResetCursorDelta  ()       { m_RealCursorDelta = Vec2(0,0); }
+            void SetCursorPosition(const Vec2& p);
+            Vec2 GetCursorPosition    () const { return m_CursorPosition; }
+            Vec2 GetCursorDelta       () const { return m_CursorPosition - m_LastCursorPosition; }
+            Vec2 GetRealCursorPosition() const { return m_RealCursorPosition; }
+            Vec2 GetRealCursorDelta   () const { return m_RealCursorDelta; }
+            void ResetCursorDelta     ()       { m_RealCursorDelta = Vec2(0,0); }
         
             void OnButtonDown(i32 ButtonID);
             void OnButtonUp  (i32 ButtonID);

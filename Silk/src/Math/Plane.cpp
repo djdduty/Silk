@@ -13,17 +13,10 @@ namespace Silk
     }
     Vec3 Plane::GetIntersectionPoint(const Ray& r) const
     {
-        Vec3 v1 = r.Point;
-        Vec3 v2 = r.Point + (r.Dir * 10000000.0f);
-        Vec3 Diff = r.Dir;
+        f64 t = -(Normal.Dot(r.Point) + Offset) / Normal.Dot(r.Dir);
+        //if(t < 0.0f) return Vec3(0,0,0);
         
-        Scalar Denominator = Normal.Dot(Diff);
-        if(Denominator == 0.0f)
-        {
-            return (v1 + v2) * 0.5f;
-        }
-        
-        return (v1 + ((v2 - v1) * ((Normal.Dot(v1) + Offset) / Denominator)));
+        return r.Point + (r.Dir * t);
     }
 
     void Plane::Transform(const Mat4& Trans)

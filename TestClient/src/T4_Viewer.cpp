@@ -216,9 +216,9 @@ namespace TestClient
         if(!m_ActorDefs[AID]->GetDef()) return Mat4::Identity;
         
         Mat4 T = Translation(*(Vec3*)&m_ActorDefs[AID]->GetDef()->Position);
-        Mat4 R = Rotation(m_ActorDefs[AID]->GetDef()->Rotation.y,
-                          m_ActorDefs[AID]->GetDef()->Rotation.z,
-                          m_ActorDefs[AID]->GetDef()->Rotation.x);
+        Mat4 R = RotationX(m_ActorDefs[AID]->GetDef()->Rotation.x) *
+                 RotationY(m_ActorDefs[AID]->GetDef()->Rotation.y) *
+                 RotationZ(m_ActorDefs[AID]->GetDef()->Rotation.z);
         Mat4 S = Scale(*(Vec3*)&m_ActorDefs[AID]->GetDef()->Scale);
         return T * R * S;
     }
@@ -232,7 +232,9 @@ namespace TestClient
     void T4_Viewer::SetActorRotation(i32 AID,const Vec3& Rot)
     {
         if(!m_ActorDefs[AID]->GetDef()) return;
-        m_ActorDefs[AID]->GetDef()->Rotation = *(Turok4::ActorVec3*)&Rot;
+        m_ActorDefs[AID]->GetDef()->Rotation.x = Rot.x;
+        m_ActorDefs[AID]->GetDef()->Rotation.y = Rot.y;
+        m_ActorDefs[AID]->GetDef()->Rotation.z = Rot.z;
         Mat4 t = GetActorTransform(AID);
         for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
     }
@@ -242,6 +244,18 @@ namespace TestClient
         m_ActorDefs[AID]->GetDef()->Scale    = *(Turok4::ActorVec3*)&Scl;
         Mat4 t = GetActorTransform(AID);
         for(i32 i = 0;i < m_Actors[AID].size();i++) m_Actors[AID][i]->SetTransform(t);
+    }
+    Scalar T4_Viewer::GetActorRadius(i32 AID) const
+    {
+        Vec3 MaxExtents = Vec3(FLT_MIN,FLT_MIN,FLT_MIN);
+        for(i32 i = 0;i < m_Actors[AID].size();i++)
+        {
+            Vec3 aMax = m_Actors[AID][i]->GetBoundingBox().GetLocalAABB().GetExtents();
+            if(aMax.x > MaxExtents.x) MaxExtents.x = aMax.x;
+            if(aMax.y > MaxExtents.y) MaxExtents.y = aMax.y;
+            if(aMax.z > MaxExtents.z) MaxExtents.z = aMax.z;
+        }
+        return MaxExtents.Magnitude();
     }
     void T4_Viewer::Initialize()
     {
@@ -357,6 +371,8 @@ namespace TestClient
         m_ToolbarButtonDown = m_ActorPanelButtonDown = false;
         
         m_ActorPanel = new ActorPanel(m_UIManager,m_InputManager);
+        
+        m_TransformTool = new TransformTool(this);
     }
 
     void T4_Viewer::Run()
@@ -366,31 +382,20 @@ namespace TestClient
         
         Scalar rt = 12.0f;
         i32 SelectedIdx = -1;
-        Scalar sDist = 0.0f;
         bool BtnDown = false;
         bool APButtonDown = false;
         
+        m_TransformTool->ToggleTranslate();
+        m_TransformTool->ToggleRotate   ();
+        
         while(IsRunning())
         {
-            for(i32 a = 0;a < m_ActorDefs.size();a++)
-            {
-                ActorVariables* v = m_ActorDefs[a]->GetActorVariables();
-                if(v)
-                {
-                    for(i32 r = 0;r < m_Actors[a].size();r++)
-                    {
-                        RenderObject* obj = m_Actors[a][r];
-                        obj->SetTransform(GetActorTransform(a) * Rotation(v->Spin.y * rt,v->Spin.x * rt,v->Spin.z * rt));
-                        if(v->Spin.y > 0.0f) m_DebugDraw->OBB(obj->GetBoundingBox(),Vec4(1,1,0,1));
-                    }
-                }
-            }
-        
             Mat4 T = (m_Camera->GetTransform() * m_Camera->GetProjection().Inverse()).Transpose();
             
             Vec3 t[4] = { Vec3(-0.01,0.0,0.0), Vec3(0.01,0.0,0.0), Vec3(0.0,-0.01,0.0), Vec3(0.0,0.01,0.0) };
             m_DebugDraw->Line(T * t[0],T * t[1],Vec4(1,1,1,1));
             m_DebugDraw->Line(T * t[2],T * t[3],Vec4(1,1,1,1));
+            
             if(m_InputManager->IsButtonDown(BTN_LEFT_MOUSE))
             {
                 if(!BtnDown)
@@ -424,25 +429,41 @@ namespace TestClient
                             (char)(i32)(ObjID.z * 255.0f),
                             (char)(i32)(ObjID.w * 255.0f),
                         };
+                        i32 sIdx = SelectedIdx;
                         memcpy(&SelectedIdx,&v,sizeof(i32));
                         if(SelectedIdx >= 0)
                         {
-                            sDist = (GetActorTransform(SelectedIdx).GetTranslation() - m_CamPos).Magnitude();
-                            m_ActorPanel->SetActor(m_ActorDefs[SelectedIdx]);
+                            if(!m_TransformTool->OnObjClick(SelectedIdx))
+                            {
+                                m_ActorPanel->SetActor(m_ActorDefs[SelectedIdx]);
+                                
+                                Mat4 t = GetActorTransform(SelectedIdx);
+                                m_TransformTool->SetTransform(t);
+                                m_TransformTool->SetMinDisplaySize(GetActorRadius(SelectedIdx) * 2.0f);
+                            }
+                            else SelectedIdx = sIdx;
                         }
                     }
                 }
                 BtnDown = true;
             }
-            else BtnDown = false;
+            else
+            {
+                BtnDown = false;
+                m_TransformTool->OnClickUp();
+            }
+            
             if(SelectedIdx >= 0)
             {
-                Vec4 mColor = Vec4(1,0,0,1);
-                if(!m_ActorIsStatic[SelectedIdx])
+                if(m_TransformTool->IsEnabled())
                 {
-                    mColor = Vec4(0.5f,0.5f,1.0f,1.0f);
-                    if(!m_Toolbar->IsEnabled()) SetActorPosition(SelectedIdx,m_CamPos + m_Camera->GetTransform().GetZ() * -sDist);
+                    SetActorPosition(SelectedIdx,m_TransformTool->GetTransform().GetTranslation());
+                    SetActorRotation(SelectedIdx,m_TransformTool->GetRotation ().ToEuler       ());
+                    //SetActorScale   (SelectedIdx,m_TransformTool->GetTransform().GetScale());
                 }
+                
+                Vec4 mColor = Vec4(1,0,0,0.45f);
+                if(!m_ActorIsStatic[SelectedIdx]) mColor = Vec4(0.5f,0.5f,1.0f,0.45f);
                 
                 for(i32 i = 0;i < m_Actors[SelectedIdx].size();i++)
                 {
@@ -451,9 +472,13 @@ namespace TestClient
                 }
             }
             
+            if(m_InputManager->GetCursorDelta().MagnitudeSq() > 1.0f) m_TransformTool->OnCursorMove();
+            
             rt += GetDeltaTime();
             //m_DebugDraw->Line(Vec3(0,0,0),Vec3(0,10,0),Vec4(1,1,1,1));
             m_Lights[0]->SetTransform(Rotation(Vec3(0,0,1),90 + (rt * 7.5f)) * Rotation(Vec3(1,0,0),-90.0f));
+            
+            m_TransformTool->SetDisplayScale(((m_Camera->GetTransform().GetTranslation() - m_TransformTool->GetTransform().GetTranslation()).Magnitude() * 0.1f));
             
             UpdateUI();
         }

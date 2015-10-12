@@ -10,6 +10,7 @@
 #include <Test.h>
 #include <T4/Turok4.h>
 #include <T4/ActorPanel.h>
+#include <T4/TransformTool.h>
 
 #define BUTTON_COLOR 0.5,0.5,0.5,1.0
 
@@ -38,12 +39,13 @@ namespace TestClient
             void SetActorPosition(i32 AID,const Vec3& Pos);
             void SetActorRotation(i32 AID,const Vec3& Rot);
             void SetActorScale   (i32 AID,const Vec3& Scl);
+            Scalar GetActorRadius(i32 AID) const;
         
             virtual const char* GetTestName() const { return "Turok: Evolution Viewer"; }
 #ifdef __APPLE__
-            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1200,700); }
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1200,600); }
 #else
-            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,600); }
 #endif
             virtual Renderer* GetPreferredRenderer(Rasterizer* Raster,TaskManager* TaskMng) const { return new DeferredRenderer(Raster,TaskMng); }
         
@@ -63,5 +65,6 @@ namespace TestClient
             UIPanel* m_LoadButton;
             UIPanel* m_SaveButton;
             ActorPanel* m_ActorPanel;
+            TransformTool* m_TransformTool;
     };
 };

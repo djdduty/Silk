@@ -336,6 +336,7 @@ namespace Silk
         
             void LookAt(Vec3 From,Vec3 To);
             Mat4 ToMat() const;
+            Vec3 ToEuler() const;
         
             Quat operator *(const Quat& rVal) const;
             Vec3 operator *(const Vec3& rVal) const;
@@ -382,6 +383,8 @@ namespace Silk
     } Ray;
 
     Ray UnProject(const Vec3& win,const Mat4& v,const Mat4& p,const Vec4& viewport);
+    bool ClosestPointsBetweenLines(const Vec3& l0_Point,const Vec3& l0_Offset,const Vec3& l1_Point,const Vec3& l1_Offset,Vec3& Out0,Vec3& Out1);
+    bool ClosestPointsBetweenRays(const Ray& r0,const Ray& r1,Vec3& Out0,Vec3& Out1);
     
     void SeedRandom(i32 Seed);
     Scalar Random(Scalar Min,Scalar Max);
