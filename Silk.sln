@@ -39,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClient", "TestClient\Te
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZERO_CHECK", "ZERO_CHECK.vcxproj", "{83C1C6B4-390F-4BDA-B138-BC76CD92BC80}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uninstall", "Dependencies\glfw\uninstall.vcxproj", "{258E68F9-BC01-486A-B047-6400B7345355}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -80,7 +82,8 @@ Global
 		{258E68F9-BC01-486A-B047-6400B7345355}.Debug|Win32.ActiveCfg = Debug|Win32
 		{258E68F9-BC01-486A-B047-6400B7345355}.Release|Win32.ActiveCfg = Release|Win32
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
 	EndGlobalSection
 EndGlobal

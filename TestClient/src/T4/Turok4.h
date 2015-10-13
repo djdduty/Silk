@@ -9,6 +9,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <stdint.h>
 using namespace std;
 
 #include "MeshStructs.h"

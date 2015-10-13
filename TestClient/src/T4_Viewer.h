@@ -45,7 +45,7 @@ namespace TestClient
 #ifdef __APPLE__
             virtual Vec2 GetPreferredInitResolution() const { return Vec2(1200,600); }
 #else
-            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,600); }
+            virtual Vec2 GetPreferredInitResolution() const { return Vec2(1280,900); }
 #endif
             virtual Renderer* GetPreferredRenderer(Rasterizer* Raster,TaskManager* TaskMng) const { return new DeferredRenderer(Raster,TaskMng); }
         

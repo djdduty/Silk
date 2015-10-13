@@ -453,18 +453,19 @@ namespace TestClient
                 m_TransformTool->OnClickUp();
             }
             
-            if(SelectedIdx >= 0)
+            if(SelectedIdx >= 0 && SelectedIdx < m_Actors.size())
             {
-                if(m_TransformTool->IsEnabled())
+                
+                Vec4 mColor = Vec4(1,0,0,0.45f);
+                if(m_TransformTool->IsEnabled() && !m_ActorIsStatic[SelectedIdx])
                 {
                     SetActorPosition(SelectedIdx,m_TransformTool->GetTransform().GetTranslation());
                     SetActorRotation(SelectedIdx,m_TransformTool->GetRotation ().ToEuler       ());
                     //SetActorScale   (SelectedIdx,m_TransformTool->GetTransform().GetScale());
+					
+					mColor = Vec4(0.5f,0.5f,1.0f,0.45f);
                 }
-                
-                Vec4 mColor = Vec4(1,0,0,0.45f);
-                if(!m_ActorIsStatic[SelectedIdx]) mColor = Vec4(0.5f,0.5f,1.0f,0.45f);
-                
+
                 for(i32 i = 0;i < m_Actors[SelectedIdx].size();i++)
                 {
                     //m_Renderer->GetDebugDrawer()->OBB(m_Actors[SelectedIdx][i]->GetBoundingBox(),Vec4(1,0,0,1));

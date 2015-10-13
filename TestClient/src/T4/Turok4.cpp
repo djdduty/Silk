@@ -799,6 +799,7 @@ namespace Turok4
     }
     bool ActorVariables::Save(ByteStream* Data)
     {
+		return false;
     }
     void ActorVariables::ProcessBlocks()
     {
@@ -1347,7 +1348,7 @@ namespace Turok4
         {
             for(int c = 0;c < m_Children.size();c++) m_Children[c]->Save(Data);
         }
-        else
+		else if(m_Data->GetSize() > 0)
         {
             m_Data->SetOffset(0);
             if(!Data->WriteData(m_Data->GetSize(),m_Data->Ptr())) return false;

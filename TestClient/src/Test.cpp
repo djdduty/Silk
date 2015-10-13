@@ -59,7 +59,8 @@ namespace TestClient
             else if(Key == GLFW_KEY_RIGHT ) g_Test->GetInput()->OnButtonDown(BTN_RIGHT_ARROW  );
             else if(Key == GLFW_KEY_I     ) g_Test->GetInput()->OnButtonDown(BTN_TOGGLE_STATS );
             else if(Key == GLFW_KEY_P     ) g_Test->GetInput()->OnButtonDown(BTN_P            );
-            else if(Key == GLFW_KEY_WORLD_1) g_Test->GetInput()->OnButtonDown(BTN_TOGGLE      );
+            else if(Key == GLFW_KEY_WORLD_1
+		        ||  Key == GLFW_KEY_GRAVE_ACCENT) g_Test->GetInput()->OnButtonDown(BTN_TOGGLE );
         }
         else if(Action == GLFW_RELEASE)
         {
@@ -74,7 +75,8 @@ namespace TestClient
             else if(Key == GLFW_KEY_RIGHT ) g_Test->GetInput()->OnButtonUp(BTN_RIGHT_ARROW  );
             else if(Key == GLFW_KEY_I     ) g_Test->GetInput()->OnButtonUp(BTN_TOGGLE_STATS );
             else if(Key == GLFW_KEY_P     ) g_Test->GetInput()->OnButtonUp(BTN_P            );
-            else if(Key == GLFW_KEY_WORLD_1) g_Test->GetInput()->OnButtonUp(BTN_TOGGLE      );
+            else if(Key == GLFW_KEY_WORLD_1
+		        ||  Key == GLFW_KEY_GRAVE_ACCENT) g_Test->GetInput()->OnButtonUp(BTN_TOGGLE );
         }
     }
     
