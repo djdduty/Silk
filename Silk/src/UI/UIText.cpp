@@ -116,6 +116,7 @@ namespace Silk
 
     void UIText::RebuildMesh()
     {
+		if(m_Text.length() == 0) return;
         Mesh* m = new Mesh();
 
         if(!m_Render)

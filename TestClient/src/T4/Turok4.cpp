@@ -1085,7 +1085,9 @@ namespace Turok4
                 }
                 case BT_ACTOR_MESH_AXIS:
                 {
-                    m_ActorMeshAxis = { Data->GetFloat(), Data->GetFloat(), Data->GetFloat() };
+                    m_ActorMeshAxis.x = Data->GetFloat();
+					m_ActorMeshAxis.y = Data->GetFloat();
+					m_ActorMeshAxis.z = Data->GetFloat();
                     break;
                 }
                 case BT_ACTOR_PRECACHE_FILE:
