@@ -399,6 +399,97 @@ namespace Silk
         
         s->Disable();
     }
+    void Renderer::RenderObjectsToTexture(ObjectList* List,Texture* Tex,Camera* Cam)
+    {
+        Camera* tc = m_Scene->GetActiveCamera();
+        m_Scene->SetActiveCamera(Cam);
+        
+        Tex->EnableRTT(true);
+        
+        i32 ShaderCount = List->GetShaderCount();
+        
+        i32 ActualObjectCount = 0;
+        i32 VertexCount       = 0;
+        i32 TriangleCount     = 0;
+        
+        for(i32 i = 0;i < ShaderCount;i++)
+        {
+            Shader* Shader = List->GetShader(i);
+            if(!Shader) continue;
+            
+            Shader->Enable();
+            
+            SilkObjectVector Meshes = List->GetShaderMeshList(i);
+            for(i32 m = 0;m < Meshes.size();m++)
+            {
+                RenderObject* Obj = Meshes[m];
+                if(!Obj->IsEnabled()) continue;
+                if(Obj->IsInstanced() && Obj->m_Mesh->m_LastFrameRendered == m_Stats.FrameID) continue;
+                else if(Obj->IsInstanced()) Obj = (*Obj->GetMesh()->GetInstanceList())[0];
+                
+                Obj->m_Mesh->m_LastFrameRendered = m_Stats.FrameID;
+            
+                if(Obj->m_Mesh && Obj->m_Material && Obj->m_Enabled)
+                {
+                    //Pass material uniforms
+                    Material* Mat = Obj->GetMaterial();
+                    /*if(Mat->HasUpdated())*/ Shader->UseMaterial(Mat);
+                    
+                    //Pass object uniforms
+                    if(Shader->UsesUniformInput(ShaderGenerator::IUT_OBJECT_UNIFORMS))
+                    {
+                        if(Obj->IsInstanced())
+                        {
+                            Mat4 tmp = Obj->GetTransform();
+                            Obj->SetTransform(Mat4::Identity);
+                            Obj->UpdateUniforms();
+                            Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+                            Obj->SetTransform(tmp);
+                        }
+                        else
+                        {
+                            Obj->UpdateUniforms();
+                            Shader->PassUniforms(Obj->GetUniformSet()->GetUniforms());
+                        }
+                    }
+                    
+                    //To do: Batching
+                    i32 Count = 0;
+                    if(Obj->m_Mesh->IsIndexed()) Count = Obj->m_Mesh->GetIndexCount();
+                    else Count = Obj->m_Mesh->GetVertexCount();
+                    
+                    PRIMITIVE_TYPE p = Obj->m_Mesh->PrimitiveType;
+                    Obj->m_Object->Render(Obj,p,0,Count);
+                    
+                    i32 vc = Obj->m_Mesh->GetVertexCount();
+                    i32 tc = 0;
+                    if(p == PT_TRIANGLES     ) tc = vc / 3;
+                    if(p == PT_TRIANGLE_STRIP
+                    || p == PT_TRIANGLE_FAN  ) tc = vc - 2;
+                    
+                    if(Obj->IsInstanced())
+                    {
+                        i32 InstanceCount = Obj->GetMesh()->m_VisibleInstanceCount;
+                        ActualObjectCount +=      InstanceCount;
+                        VertexCount       += vc * InstanceCount;
+                        TriangleCount     += tc * InstanceCount;
+                    }
+                    else
+                    {
+                        ActualObjectCount++;
+                        VertexCount   += vc;
+                        TriangleCount += tc;
+                    }
+                }
+            }
+            
+            Shader->Disable();
+        }
+        
+        Tex->DisableRTT();
+        
+        m_Scene->SetActiveCamera(tc);
+    }
 
     RenderObject* Renderer::CreateRenderObject(RENDER_OBJECT_TYPE Rot)
     {

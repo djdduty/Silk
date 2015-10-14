@@ -570,7 +570,7 @@ namespace Turok4
                     }
                     default:
                     {
-                        printf("Encountered unknown vertex type! Study me!\n");
+                        //printf("Encountered unknown vertex type! Study me!\n");
                     }
                 }
                 m_SubMeshes.push_back(m);
@@ -771,7 +771,7 @@ namespace Turok4
         {
             if(BlockTypeIDs[i] == ID) return (BLOCK_TYPE)i;
         }
-        printf("Encountered new block type (%s).\n",ID.c_str());
+        //printf("Encountered new block type (%s).\n",ID.c_str());
         return BT_COUNT;
     }
     
@@ -988,7 +988,7 @@ namespace Turok4
             }
             if(m_Blocks[i]->GetType() == BT_COUNT)
             {
-                printf("Unsupported actor variable (%s).\n",m_Blocks[i]->GetTypeString().c_str());
+                //printf("Unsupported actor variable (%s).\n",m_Blocks[i]->GetTypeString().c_str());
             }
         }
     }
@@ -1030,6 +1030,7 @@ namespace Turok4
         m_File = m_Root->GetData()->GetString(PathLen);
         m_Root->GetData()->Offset(1);
         
+        //printf("ATR: %s.\n",Filename.c_str());
         while(!m_Root->GetData()->AtEnd(1))
         {
             Block* b = new Block();
@@ -1052,30 +1053,49 @@ namespace Turok4
             {
                 case BT_ACTOR_MESH:
                 {
+                    Data->GetByte(); //Path length (not needed)
+                    m_ActorMeshFile = Data->GetString();
+                    
                     ActorMesh* m = new ActorMesh();
-                    unsigned char PathLen = Data->GetByte();
-                    string Path = Data->GetString();
-                    m->Load(TransformPseudoPathToRealPath(Path));
+                    m->Load(TransformPseudoPathToRealPath(m_ActorMeshFile));
                     m_Actor->m_Mesh = m;
+                    
                     break;
                 }
                 case BT_ACTOR_INSTANCES:
                 {
-                    unsigned char PathLen = Data->GetByte();
-                    string Path = Data->GetString();
+                    Data->GetByte(); //Path length (not needed)
+                    m_InstancesFile = Data->GetString();
+                    
                     ATIFile* ATI = new ATIFile();
-                    ATI->Load(TransformPseudoPathToRealPath(Path));
+                    ATI->Load(TransformPseudoPathToRealPath(m_InstancesFile));
                     m_ActorInstanceFiles.push_back(ATI);
+                    
+                    break;
+                }
+                case BT_VERSION:
+                {
+                    m_Version = Data->GetFloat();
+                    break;
+                }
+                case BT_ACTOR_CODE:
+                {
+                    m_ActorCode = Data->GetString();
+                    break;
+                }
+                case BT_ACTOR_MESH_AXIS:
+                {
+                    m_ActorMeshAxis = { Data->GetFloat(), Data->GetFloat(), Data->GetFloat() };
                     break;
                 }
                 case BT_ACTOR_PRECACHE_FILE:
                 {
-                    printf("Precache files not yet understood.\n");
+                    Data->GetByte(); //Path length (not needed)
+                    m_PrecacheFile = Data->GetString();
+                    //printf("Precache files not yet understood.\n");
+                    
                     break;
                 }
-                case BT_VERSION          :
-                case BT_ACTOR_CODE       :
-                case BT_ACTOR_MESH_AXIS  :
                 case BT_ACTOR_VARIABLES  :
                 case BT_ACTOR_MESH_BOUNDS:
                 case BT_ACTOR_TEXTURE_SET:
@@ -1095,7 +1115,7 @@ namespace Turok4
                 case BT_HOTPS            : { break; }
                 default:
                 {
-                    printf("Unsupported ATR block type (%s).\n",BlockTypeIDs[b->GetType()].c_str());
+                    //printf("Unsupported ATR block type (%s).\n",BlockTypeIDs[b->GetType()].c_str());
                     break;
                 }
             }
@@ -1139,154 +1159,147 @@ namespace Turok4
     {
         //Determine whether or not the block's size is a 16 bit integer or an 8 bit integer
         m_PreBlockFlag = Data->GetByte();
-        bool Has16BitBlockSize = false;
-        bool HasUnkBlockHeaderType = false;
-        int UnkBlockHeaderType = 0;
+        size_t Size = 0;
         
         switch(m_PreBlockFlag)
         {
-            case 0x82: { Has16BitBlockSize     = true; break; }
-            case 0x81: { Has16BitBlockSize     = true; break; }
-            case 0x61: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 0; break; }
-            case 0xA1: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 1; break; }
-            case 0xC2: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 2; break; }
-            case 0xE1: { HasUnkBlockHeaderType = true; UnkBlockHeaderType = 3; break; }
-            default  : { Data->Offset(-1); }
+            case 0x41:
+            case 0x42:
+            case 0x43:
+            case 0x44:
+            case 0x45:
+            case 0x46:
+            case 0x47:
+            case 0x48:
+            case 0x4A:
+            case 0x4B:
+            case 0x4C:
+            case 0x4D:
+            case 0x4F:
+            {
+                //Hdr[0] = Unknown (when not part of 2-byte block size)
+                //Hdr[1] = Block size in bytes (starts after block ID, including the null)
+                //Hdr[2] = Block ID string length
+                
+                //Read block header
+                Data->GetData(3,m_Hdr);
+                
+                //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
+                m_BlockID = Data->GetString();
+                
+                //Establish block size
+                Size = (size_t)(unsigned char)m_Hdr[1];
+                break;
+            }
+            case 0x81: { }
+            case 0x82:
+            {
+                //Hdr[0] = Unknown
+                //Hdr[1] = First 8 bits of 16 bit integer representing block size
+                //Hdr[2] = Last  8 bits of 16 bit integer representing block size
+                //Hdr[3] = Block ID string length
+                
+                //Read block header
+                Data->GetData(4,m_Hdr);
+                
+                //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
+                m_BlockID = Data->GetString();
+                
+                //Establish block size
+                Size = (size_t)*((uint16_t*)&m_Hdr[1]);
+                break;
+            }
+            case 0x61:
+            case 0x6C:
+            {
+                //Hdr[0] = Unknown
+                //Hdr[1] = First 8 bits of 16 bit integer representing block size
+                //Hdr[2] = Unknown
+                //Hdr[3] = Unknown
+                //Hdr[4] = Block ID string length
+                
+                //Read block header
+                Data->GetData(5,m_Hdr);
+                
+                //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
+                m_BlockID = Data->GetString();
+                
+                //Establish block size
+                Size = (size_t)(unsigned char)m_Hdr[1];
+                
+                break;
+            }
+            case 0xA1:
+            {
+                //Hdr[0] = Unknown
+                //Hdr[1] = First 8 bits of 16 bit integer representing block size
+                //Hdr[2] = Last  8 bits of 16 bit integer representing block size
+                //Hdr[3] = Unknown
+                //Hdr[4] = Unknown
+                //Hdr[5] = Block ID string length
+                
+                //Read block header
+                Data->GetData(6,m_Hdr);
+                
+                //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
+                m_BlockID = Data->GetString();
+                
+                //Establish block size
+                Size = (size_t)*((uint16_t*)&m_Hdr[1]);
+                
+                break;
+            }
+            case 0xC2:
+            {
+                //Hdr[0] = Unknown
+                //Hdr[1] = First  8 bits of 32 bit integer representing block size
+                //Hdr[2] = Second 8 bits of 32 bit integer representing block size
+                //Hdr[3] = Third  8 bits of 32 bit integer representing block size
+                //Hdr[4] = Last   8 bits of 32 bit integer representing block size
+                //Hdr[5] = Block ID string length
+                
+                //Read block header
+                Data->GetData(6,m_Hdr);
+                
+                //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
+                m_BlockID = Data->GetString();
+                
+                //Establish block size
+                Size = (size_t)*((uint32_t*)&m_Hdr[1]);
+                break;
+            }
+            case 0xE1:
+            {
+                //Hdr[0] = Unknown
+                //Hdr[1] = First  8 bits of 32 bit integer representing block size
+                //Hdr[2] = Second 8 bits of 32 bit integer representing block size
+                //Hdr[3] = Third  8 bits of 32 bit integer representing block size
+                //Hdr[4] = Last   8 bits of 32 bit integer representing block size
+                //Hdr[5] = Unknown
+                //Hdr[6] = Unknown
+                //Hdr[7] = Block ID string length
+                
+                //Read block header
+                Data->GetData(8,m_Hdr);
+                
+                //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
+                m_BlockID = Data->GetString();
+                
+                //Establish block size
+                Size = (size_t)*((uint32_t*)&m_Hdr[1]);
+                break;
+            }
+            default  :
+            {
+                printf("Unknown block type 0x%2X.\n",m_PreBlockFlag);
+            }
         }
         
-        size_t Size = 0;
-        //printf("[%3d]",(int)(unsigned char)m_PreBlockFlag);
-        //Basic block information
-        if(!HasUnkBlockHeaderType) //"Normal" block header
-        {
-            
-            //Hdr[0] = Unknown
-            //Hdr[1] = Unknown (when not part of 2-byte block size)
-            //Hdr[2] = Block size in bytes (starts after block ID, including the null)
-            //Hdr[3] = Block ID string length
-            
-            //Read block header
-            Data->GetData(4,m_Hdr);
-            //printf("HDR   [0]: %3d, %3d      (",(int)(unsigned char)m_Hdr[0],(unsigned char)m_Hdr[1]);
-            
-            //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
-            m_BlockID = Data->GetString();
-            
-            //Establish block size
-            if(!Has16BitBlockSize)
-            {
-                Size = (size_t)(unsigned char)m_Hdr[2];
-                //printf("Block:(?: %d | Sz: %zu): %s\n",(int)(unsigned char)Hdr[0],BlockSize,BlockID.c_str());
-            }
-            else
-            {
-                Size = (size_t)*((uint16_t*)&m_Hdr[1]);
-                //printf("Block:(?: %d | Sz: %zu): %s\n",(int)(unsigned char)Hdr[0],BlockSize,BlockID.c_str());
-            }
-        }
-        else if(HasUnkBlockHeaderType)
-        {
-            switch(UnkBlockHeaderType)
-            {
-                case 0:
-                {
-                    //Hdr[0] = Unknown
-                    //Hdr[1] = Block size in bytes (starts after block ID, including the null)
-                    //Hdr[2] = Unknown
-                    //Hdr[3] = Unknown
-                    //Hdr[4] = Block ID string length
-                    
-                    //Read block header
-                    Data->GetData(5,m_Hdr);
-                    //printf("UNKHDR[1]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[2],(int)(unsigned char)m_Hdr[3]);
-                    
-                    //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
-                    m_BlockID = Data->GetString();
-                    
-                    //Establish block size
-                    Size = (size_t)(unsigned char)m_Hdr[1];
-                    
-                    //printf("Block:(?: %d | Sz: %zu | ?: %d, %d): %s\n",(int)(unsigned char)Hdr[0],BlockSize,(int)(unsigned char)Hdr[2],(int)(unsigned char)Hdr[3],BlockID.c_str());
-                    break;
-                }
-                case 1:
-                {
-                    //Hdr[0] = Unknown
-                    //Hdr[1] = First 8 bits of 16 bit integer representing block size
-                    //Hdr[2] = Last  8 bits of 16 bit integer representing block size
-                    //Hdr[3] = Unknown
-                    //Hdr[4] = Unknown
-                    //Hdr[5] = Block ID string length
-                    
-                    //Read block header
-                    Data->GetData(6,m_Hdr);
-                    //printf("UNKHDR[2]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
-                    
-                    //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
-                    m_BlockID = Data->GetString();
-                    
-                    //Establish block size
-                    Size = (size_t)*((uint16_t*)&m_Hdr[1]);
-                    
-                    //printf("Block:(?: %d | Sz: %zu | ?: %d, %d): %s\n",(int)(unsigned char)Hdr[0],BlockSize,(int)(unsigned char)Hdr[2],(int)(unsigned char)Hdr[3],BlockID.c_str());
-                    
-                    break;
-                }
-                case 2:
-                {
-                    //Hdr[0] = Unknown
-                    //Hdr[1] = First  8 bits of 32 bit integer representing block size
-                    //Hdr[2] = Second 8 bits of 32 bit integer representing block size
-                    //Hdr[3] = Third  8 bits of 32 bit integer representing block size
-                    //Hdr[4] = Last   8 bits of 32 bit integer representing block size
-                    //Hdr[5] = Block ID string length
-                    
-                    //Read block header
-                    Data->GetData(6,m_Hdr);
-                    //printf("UNKHDR[3]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
-                    
-                    //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
-                    m_BlockID = Data->GetString();
-                    
-                    //Establish block size
-                    Size = (size_t)*((uint32_t*)&m_Hdr[1]);
-                    
-                    //printf("Block:(?: %d | Sz: %zu | ?: %d, %d): %s\n",(int)(unsigned char)Hdr[0],BlockSize,(int)(unsigned char)Hdr[2],(int)(unsigned char)Hdr[3],BlockID.c_str());
-                    
-                    break;
-                }
-                case 3:
-                {
-                    //Hdr[0] = Unknown
-                    //Hdr[1] = First  8 bits of 32 bit integer representing block size
-                    //Hdr[2] = Second 8 bits of 32 bit integer representing block size
-                    //Hdr[3] = Third  8 bits of 32 bit integer representing block size
-                    //Hdr[4] = Last   8 bits of 32 bit integer representing block size
-                    //Hdr[5] = Unknown
-                    //Hdr[6] = Unknown
-                    //Hdr[7] = Block ID string length
-                    
-                    //Read block header
-                    Data->GetData(8,m_Hdr);
-                    //printf("UNKHDR[3]: %3d, %3d, %3d (",(int)(unsigned char)m_Hdr[0],(int)(unsigned char)m_Hdr[3],(int)(unsigned char)m_Hdr[4]);
-                    
-                    //Read block ID string (ACTOR, ID, ACTOR_VARIABLES, EVENTS, etc...)
-                    m_BlockID = Data->GetString();
-                    
-                    //Establish block size
-                    Size = (size_t)*((uint32_t*)&m_Hdr[1]);
-                    
-                    //printf("Block:(?: %d | Sz: %zu | ?: %d, %d): %s\n",(int)(unsigned char)Hdr[0],BlockSize,(int)(unsigned char)Hdr[2],(int)(unsigned char)Hdr[3],BlockID.c_str());
-                    
-                    break;
-                }
-            }
-        }
-        //printf("%5zu : %s).\n",Size,m_BlockID.c_str());
+        //printf("0x%2X | %10zu | %16s\n",m_PreBlockFlag,Size,m_BlockID.c_str());
         m_Type = GetBlockTypeFromID(m_BlockID);
         
         m_Data = Data->SubData(Size);
-        m_Data->SetOffset(0);
+        if(m_Data) m_Data->SetOffset(0);
         return true;
     }
     bool Block::Save(ByteStream* Data)
@@ -1443,7 +1456,7 @@ namespace Turok4
                 case BT_VERSION         : { break; }
                 default:
                 {
-                    printf("Unsupported ATI block type (%s).\n",BlockTypeIDs[m_Blocks[i]->GetType()].c_str());
+                    //printf("Unsupported ATI block type (%s).\n",BlockTypeIDs[m_Blocks[i]->GetType()].c_str());
                     break;
                 }
             }
@@ -1532,7 +1545,7 @@ namespace Turok4
                 }
                 default:
                 {
-                    printf("Unsupported actor block type (%s).\n",BlockTypeIDs[cBlock->GetType()].c_str());
+                    //printf("Unsupported actor block type (%s).\n",BlockTypeIDs[cBlock->GetType()].c_str());
                 }
             }
         }
@@ -1602,7 +1615,7 @@ namespace Turok4
                 }
                 default:
                 {
-                    printf("Unsupported actor block type (%s).\n",BlockTypeIDs[cBlock->GetType()].c_str());
+                    //printf("Unsupported actor block type (%s).\n",BlockTypeIDs[cBlock->GetType()].c_str());
                 }
             }
         }

@@ -419,7 +419,7 @@ namespace TestClient
                 C.z = f32(Pixels[Idx + 2]) * Inv255;
                 C.w = f32(Pixels[Idx + 3]) * Inv255;
                 
-                Tex->SetPixel(Vec2(x,y),C);
+                Tex->SetPixel(Vec2(x,(h - 1) - y),C);
             }
         }
         Tex->UpdateTexture();

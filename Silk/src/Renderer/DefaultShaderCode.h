@@ -24,7 +24,7 @@ namespace Silk
     string("\t\tgl_Position = u_MVP * vec4(") + PositionAttribName + ",1.0);\n";
     
     static string DefaultPositionInstancedFunc =
-    string("\t\t") + PositionOutName + " = (" + InstanceTransformAttribName + " * vec4(_Pos,1.0)).xyz;\n";
+    string("\t\t") + PositionOutName + " = (" + InstanceTransformAttribName + " * _Pos).xyz;\n";
     
     static string DefaultPositionNonInstancedFunc =
     string("\t\t") + PositionOutName + " = (u_Model * vec4(" PositionAttribName + ",1.0)).xyz;\n";

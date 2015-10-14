@@ -176,6 +176,10 @@ namespace Silk
             uv1 = uv0 + ((g.uv1 - g.uv0) * Vec2(1,0));
             uv2 = g.uv1;
             uv3 = uv0 + ((g.uv1 - g.uv0) * Vec2(0,1));
+            uv0.y = 1.0 - uv0.y;
+            uv1.y = 1.0 - uv1.y;
+            uv2.y = 1.0 - uv2.y;
+            uv3.y = 1.0 - uv3.y;
             
             Verts.push_back(Vec3(p0 + Offset,zOffset));
             Verts.push_back(Vec3(p1 + Offset,zOffset));

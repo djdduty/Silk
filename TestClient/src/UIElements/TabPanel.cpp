@@ -1,11 +1,3 @@
-/*
- *  TabPanel.cpp
- *  Silk
- *
- *  Created by Michael DeCicco on 10/5/15.
- *
- */
-
 #include <UIElements/TabPanel.h>
 #include <UIElements/Common.h>
 #include <InputManager.h>

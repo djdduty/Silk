@@ -11,6 +11,7 @@
 #include <T4/Turok4.h>
 #include <T4/ActorPanel.h>
 #include <T4/TransformTool.h>
+#include <T4/LoadActorPanel.h>
 
 #define BUTTON_COLOR 0.5,0.5,0.5,1.0
 
@@ -65,6 +66,7 @@ namespace TestClient
             UIPanel* m_LoadButton;
             UIPanel* m_SaveButton;
             ActorPanel* m_ActorPanel;
+            LoadActorPanel* m_LoadActorPanel;
             TransformTool* m_TransformTool;
     };
 };

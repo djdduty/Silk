@@ -294,12 +294,27 @@ namespace Turok4
         
             /* For levels only */
             ATIFile* GetActors() const { return m_ActorInstanceFiles[0]; }
+        
+            /* All actors */
+            float     GetVersion      () const { return m_Version      ; }
+            string    GetActorCode    () const { return m_ActorCode    ; }
+            ActorVec3 GetMeshAxis     () const { return m_ActorMeshAxis; }
+            string    GetActorMeshFile() const { return m_ActorMeshFile; }
+            string    GetInstancesFile() const { return m_InstancesFile; }
+            string    GetPrecacheFile () const { return m_PrecacheFile ; }
             
         protected:
             friend class Actor;
             char m_Hdr[4];
             bool CheckHeader();
             void ProcessBlocks();
+        
+            float     m_Version      ;
+            string    m_ActorCode    ;
+            ActorVec3 m_ActorMeshAxis;
+            string    m_ActorMeshFile;
+            string    m_InstancesFile;
+            string    m_PrecacheFile ;
         
             ByteStream* m_Data;
             Block* m_Root;

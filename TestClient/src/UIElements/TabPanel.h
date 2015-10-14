@@ -1,11 +1,3 @@
-/*
- *  TabPanel.h
- *  TestClient
- *
- *  Created by Michael DeCicco on 10/5/15.
- *
- */
-
 #pragma once
 #include <Silk.h>
 using namespace Silk;

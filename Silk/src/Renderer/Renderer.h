@@ -99,6 +99,7 @@ namespace Silk
             void Render(Scalar dt,PRIMITIVE_TYPE PrimType);
             virtual void RenderObjects(ObjectList* List,PRIMITIVE_TYPE PrimType,bool SendLighting = true);
             void RenderTexture(Texture* Tex,Material* Effect = 0,RenderObject* Obj = 0);
+            void RenderObjectsToTexture(ObjectList* List,Texture* Tex,Camera* Cam);
             virtual Texture* GetLightAccumulationTexture() { return 0; }
             virtual void OnResolutionChanged() { }
         

@@ -89,7 +89,10 @@ namespace Silk
     }
     void UIElement::_Update(Scalar dt)
     {
-        for(i32 i = 0;i < m_Children.size();i++) m_Children[i]->_Update(dt);
+        for(i32 i = 0;i < m_Children.size();i++)
+        {
+            m_Children[i]->_Update(dt);
+        }
         Update(dt);
     }
     void UIElement::_Initialize(UIManager* Manager)

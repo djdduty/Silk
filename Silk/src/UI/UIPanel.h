@@ -12,8 +12,20 @@ namespace Silk
             UIPanel(const Vec2& Size);
             ~UIPanel();
 
-            void Update(Scalar dt);
+            virtual void Update(Scalar dt);
             void OnInitialize();
+        
+            virtual void PreRender () {}
+            virtual void PostRender() {}
+            
+            virtual void OnMouseMove() {}
+            virtual void OnMouseOver() {}
+            virtual void OnMouseDown() {}
+            virtual void OnMouseOut () {}
+            virtual void OnMouseUp  () {}
+            virtual void OnKeyDown  () {}
+            virtual void OnKeyHeld  () {}
+            virtual void OnKeyUp    () {}
 
             Vec4 GetBackgroundColor() { return m_BackgroundColor; }
             void SetBackgroundColor(const Vec4& v) { m_BackgroundColor = v; if(m_Material) m_Material->SetDiffuse(v); }

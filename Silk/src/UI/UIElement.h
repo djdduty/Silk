@@ -83,6 +83,7 @@ namespace Silk
             Vec3 GetPosition() const { return m_Render->GetTransform().GetTranslation(); };
             Vec3 GetAbsolutePosition() const;
             UIRect* GetBounds()   const { return m_Bounds; }
+            UIRect GetAbsoluteBounds() const { UIRect b; b.SetPosition(GetAbsolutePosition().xy()); b.SetDimensions(m_Bounds->GetDimensions()); return b; }
             Vec2 GetChildOffset() const { return m_ChildOffset; }
         
             void SetEnabled(bool Flag) { m_Enabled = Flag; }
