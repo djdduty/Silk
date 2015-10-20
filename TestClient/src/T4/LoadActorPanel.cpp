@@ -252,7 +252,6 @@ void LoadActorPanel::OnListSelectionChanged(i32 SelectionIndex,string SelectionN
         Grid->SetSize(Vec2(m_CategoryListBox->GetPosition().x - (2.0f * m_BorderSize),m_Bounds->GetDimensions().y - (2.0f * m_BorderSize)));
         Grid->SetTilesPerRow(4);
         Grid->SetTileSpacing(4.0f);
-        AddChild(Grid);
         
         for(i32 a = 0;a < m_CategorizedActorFiles[m_CurrentGrid].size();a++)
         {

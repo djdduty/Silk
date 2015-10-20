@@ -13,6 +13,7 @@ namespace TestClient
         m_ScrollBarSize = 12.0f;
         m_ScrollOffset = 0.0f;
         m_SelectionIndex = -1;
+		m_TextSizeChanged = true;
         m_Receiver = 0;
         Parent->AddChild(this);
         
@@ -34,6 +35,7 @@ namespace TestClient
             {
                 m_Receiver->OnListSelectionChanged(i,m_EntryLabels[i]->GetText(),this);
                 m_SelectionIndex = i;
+				UpdatePanels();
                 return;
             }
         }
@@ -59,7 +61,7 @@ namespace TestClient
         
         m_Entries    .push_back(EntryPanel);
         m_EntryLabels.push_back(Label     );
-        
+		m_TextSizeChanged = true;
         UpdatePanels();
         return m_Entries.size() - 1;
     }
@@ -80,8 +82,11 @@ namespace TestClient
             else m_Entries[i]->SetBackgroundColor(Vec4(0.325f,0.325f,0.325f,0.9f));
             
             //Center label
-            m_EntryLabels[i]->SetTextSize(m_TextSize);
-            m_EntryLabels[i]->RebuildMesh();
+			if(m_TextSizeChanged)
+			{
+				m_EntryLabels[i]->SetTextSize(m_TextSize);
+				m_EntryLabels[i]->RebuildMesh();
+			}
             
             Vec2 d = m_EntryLabels[i]->GetBounds()->GetDimensions();
             switch(m_TextAlignment)
@@ -105,5 +110,6 @@ namespace TestClient
                 }
             }
         }
+		m_TextSizeChanged = false;
     }
 };

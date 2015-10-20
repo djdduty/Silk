@@ -99,7 +99,13 @@ namespace Silk
             friend class UIElement;
 			friend class UIText;
             
-            void _OnMouseMove() { OnMouseMove(); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseMove(); } }
+            void _OnMouseMove() 
+			{ 
+				OnMouseMove(); 
+				for(i32 i = 0;i < m_Children.size();i++) { 
+					if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseMove(); 
+				} 
+			}
             void _OnMouseDown() { OnMouseDown(); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseDown(); } }
             void _OnMouseUp  () { OnMouseUp  (); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseUp  (); } }
             void _OnKeyDown  () { OnKeyDown  (); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnKeyDown  (); } }

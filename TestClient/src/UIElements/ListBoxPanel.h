@@ -34,7 +34,7 @@ namespace TestClient
         
             void SetTextAlign    (TEXT_ALIGNMENT Alignment);
             void SetBorderSize   (Scalar Sz) { m_BorderSize    = Sz; UpdatePanels(); }
-            void SetTextSize     (Scalar Sz) { m_TextSize      = Sz; UpdatePanels(); }
+			void SetTextSize     (Scalar Sz) { m_TextSize      = Sz; m_TextSizeChanged = true; UpdatePanels(); }
             void SetScrollBarSize(Scalar Sz) { m_ScrollBarSize = Sz; UpdatePanels(); }
         
             void SetReceiver(ListBoxEventReceiver* Receiver) { m_Receiver = Receiver; }
@@ -48,6 +48,7 @@ namespace TestClient
             Scalar m_TextSize;
             Scalar m_ScrollBarSize;
             i32 m_SelectionIndex;
+			bool m_TextSizeChanged;
         
             ScrollBar* m_Scroll;
             Scalar m_ScrollOffset;
