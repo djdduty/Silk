@@ -23,6 +23,7 @@ class ActorGridTile : public GridTile
         vector<RenderObject*> m_TileObjs;   
     protected:
         friend class LoadActorPanel;
+		bool m_Initialized;
         bool m_IsLoaded;
         ATRFile* m_ATR;
         string m_File;

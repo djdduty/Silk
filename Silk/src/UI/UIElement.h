@@ -86,26 +86,25 @@ namespace Silk
             UIRect GetAbsoluteBounds() const { UIRect b; b.SetPosition(GetAbsolutePosition().xy()); b.SetDimensions(m_Bounds->GetDimensions()); return b; }
             Vec2 GetChildOffset() const { return m_ChildOffset; }
         
-            void SetEnabled(bool Flag) { m_Enabled = Flag; }
+			void SetEnabled(bool Flag) { if(Flag == m_Enabled) { return; } m_Enabled = Flag; RaiseViewUpdatedFlag(); }
             bool IsEnabled() const { return m_Enabled; }
 
-            void    EnableScissor(bool Enable) { m_ScissorEnabled = Enable; }
+			void    EnableScissor(bool Enable) { m_ScissorEnabled = Enable; RaiseViewUpdatedFlag(); }
             void    UpdateOuterBounds();
             UIRect* GetOuterBounds() const { return m_OuterBounds; }
             void    SetChildOffset(Vec2 Off);
+
+			/* Returns true only if this and all parents are enabled */
+			bool WillRender() const;
+			void RaiseViewUpdatedFlag();
+			void SetNeedsUpdate() { if(m_Parent) m_Parent->m_UpdateList.push_back(this); }
 
         protected:
             friend class UIManager;
             friend class UIElement;
 			friend class UIText;
             
-            void _OnMouseMove() 
-			{ 
-				OnMouseMove(); 
-				for(i32 i = 0;i < m_Children.size();i++) { 
-					if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseMove(); 
-				} 
-			}
+            void _OnMouseMove() { OnMouseMove(); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseMove(); } }
             void _OnMouseDown() { OnMouseDown(); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseDown(); } }
             void _OnMouseUp  () { OnMouseUp  (); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnMouseUp  (); } }
             void _OnKeyDown  () { OnKeyDown  (); for(i32 i = 0;i < m_Children.size();i++) { if(m_Children[i]->IsEnabled()) m_Children[i]->_OnKeyDown  (); } }
@@ -130,6 +129,7 @@ namespace Silk
             bool               m_ScissorEnabled;
             bool               m_MeshNeedsUpdate;
         
+            vector<UIElement*> m_UpdateList;
             vector<UIElement*> m_Children;
             UIElement*         m_Parent;
             UIManager*         m_Manager;

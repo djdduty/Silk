@@ -217,6 +217,7 @@ namespace TestClient
         m_ActorPanel     = new ActorPanel(m_UIManager,m_InputManager);
         m_LoadActorPanel = new LoadActorPanel(GetPreferredInitResolution() * 0.8f,m_UIManager,m_InputManager);
         m_LoadActorPanel->SetPosition(Vec3(100,100,0.0f));
+		m_LoadActorPanel->SetEnabled(false);
         
         m_TransformTool = new TransformTool(this);
     }
@@ -230,6 +231,7 @@ namespace TestClient
         i32 SelectedIdx = -1;
         bool BtnDown = false;
         bool APButtonDown = false;
+		bool L_Released = true;
         
         m_TransformTool->ToggleTranslate();
         m_TransformTool->ToggleRotate   ();
@@ -301,7 +303,6 @@ namespace TestClient
             
             if(SelectedIdx >= 0 && SelectedIdx < m_Actors.size())
             {
-                
                 Vec4 mColor = Vec4(1,0,0,0.45f);
                 if(m_TransformTool->IsEnabled() && !m_ActorIsStatic[SelectedIdx])
                 {
@@ -318,6 +319,13 @@ namespace TestClient
                     m_Renderer->GetDebugDrawer()->DrawMesh(m_Actors[SelectedIdx][i]->GetTransform(),m_Actors[SelectedIdx][i]->GetMesh(),mColor);
                 }
             }
+
+			if(m_InputManager->GetButtonDownDuration(BTN_L) != -1.0f)
+			{
+				if(L_Released) m_LoadActorPanel->SetEnabled(!m_LoadActorPanel->IsEnabled());
+				L_Released = false;
+			}
+			else L_Released = true;
             
             if(m_InputManager->GetCursorDelta().MagnitudeSq() > 1.0f) m_TransformTool->OnCursorMove();
             

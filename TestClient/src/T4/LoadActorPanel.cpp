@@ -7,6 +7,7 @@
 ActorGridTile::ActorGridTile(UIManager* Mgr,InputManager* Input) : m_Input(Input), m_Texture(0), m_ATR(0), m_IsLoaded(false)
 {
     m_Camera = new Camera();
+	m_Initialized = false;
 }
 ActorGridTile::~ActorGridTile()
 {
@@ -23,7 +24,7 @@ void ActorGridTile::GenerateContent(const Vec2& Size)
         m_Texture->UpdateTexture();
         m_Size = Size;
     }
-    if(m_TileObjs.size() == 0) { return; }
+    if(m_TileObjs.size() == 0 || !m_Texture) { return; }
     
     Vec3 MaxExtents = m_TileObjs[0]->GetBoundingBox().GetLocalAABB().GetExtents();
     ObjectList l;
@@ -35,11 +36,17 @@ void ActorGridTile::GenerateContent(const Vec2& Size)
         if(MaxExtents.y < Extents.y) MaxExtents.y = Extents.y;
         if(MaxExtents.z < Extents.z) MaxExtents.z = Extents.z;
         m_TileObjs[i]->SetEnabled(true);
+		
+		if(!m_Initialized)
+		{
+			m_TileObjs[i]->SetTransform(Translation(-m_TileObjs[i]->GetBoundingBox().GetLocalAABB().GetCenter()));
+		}
     }
+	m_Initialized = true;
     
     
     Scalar Aspect = Size.y / Size.x;
-    m_Camera->SetFieldOfView(Vec2(40.0f,40.0f * Aspect));
+    m_Camera->SetFieldOfView(Vec2(60.0f,60.0f * Aspect));
     
     m_Camera->SetTransform(Translation(Vec3(0,1,1).Normalized() * MaxExtents.Magnitude() * 1.5f) * RotationX(45.0f));
     
@@ -48,6 +55,8 @@ void ActorGridTile::GenerateContent(const Vec2& Size)
     SetBackgroundImage(m_Texture);
     
     for(i32 i = 0;i < m_TileObjs.size();i++) m_TileObjs[i]->SetEnabled(false);
+
+	SetNeedsUpdate();
 }
 void ActorGridTile::Load(Shader* Shdr)
 {
@@ -218,15 +227,12 @@ void LoadActorPanel::Toggle()
 }
 void LoadActorPanel::Update(Scalar dt)
 {
-    for(i32 i = 0;i < m_CategorizedActorFiles[m_CurrentGrid].size();i++)
+	if(!WillRender()) return;
+	vector<GridTile*> Tiles;
+	m_ActorGrids[m_CurrentGrid]->GetVisibleTiles(Tiles);
+    for(i32 i = 0;i < Tiles.size();i++)
     {
-        ActorGridTile* t = (ActorGridTile*)m_ActorGrids[m_CurrentGrid]->GetTile(i);
-        if(!GetAbsoluteBounds().Intersects(t->GetAbsoluteBounds()))
-        {
-            t->SetEnabled(false);
-            continue;
-        }
-        t->SetEnabled(true);
+        ActorGridTile* t = (ActorGridTile*)Tiles[i];
         
         if(!t->IsLoaded()) t->Load(m_GridObjDisplayShader);
         

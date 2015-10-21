@@ -63,6 +63,7 @@ namespace Silk
         m_Parent = 0;
         m_CID    = 0;
         m_Parent->UpdateOuterBounds();
+		RaiseViewUpdatedFlag();
     }
     void UIElement::AddChild(UIElement* E)
     {
@@ -74,6 +75,7 @@ namespace Silk
         E->_Initialize(m_Manager);
         E->SetPosition(E->GetPosition());
         UpdateOuterBounds();
+		RaiseViewUpdatedFlag();
     }
     void UIElement::RemoveChild(UIElement* E)
     {
@@ -86,13 +88,25 @@ namespace Silk
         E->m_CID = -1;
         E->m_Parent = 0;
         UpdateOuterBounds();
+		RaiseViewUpdatedFlag();
     }
     void UIElement::_Update(Scalar dt)
     {
-        for(i32 i = 0;i < m_Children.size();i++)
-        {
-            m_Children[i]->_Update(dt);
-        }
+		if(m_UpdateList.size() == 0)
+		{
+		    for(i32 i = 0;i < m_Children.size();i++)
+            {
+                m_Children[i]->_Update(dt);
+            }
+		}
+		else
+		{
+			for(i32 i = 0;i < m_UpdateList.size();i++)
+			{
+				m_UpdateList[i]->_Update(dt);
+			}
+			m_UpdateList.clear();
+		}
         Update(dt);
     }
     void UIElement::_Initialize(UIManager* Manager)
@@ -106,6 +120,7 @@ namespace Silk
         m_Material->SetShader(m_Manager->GetDefaultShader());
         OnInitialize();
         m_Initialized = true;
+		RaiseViewUpdatedFlag();
     }
     void UIElement::_PreRender()
     {
@@ -157,12 +172,14 @@ namespace Silk
             m_Render->SetTransform(Translation(Position));
 
         m_Bounds->SetPosition(Position.xy());
+		RaiseViewUpdatedFlag();
     }
     void UIElement::SetSize(Vec2 Size)
     {
         m_Bounds->SetDimensions(Size);
         UpdateOuterBounds();
         m_MeshNeedsUpdate = true;
+		RaiseViewUpdatedFlag();
     }
     Vec3 UIElement::GetAbsolutePosition() const
     {
@@ -245,5 +262,22 @@ namespace Silk
             Child->SetPosition(ChildPos + Vec3(Diff, 0));
         }
         m_ChildOffset = Off;
+		RaiseViewUpdatedFlag();
     }
+	bool UIElement::WillRender() const
+	{
+		bool IsVisible = m_Enabled;
+
+		UIElement* Next = m_Parent;
+		while(IsVisible) { if(!Next) break; IsVisible = Next->m_Enabled; Next = Next->m_Parent; }
+
+		return IsVisible;
+	}
+	void UIElement::RaiseViewUpdatedFlag()
+	{
+		if(!m_Enabled) return;
+
+		if(m_Parent && m_Parent->IsEnabled()) m_Parent->RaiseViewUpdatedFlag();
+		else if(!m_Parent && m_Manager) m_Manager->SetViewNeedsUpdate(true);
+	}
 };

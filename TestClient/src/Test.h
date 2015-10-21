@@ -30,6 +30,7 @@ namespace TestClient
         BTN_TOGGLE_STATS ,
         
         BTN_P            ,
+		BTN_L			 ,
         
         BTN_QUIT         ,  //Escape
         

@@ -34,7 +34,7 @@ namespace TestClient
     void ScrollBar::OnMouseUp() { m_BarClicked = false; }
     void ScrollBar::OnMouseMove()
     {
-        if(!m_BarClicked) return;
+		if(!m_BarClicked) return;
         Scalar delta = m_Input->GetCursorDelta().y;
         
         Scalar tmp = m_BarOffset;

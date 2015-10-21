@@ -28,8 +28,8 @@ namespace Silk
             virtual void OnKeyUp    () {}
 
             Vec4 GetBackgroundColor() { return m_BackgroundColor; }
-            void SetBackgroundColor(const Vec4& v) { m_BackgroundColor = v; if(m_Material) m_Material->SetDiffuse(v); }
-            void SetBackgroundImage(Texture* T) { m_BackgroundImage = T; if(m_Material) m_Material->SetMap(Material::MT_DIFFUSE,T); }
+			void SetBackgroundColor(const Vec4& v) { m_BackgroundColor = v; if(m_Material) m_Material->SetDiffuse(v); RaiseViewUpdatedFlag(); }
+			void SetBackgroundImage(Texture* T) { m_BackgroundImage = T; if(m_Material) m_Material->SetMap(Material::MT_DIFFUSE,T); RaiseViewUpdatedFlag(); }
 
         protected:
             void GenerateMesh();

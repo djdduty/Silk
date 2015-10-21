@@ -24,8 +24,9 @@ namespace TestClient
             ~GridView();
         
             void Clear();
-            void AddTile(GridTile* T) { AddChild(T); m_Tiles.push_back(T); UpdatePanels(); }
+			void AddTile(GridTile* T) { AddChild(T); m_Tiles.push_back(T); T->SetEnabled(false); UpdatePanels(); }
             GridTile* GetTile(i32 Idx) const { return m_Tiles[Idx]; }
+			void GetVisibleTiles(vector<GridTile*>& Tiles) const;
         
             void OnMouseDown();
             
@@ -47,6 +48,7 @@ namespace TestClient
         
             ScrollBar* m_ScrollBar;
             vector<GridTile*> m_Tiles;
+            vector<GridTile*> m_LastVisibleTiles;
         
             InputManager* m_Input;
     };
