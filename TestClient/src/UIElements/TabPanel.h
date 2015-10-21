@@ -18,11 +18,13 @@ namespace TestClient
         
             i32 AddTab(const string& TabName);
             UIPanel* GetTabView(i32 ID) const { return m_TabViews[ID]; }
+            i32 GetSelectedTabIndex() const { return m_SelectedTabIdx; }
         
         protected:
             void UpdatePanels();
             Scalar m_BorderSize;
             Scalar m_TextSize;
+            i32 m_SelectedTabIdx;
         
             vector<UIPanel*> m_Tabs;
             vector<UIText *> m_TabLabels;

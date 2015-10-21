@@ -9,6 +9,7 @@ namespace TestClient
         SetBackgroundColor(Vec4(0,0,0,0.75f));
         m_BorderSize = 2.0f ;
         m_TextSize   = 14.0f;
+        m_SelectedTabIdx = 0;
     }
     TabPanel::~TabPanel()
     {
@@ -32,6 +33,7 @@ namespace TestClient
             {
                 m_Tabs[i]->SetBackgroundColor(Vec4(0.525f,0.525f,0.525f,0.9f));
                 m_TabViews[i]->SetEnabled(true);
+                m_SelectedTabIdx = i;
             }
         }
     }

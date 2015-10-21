@@ -111,9 +111,5 @@ namespace TestClient
 			m_LastVisibleTiles.push_back(m_Tiles[StartIdx + i]);
 			m_Tiles[StartIdx + i]->SetEnabled(true);
         }
-
-		printf("Tv: ");
-		for(i32 i = 0;i < m_Tiles.size();i++) printf("%d",m_Tiles[i]->IsEnabled());
-		printf(".\n");
     }
 };

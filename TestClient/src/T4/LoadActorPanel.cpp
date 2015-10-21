@@ -196,7 +196,8 @@ LoadActorPanel::LoadActorPanel(const Vec2& Size,UIManager* Mgr,InputManager* Inp
     for(i32 i = 0; i < m_Categories.size();i++)
     {
         m_CategoryListBox->AddEntry(m_Categories[i]);
-        m_ActorGrids.push_back(0);
+        m_ActorGridViews.push_back(vector<GridView*>());
+        m_GridPages.push_back(0);
     }
     OnListSelectionChanged(0,"",0);
 }
@@ -229,7 +230,7 @@ void LoadActorPanel::Update(Scalar dt)
 {
 	if(!WillRender()) return;
 	vector<GridTile*> Tiles;
-	m_ActorGrids[m_CurrentGrid]->GetVisibleTiles(Tiles);
+	m_ActorGridViews[m_CurrentGrid][m_GridPages[m_CurrentGrid]->GetSelectedTabIndex()]->GetVisibleTiles(Tiles);
     for(i32 i = 0;i < Tiles.size();i++)
     {
         ActorGridTile* t = (ActorGridTile*)Tiles[i];
@@ -246,34 +247,55 @@ void LoadActorPanel::Update(Scalar dt)
 }
 void LoadActorPanel::OnListSelectionChanged(i32 SelectionIndex,string SelectionName,ListBoxPanel* Sender)
 {
-    if(m_CurrentGrid > 0 && m_CurrentGrid < m_ActorGrids.size()) m_ActorGrids[m_CurrentGrid]->SetEnabled(false);
+    if(m_CurrentGrid > 0 && m_CurrentGrid < m_ActorGridViews.size() && m_ActorGridViews[m_CurrentGrid].size() > 0)
+    {
+        m_ActorGridViews[m_CurrentGrid][m_GridPages[m_CurrentGrid]->GetSelectedTabIndex()]->SetEnabled(false);
+        m_GridPages     [m_CurrentGrid]->SetEnabled(false);
+    }
     m_CurrentGrid = SelectionIndex;
-    if(!m_ActorGrids[m_CurrentGrid])
+    
+    if(m_ActorGridViews[m_CurrentGrid].size() == 0)
     {
         if(m_CategorizedActorFiles[m_CurrentGrid].size() == 0) return;
         
-        GridView* Grid = new GridView(Vec2(0,0),m_InputManager,this);
-        Grid->SetBackgroundColor(Vec4(0.6f,0.6f,0.6f,0.9f));
-        Grid->SetPosition(Vec3(m_BorderSize,m_BorderSize,0.0f));
-        Grid->SetSize(Vec2(m_CategoryListBox->GetPosition().x - (2.0f * m_BorderSize),m_Bounds->GetDimensions().y - (2.0f * m_BorderSize)));
-        Grid->SetTilesPerRow(4);
-        Grid->SetTileSpacing(4.0f);
+        TabPanel* Pages = new TabPanel(Vec2(0,0),m_InputManager);
+        AddChild(Pages);
+        Pages->SetPosition(Vec3(m_BorderSize,m_BorderSize,0.0f));
+        Pages->SetSize(Vec2(m_CategoryListBox->GetPosition().x - (2.0f * m_BorderSize),m_Bounds->GetDimensions().y - (2.0f * m_BorderSize)));
         
-        for(i32 a = 0;a < m_CategorizedActorFiles[m_CurrentGrid].size();a++)
+        i32 PageCount = (m_CategorizedActorFiles[m_CurrentGrid].size() / 100) + 1;
+        for(i32 i = 0;i < PageCount;i++)
         {
-            ActorGridTile* Tile = new ActorGridTile(m_Manager,m_InputManager);
-            Tile->SetBackgroundColor(Vec4(0.8f,0.8f,0.8f,0.9f));
-            Grid->AddTile(Tile);
+            Pages->AddTab(FormatString("Page %d",i + 1));
             
-            string f = m_CategorizedActorFiles[m_CurrentGrid][a].substr(m_CategorizedActorFiles[m_CurrentGrid][a].find_last_of('\\') + 1,
-                                                                        m_CategorizedActorFiles[m_CurrentGrid][a].length() - 1);
-            Tile->m_File = m_CategorizedActorFiles[m_CurrentGrid][a];
-            AddText(m_Manager,16.0f,Vec2(2,2),f,Tile);
+            GridView* Grid = new GridView(Vec2(0,0),m_InputManager,Pages->GetTabView(i));
+            Grid->SetBackgroundColor(Vec4(0.6f,0.6f,0.6f,0.9f));
+            Grid->SetPosition(Vec3(m_BorderSize,m_BorderSize,0.0f));
+            Grid->SetSize(Pages->GetTabView(i)->GetBounds()->GetDimensions() - (Vec2(m_BorderSize,m_BorderSize) * 2.0f));
+            Grid->SetTilesPerRow(4);
+            Grid->SetTileSpacing(4.0f);
+            
+            for(i32 a = i * 100;a < m_CategorizedActorFiles[m_CurrentGrid].size();a++)
+            {
+                ActorGridTile* Tile = new ActorGridTile(m_Manager,m_InputManager);
+                Tile->SetBackgroundColor(Vec4(0.8f,0.8f,0.8f,0.9f));
+                
+                Grid->AddTile(Tile);
+                
+                string f = m_CategorizedActorFiles[m_CurrentGrid][a].substr(m_CategorizedActorFiles[m_CurrentGrid][a].find_last_of('\\') + 1,
+                                                                            m_CategorizedActorFiles[m_CurrentGrid][a].length() - 1);
+                Tile->m_File = m_CategorizedActorFiles[m_CurrentGrid][a];
+                AddText(m_Manager,16.0f,Vec2(2,2),f,Tile);
+            }
+            
+            m_ActorGridViews[m_CurrentGrid].push_back(Grid);
         }
         
-        m_ActorGrids[m_CurrentGrid] = Grid;
+        m_GridPages[m_CurrentGrid] = Pages;
     }
-    m_ActorGrids[m_CurrentGrid]->SetEnabled(true);
+    
+    m_ActorGridViews[m_CurrentGrid][m_GridPages[m_CurrentGrid]->GetSelectedTabIndex()]->SetEnabled(true);
+    m_GridPages     [m_CurrentGrid]->SetEnabled(true);
 }
 
 

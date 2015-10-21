@@ -53,7 +53,8 @@ class LoadActorPanel : public UIPanel, ListBoxEventReceiver
     
         vector<string>    m_Categories;
         vector<vector<string>> m_CategorizedActorFiles;
-        vector<GridView*> m_ActorGrids;
+        vector<vector<GridView*>> m_ActorGridViews;
+        vector<TabPanel*> m_GridPages;
         i32 m_CurrentGrid;
     
         Scalar m_Translation;

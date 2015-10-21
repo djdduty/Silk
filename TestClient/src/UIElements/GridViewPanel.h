@@ -3,6 +3,7 @@
 using namespace Silk;
 
 #include <UIElements/ScrollBar.h>
+#include <UIElements/TabPanel.h>
 
 namespace TestClient
 {
