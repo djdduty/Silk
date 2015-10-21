@@ -17,7 +17,7 @@ namespace TestClient
             void SetTextSize  (Scalar Sz) { m_TextSize   = Sz; UpdatePanels(); }
         
             i32 AddTab(const string& TabName);
-            UIPanel* GetTabView(i32 ID) const { return m_TabViews[ID]; }
+			UIPanel* GetTabView(i32 ID) const { if(ID < 0 || ID >= m_TabViews.size()) { return 0; } return m_TabViews[ID]; }
             i32 GetSelectedTabIndex() const { return m_SelectedTabIdx; }
         
         protected:

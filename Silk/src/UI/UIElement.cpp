@@ -27,7 +27,7 @@ namespace Silk
     
     UIElement::UIElement() : m_RefCount(1), m_ID(0), m_CID(-1), m_Parent(0), m_Manager(0), m_Bounds(new UIRect(0,0,0,0)), m_MeshNeedsUpdate(true),
                         m_Render(0), m_Material(0), m_Initialized(false), m_ChildOffset(Vec2(0,0)), m_ScissorEnabled(false), m_OuterBounds(new UIRect(0,0,0,0)),
-                        m_Enabled(true)
+						m_Enabled(true), m_AutoUpdateChildrenEnabled(true)
     {
 
     }
@@ -92,7 +92,7 @@ namespace Silk
     }
     void UIElement::_Update(Scalar dt)
     {
-		if(m_UpdateList.size() == 0)
+		if(m_AutoUpdateChildrenEnabled)
 		{
 		    for(i32 i = 0;i < m_Children.size();i++)
             {
@@ -140,7 +140,7 @@ namespace Silk
         }
         PreRender();
     }
-    void UIElement::_Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
+    void UIElement::_Render(PRIMITIVE_TYPE PrimType,SilkObjectVector* ObjectsRendered)
     {
         _PreRender();
         

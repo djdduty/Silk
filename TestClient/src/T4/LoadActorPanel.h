@@ -9,6 +9,8 @@ using namespace TestClient;
 using namespace Turok4;
 using namespace Silk;
 
+#define TILES_PER_PAGE 100
+
 class ActorGridTile : public GridTile
 {
     public:
@@ -46,6 +48,7 @@ class LoadActorPanel : public UIPanel, ListBoxEventReceiver
         virtual void Update(Scalar dt);
     
         virtual void OnListSelectionChanged(i32 SelectionIndex,string SelectionName,ListBoxPanel* Sender);
+		void OnPageChanged(i32 OldTab,i32 NewTab);
     
         Shader* m_GridObjDisplayShader;
     protected:
@@ -54,6 +57,7 @@ class LoadActorPanel : public UIPanel, ListBoxEventReceiver
         vector<string>    m_Categories;
         vector<vector<string>> m_CategorizedActorFiles;
         vector<vector<GridView*>> m_ActorGridViews;
+		vector<i32> m_SelectedPageIndices;
         vector<TabPanel*> m_GridPages;
         i32 m_CurrentGrid;
     

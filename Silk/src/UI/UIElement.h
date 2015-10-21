@@ -97,7 +97,8 @@ namespace Silk
 			/* Returns true only if this and all parents are enabled */
 			bool WillRender() const;
 			void RaiseViewUpdatedFlag();
-			void SetNeedsUpdate() { if(m_Parent) m_Parent->m_UpdateList.push_back(this); }
+			void SetNeedsUpdate() { if(m_Parent) { m_Parent->m_UpdateList.push_back(this); m_Parent->SetNeedsUpdate(); } }
+			void SetAutoUpdateChildren(bool Flag) { m_AutoUpdateChildrenEnabled = Flag; }
 
         protected:
             friend class UIManager;
@@ -135,6 +136,7 @@ namespace Silk
             UIManager*         m_Manager;
             bool               m_Initialized;
             bool               m_Enabled;
+			bool			   m_AutoUpdateChildrenEnabled;
     };
 };
 

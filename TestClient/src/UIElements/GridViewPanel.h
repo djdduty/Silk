@@ -30,7 +30,7 @@ namespace TestClient
 			void GetVisibleTiles(vector<GridTile*>& Tiles) const;
         
             void OnMouseDown();
-            
+
             virtual void OnScrollChanged(Scalar CurrentValue,Scalar Delta,ScrollBar* Sender);
         
             void SetBorderSize   (Scalar Sz) { m_BorderSize    =  Sz; UpdatePanels(); }
