@@ -215,8 +215,9 @@ namespace TestClient
         m_ToolbarButtonDown = m_ActorPanelButtonDown = false;
         
         m_ActorPanel     = new ActorPanel(m_UIManager,m_InputManager);
-        m_LoadActorPanel = new LoadActorPanel(GetPreferredInitResolution() * 0.8f,m_UIManager,m_InputManager);
-        m_LoadActorPanel->SetPosition(Vec3(100,100,0.0f));
+        m_LoadActorPanel = new LoadActorPanel(GetPreferredInitResolution() * 0.9f,m_UIManager,m_InputManager);
+        m_LoadActorPanel->SetPosition(Vec3((GetPreferredInitResolution().x * 0.5f) - (m_LoadActorPanel->GetBounds()->GetDimensions().x * 0.5f),
+                                           (GetPreferredInitResolution().y * 0.5f) - (m_LoadActorPanel->GetBounds()->GetDimensions().y * 0.5f),0.0f));
 		m_LoadActorPanel->SetEnabled(false);
         
         m_TransformTool = new TransformTool(this);

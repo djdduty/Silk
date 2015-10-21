@@ -386,6 +386,17 @@ namespace Silk
     bool ClosestPointsBetweenLines(const Vec3& l0_Point,const Vec3& l0_Offset,const Vec3& l1_Point,const Vec3& l1_Offset,Vec3& Out0,Vec3& Out1);
     bool ClosestPointsBetweenRays(const Ray& r0,const Ray& r1,Vec3& Out0,Vec3& Out1);
     
+    Vec2 Abs(const Vec2& v);
+    Vec3 Abs(const Vec3& v);
+    Vec4 Abs(const Vec4& v);
+    
+    Vec2 Min(const Vec2& v0,const Vec2& v1);
+    Vec3 Min(const Vec3& v0,const Vec3& v1);
+    Vec4 Min(const Vec4& v0,const Vec4& v1);
+    Vec2 Max(const Vec2& v0,const Vec2& v1);
+    Vec3 Max(const Vec3& v0,const Vec3& v1);
+    Vec4 Max(const Vec4& v0,const Vec4& v1);
+    
     void SeedRandom(i32 Seed);
     Scalar Random(Scalar Min,Scalar Max);
     Scalar Random   (Scalar Span           );

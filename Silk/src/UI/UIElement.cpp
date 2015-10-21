@@ -127,14 +127,16 @@ namespace Silk
         if(m_ScissorEnabled)
         {
             glEnable(GL_SCISSOR_TEST); // TODO: Abstract this
-
-            Vec2 Offset = m_Parent ? m_Parent->GetAbsolutePosition().xy() : Vec2(0,0);
+            
             Vec2 Resolution = m_Manager->GetResolution();
             Vec2 CamTrans = m_Manager->GetCamera()->GetTransform().GetTranslation().xy();
             Vec2 HalfRes = Resolution * 0.5;
-            Vec3 Position = Vec3(m_Bounds->GetPosition() + Offset, 0);
-            Vec2 Size = m_Bounds->GetDimensions();
-            Vec3 SSPosition = Vec3(Position.x + HalfRes.x - CamTrans.x, Resolution.y - HalfRes.y - Position.y - Size.y + CamTrans.y, Position.z);
+            
+            UIRect Region = ComputeClipRegion();
+            Vec2 Position = Region.GetPosition();
+            Vec2 Size = Region.GetDimensions();
+            Vec2 SSPosition = Vec2(Position.x + HalfRes.x - CamTrans.x,
+                                   Resolution.y - HalfRes.y - Position.y - Size.y + CamTrans.y);
         
             glScissor(SSPosition.x, SSPosition.y, Size.x, Size.y); // TODO: Abstract this
         }
@@ -185,6 +187,27 @@ namespace Silk
     {
         if(m_Parent) return m_Parent->GetAbsolutePosition() + GetPosition();
         else return GetPosition();
+    }
+    UIRect UIElement::ComputeClipRegion() const
+    {
+        Vec2 Pos1 = GetAbsolutePosition().xy();
+        Vec2 Pos2 = Pos1 + m_Bounds->GetDimensions();
+        
+        UIElement* Next = m_Parent;
+        while(Next)
+        {
+            Vec2 p1 = Next->GetAbsolutePosition().xy();
+            Vec2 p2 = p1 + Next->GetBounds()->GetDimensions();
+            
+            if(p1.x > Pos1.x) Pos1.x = p1.x;
+            if(p1.y > Pos1.y) Pos1.y = p1.y;
+            
+            if(p2.x < Pos2.x) Pos2.x = p2.x;
+            if(p2.y < Pos2.y) Pos2.y = p2.y;
+            Next = Next->m_Parent;
+        }
+        
+        return UIRect(Pos1,Max(Pos2 - Pos1,Vec2(0,0)));
     }
     void UIElement::Render(PRIMITIVE_TYPE PrimType, SilkObjectVector* ObjectsRendered)
     {

@@ -406,6 +406,8 @@ namespace Silk
         
         Tex->EnableRTT(true);
         
+        m_Raster->ClearActiveFramebuffer();
+        
         i32 ShaderCount = List->GetShaderCount();
         
         i32 ActualObjectCount = 0;

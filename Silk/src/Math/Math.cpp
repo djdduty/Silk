@@ -1368,6 +1368,15 @@ namespace Silk
     {
         return ClosestPointsBetweenLines(r0.Point,r0.Dir * 10000.0f,r1.Point,r1.Dir * 10000.0f,Out0,Out1);
     }
+    Vec2 Abs(const Vec2& v) { return Vec2(abs(v.x),abs(v.y)); }
+    Vec3 Abs(const Vec3& v) { return Vec3(abs(v.x),abs(v.y),abs(v.z)); }
+    Vec4 Abs(const Vec4& v) { return Vec4(abs(v.x),abs(v.y),abs(v.z),abs(v.w)); }
+    Vec2 Min(const Vec2& v0,const Vec2& v1) { return Vec2(min(v0.x,v1.x),min(v0.y,v1.y)); }
+    Vec3 Min(const Vec3& v0,const Vec3& v1) { return Vec3(min(v0.x,v1.x),min(v0.y,v1.y),min(v0.z,v1.z)); };
+    Vec4 Min(const Vec4& v0,const Vec4& v1) { return Vec4(min(v0.x,v1.x),min(v0.y,v1.y),min(v0.z,v1.z),min(v0.w,v1.w)); };
+    Vec2 Max(const Vec2& v0,const Vec2& v1) { return Vec2(max(v0.x,v1.x),max(v0.y,v1.y)); }
+    Vec3 Max(const Vec3& v0,const Vec3& v1) { return Vec3(max(v0.x,v1.x),max(v0.y,v1.y),max(v0.z,v1.z)); };
+    Vec4 Max(const Vec4& v0,const Vec4& v1) { return Vec4(max(v0.x,v1.x),max(v0.y,v1.y),max(v0.z,v1.z),max(v0.w,v1.w)); };
     
     static std::minstd_rand0 gen;
     void SeedRandom(i32 Seed) { if(Seed == -1) { gen.seed((i32)time(0)); } else gen.seed(Seed); }

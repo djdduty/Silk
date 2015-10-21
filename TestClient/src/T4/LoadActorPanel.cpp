@@ -48,14 +48,14 @@ void ActorGridTile::GenerateContent(const Vec2& Size)
     Scalar Aspect = Size.y / Size.x;
     m_Camera->SetFieldOfView(Vec2(60.0f,60.0f * Aspect));
     
-    m_Camera->SetTransform(Translation(Vec3(0,1,1).Normalized() * MaxExtents.Magnitude() * 1.5f) * RotationX(45.0f));
+    m_Camera->SetTransform(Translation(Vec3(0,1,1).Normalized() * MaxExtents.Magnitude() * 1.0f) * RotationX(45.0f));
     
 	Vec4 bgc = m_Manager->GetRenderer()->GetRasterizer()->GetClearColor();
-	m_Manager->GetRenderer()->GetRasterizer()->SetClearColor(Vec4(0,0,0,0));
+	m_Manager->GetRenderer()->GetRasterizer()->SetClearColor(Vec4(0.55f,0.55f,0.55f,1.0f));
     m_Manager->GetRenderer()->RenderObjectsToTexture(&l,m_Texture,m_Camera);
 	m_Manager->GetRenderer()->GetRasterizer()->SetClearColor(bgc);
     
-	SetBackgroundColor(Vec4(0.5f,0.5f,0.5f,1.0f));
+	SetBackgroundColor(Vec4(0.55f,0.55f,0.55f,1.0f));
     SetBackgroundImage(m_Texture);
     
     for(i32 i = 0;i < m_TileObjs.size();i++) m_TileObjs[i]->SetEnabled(false);
@@ -182,18 +182,15 @@ LoadActorPanel::LoadActorPanel(const Vec2& Size,UIManager* Mgr,InputManager* Inp
     Gen->SetAttributeOutput (ShaderGenerator::IAT_TEXCOORD,true);
     
     Gen->SetFragmentOutput  (ShaderGenerator::OFT_COLOR   ,true);
-    Gen->AddFragmentModule("[AlphaTest]if(sColor.a < 0.1) discard;[/AlphaTest]",0);
+    Gen->AddFragmentModule("[AlphaTest]if(sColor.a < 0.01) discard;[/AlphaTest]",0);
     Gen->SetLightingMode(ShaderGenerator::LM_FLAT);
     m_GridObjDisplayShader = Gen->Generate();
     
-    Mgr->AddElement(this);
-    SetBackgroundColor(Vec4(0,0,0,0.75f));
-    SetPosition(Vec3(50,50,0));
-    EnableScissor(true);
+    SetBackgroundColor(Vec4(0.7f,0.7f,0.7f,1.0f));
     m_BorderSize = 2.0f;
+    Mgr->AddElement(this);
     
     m_CategoryListBox = new ListBoxPanel(Vec2(Size.x * 0.2f,Size.y - (2.0f * m_BorderSize)),Input,this);
-    m_CategoryListBox->EnableScissor(true);
     m_CategoryListBox->SetPosition(Vec3(Size.x - m_BorderSize - (Size.x * 0.2f),m_BorderSize,0.0f));
     m_CategoryListBox->SetReceiver(this);
     m_CurrentGrid = 0;
@@ -235,6 +232,8 @@ void LoadActorPanel::Toggle()
 void LoadActorPanel::Update(Scalar dt)
 {
 	if(!WillRender()) return;
+    UIPanel::Update(dt);
+    
 	vector<GridTile*> Tiles;
 	i32 SelectedTab = m_GridPages[m_CurrentGrid]->GetSelectedTabIndex();
 	if(m_SelectedPageIndices[m_CurrentGrid] != SelectedTab)
@@ -284,6 +283,7 @@ void LoadActorPanel::OnListSelectionChanged(i32 SelectionIndex,string SelectionN
 	    {
 			Pages->AddTab(FormatString("Page %d",i + 1));
 			Pages->GetTabView(i)->SetAutoUpdateChildren(false);
+            m_ActorGridViews[m_CurrentGrid].push_back(0);
 		}
     }
     m_GridPages     [m_CurrentGrid]->SetEnabled(true);
@@ -293,16 +293,16 @@ void LoadActorPanel::OnPageChanged(i32 Old,i32 New)
 {
 	TabPanel* Pages = m_GridPages[m_CurrentGrid];
 	GridView* Grid = new GridView(Vec2(0,0),m_InputManager,Pages->GetTabView(New));
-    Grid->SetBackgroundColor(Vec4(0.6f,0.6f,0.6f,0.9f));
+    Grid->SetBackgroundColor(Vec4(0.6f,0.6f,0.6f,1.0f));
     Grid->SetPosition(Vec3(m_BorderSize,m_BorderSize,0.0f));
     Grid->SetSize(Pages->GetTabView(New)->GetBounds()->GetDimensions() - (Vec2(m_BorderSize,m_BorderSize) * 2.0f));
-    Grid->SetTilesPerRow(4);
+    Grid->SetTilesPerRow(6);
     Grid->SetTileSpacing(4.0f);
             
 	for(i32 a = New * TILES_PER_PAGE;a < m_CategorizedActorFiles[m_CurrentGrid].size() && a < ((New * TILES_PER_PAGE) + TILES_PER_PAGE);a++)
     {
         ActorGridTile* Tile = new ActorGridTile(m_Manager,m_InputManager);
-        Tile->SetBackgroundColor(Vec4(0.8f,0.8f,0.8f,0.9f));
+        Tile->SetBackgroundColor(Vec4(0.55f,0.55f,0.55f,1.0f));
                 
         Grid->AddTile(Tile);
             
@@ -310,9 +310,10 @@ void LoadActorPanel::OnPageChanged(i32 Old,i32 New)
                                                                     m_CategorizedActorFiles[m_CurrentGrid][a].length() - 1);
         Tile->m_File = m_CategorizedActorFiles[m_CurrentGrid][a];
         AddText(m_Manager,16.0f,Vec2(2,2),f,Tile);
+        AddText(m_Manager,24.0f,Vec2(2,Tile->GetBounds()->GetDimensions().y - 26.0f),FormatString("%d",a),Tile);
     }
             
-    m_ActorGridViews[m_CurrentGrid].push_back(Grid);
+    m_ActorGridViews[m_CurrentGrid][New] = Grid;
 }
 
 

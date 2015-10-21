@@ -84,6 +84,7 @@ namespace Silk
             Vec3 GetAbsolutePosition() const;
             UIRect* GetBounds()   const { return m_Bounds; }
             UIRect GetAbsoluteBounds() const { UIRect b; b.SetPosition(GetAbsolutePosition().xy()); b.SetDimensions(m_Bounds->GetDimensions()); return b; }
+            UIRect ComputeClipRegion() const;
             Vec2 GetChildOffset() const { return m_ChildOffset; }
         
 			void SetEnabled(bool Flag) { if(Flag == m_Enabled) { return; } m_Enabled = Flag; RaiseViewUpdatedFlag(); }
