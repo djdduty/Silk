@@ -77,6 +77,14 @@ namespace Silk
         m_Output->UpdateTexture();
     }
     
+    PostProcessingEffect::~PostProcessingEffect()
+    {
+        for(i32 i = 0;i < m_Stages.size();i++)
+        {
+            delete m_Stages[i];
+        }
+    }
+    
     bool PostProcessingEffect::LoadEffect(char* Data)
     {
         i32 dPos = 0;
