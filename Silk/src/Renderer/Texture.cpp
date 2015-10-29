@@ -55,12 +55,14 @@ namespace Silk
         if(Width == 0 || Height == 0) return;
         
         if(Type < 0 || Type >= Texture::PT_COUNT) { ERROR("Invalid pixel type.\n"); return; }
+        
         if(m_Pixels)
         {
             if(m_Type == PT_UNSIGNED_BYTE) delete [] (u32*)m_Pixels;
             else delete [] (Vec4*)m_Pixels;
         }
         
+        m_Type    = Type;
         m_Width   = Width;
         m_Height  = Height;
         if(m_Type == PT_UNSIGNED_BYTE)
@@ -73,7 +75,6 @@ namespace Silk
             m_Pixels  = new Vec4[(Width * Height) + 1];
             m_MemSize = Width * Height * sizeof(Vec4);
         }
-        m_Type = Type;
     }
     void Texture::CreateTextureb(i32 Width,i32 Height,Byte* Data)
     {

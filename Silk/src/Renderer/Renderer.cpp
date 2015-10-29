@@ -15,7 +15,8 @@
 namespace Silk
 {
 	Renderer::Renderer(Rasterizer* Raster,TaskManager* TaskMgr) : m_TaskManager(TaskMgr), m_UIManager(0), m_Raster(Raster), m_DebugDrawer(0),
-                                                                  m_UsePostProcessing(false), m_PostProcessingInherited(false), m_SceneOutput(0)
+                                                                  m_UsePostProcessing(false), m_PostProcessingInherited(false), m_SceneOutput(0),
+                                                                  m_DefaultTexture(0)
     {
         for(i32 i = 0;i < ShaderGenerator::OFT_COUNT;i++) { m_UsedFragmentOutputs[i] = 0; }
     }
@@ -23,8 +24,7 @@ namespace Silk
     Renderer::~Renderer() 
     {
         if(m_Scene) delete m_Scene;
-        if(m_DefaultTexture)
-            m_DefaultTexture->Destroy();
+        if(m_DefaultTexture) m_DefaultTexture->Destroy();
 
         m_DefaultFSQMaterial->GetShader()->Destroy();
         m_DefaultFSQMaterial->Destroy();
