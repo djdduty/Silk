@@ -36,6 +36,8 @@ namespace Silk
             PIXEL_TYPE GetPixelType() const { return m_Type; }
             void* GetPixels() { return m_Pixels; }
         
+            Vec2 GetDimensions() const { return Vec2(m_Width,m_Height); }
+        
         protected:
             Texture(Rasterizer* r);
             virtual ~Texture();
