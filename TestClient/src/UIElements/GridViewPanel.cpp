@@ -10,6 +10,7 @@ namespace TestClient
         m_TilesPerRow   =     4;
         m_ScrollBarSize = 11.0f;
         m_ScrollOffset  =  0.0f;
+        m_TileSize      =  0.0f;
         Parent->AddChild(this);
         
         m_ScrollBar = new ScrollBar(Vec2(m_ScrollBarSize,Size.y - (2.0f * m_BorderSize)),InputMgr,this);
@@ -78,6 +79,7 @@ namespace TestClient
         
         Scalar TotalEmptySpace = m_TileSpacing * Scalar(m_TilesPerRow - 1);
         Scalar TileSize = (Sz.x - TotalEmptySpace) / Scalar(m_TilesPerRow);
+        m_TileSize = TileSize;
         
 		Scalar MinY,MaxY;
 		MinY = m_ScrollOffset;

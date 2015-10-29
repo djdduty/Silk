@@ -72,6 +72,18 @@ void ActorGridTile::Load(Shader* Shdr)
     LoadActorToEngine(m_Manager->GetRenderer(),Shdr,Mat4::Identity,0,m_ATR->GetActor(),m_TileObjs);
 }
 
+bool stringCompare( const string &left, const string &right )
+{
+   for( string::const_iterator lit = left.begin(), rit = right.begin(); lit != left.end() && rit != right.end(); ++lit, ++rit )
+      if( tolower( *lit ) < tolower( *rit ) )
+         return true;
+      else if( tolower( *lit ) > tolower( *rit ) )
+         return false;
+   if( left.size() < right.size() )
+      return true;
+   return false;
+}
+
 LoadActorPanel::LoadActorPanel(const Vec2& Size,UIManager* Mgr,InputManager* Input) : UIPanel(Size), m_InputManager(Input), m_UIManager(Mgr)
 {
     FILE* fp = fopen("T4/ActorCache.dat","rb");
@@ -88,18 +100,7 @@ LoadActorPanel::LoadActorPanel(const Vec2& Size,UIManager* Mgr,InputManager* Inp
             
             //Find out if category exists
             bool Exists = false;
-            for(i32 c = 0;c < m_Categories.size();c++)
-            {
-                if(m_Categories[c] == Code)
-                {
-                    Exists = true;
-                    
-                    //Add actor to category
-                    m_CategorizedActorFiles[c].push_back(Actors[i]->GetActor()->GetFilename());
-                    
-                    break;
-                }
-            }
+            for(i32 c = 0;c < m_Categories.size();c++) { if(m_Categories[c] == Code) { Exists = true; break; } }
             
             if(!Exists)
             {
@@ -111,6 +112,22 @@ LoadActorPanel::LoadActorPanel(const Vec2& Size,UIManager* Mgr,InputManager* Inp
                 m_CategorizedActorFiles[m_CategorizedActorFiles.size() - 1].push_back(Actors[i]->GetActor()->GetFilename());
             }
         }
+        
+        sort(m_Categories.begin(),m_Categories.end(),stringCompare);
+        
+        for(i32 i = 0;i < Actors.size();i++)
+        {
+            string Code = Actors[i]->GetActorCode();
+            
+            //Find out if category exists
+            bool Exists = false;
+            for(i32 c = 0;c < m_Categories.size();c++)
+            {
+                if(m_Categories[c] == Code) m_CategorizedActorFiles[c].push_back(Actors[i]->GetActor()->GetFilename());
+            }
+        }
+        
+        for(i32 c = 0;c < m_Categories.size();c++) sort(m_CategorizedActorFiles[c].begin(),m_CategorizedActorFiles[c].end(),stringCompare);
         
         ByteStream* CacheFile = new ByteStream();
         
@@ -305,12 +322,12 @@ void LoadActorPanel::OnPageChanged(i32 Old,i32 New)
         Tile->SetBackgroundColor(Vec4(0.55f,0.55f,0.55f,1.0f));
                 
         Grid->AddTile(Tile);
-            
+        
         string f = m_CategorizedActorFiles[m_CurrentGrid][a].substr(m_CategorizedActorFiles[m_CurrentGrid][a].find_last_of('\\') + 1,
                                                                     m_CategorizedActorFiles[m_CurrentGrid][a].length() - 1);
         Tile->m_File = m_CategorizedActorFiles[m_CurrentGrid][a];
         AddText(m_Manager,16.0f,Vec2(2,2),f,Tile);
-        AddText(m_Manager,24.0f,Vec2(2,Tile->GetBounds()->GetDimensions().y - 26.0f),FormatString("%d",a),Tile);
+        AddText(m_Manager,24.0f,Vec2(2,Grid->GetTileSize() - 26.0f),FormatString("%d",a + 1),Tile);
     }
             
     m_ActorGridViews[m_CurrentGrid][New] = Grid;

@@ -28,6 +28,7 @@ namespace TestClient
 			void AddTile(GridTile* T) { AddChild(T); m_Tiles.push_back(T); T->SetEnabled(false); UpdatePanels(); }
             GridTile* GetTile(i32 Idx) const { return m_Tiles[Idx]; }
 			void GetVisibleTiles(vector<GridTile*>& Tiles) const;
+            Scalar GetTileSize() const { return m_TileSize; }
         
             void OnMouseDown();
 
@@ -46,6 +47,7 @@ namespace TestClient
             Scalar m_TileSpacing  ;
             i32    m_TilesPerRow  ;
             Scalar m_ScrollOffset ;
+            Scalar m_TileSize     ;
         
             ScrollBar* m_ScrollBar;
             vector<GridTile*> m_Tiles;
