@@ -66,3 +66,5 @@ lib/Debug/TestClient.exp
 Silk.opensdf
 *.sdf
 Silk.v11.suo
+*.exp
+/*.sln

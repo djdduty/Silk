@@ -262,6 +262,7 @@ namespace Silk
             if(m_SamplerLocations[i] == -1) continue;
             if(i == Material::MT_FRAG_LIGHTACCUM) t = (OpenGLTexture*)m_Renderer->GetLightAccumulationTexture();
             if(!t) t = (OpenGLTexture*)m_Renderer->GetDefaultTexture();
+
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D,t->GetTextureID());
             glUniform1i(m_SamplerLocations[i],i);
