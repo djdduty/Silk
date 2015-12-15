@@ -104,6 +104,7 @@ namespace Silk
             virtual void OnResolutionChanged() { }
         
             void ClearScene() { if(m_Scene) { delete m_Scene; } m_Scene = new Scene(this); }
+            void SetScene(Scene* s) { m_Scene = s; }
             Scene* GetScene() const { return m_Scene; }
 
 			/*
