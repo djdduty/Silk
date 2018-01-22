@@ -62,8 +62,8 @@ int main(int ArgC,char *ArgV[])
     //Test* Test = new UITest();
     //Test* Test = new RTTTest();
     //Test* Test = new PostProcessingTest();
-    //Test* Test = new SSAOTest();
-	Test* Test = new T4_Viewer(ArgC,ArgV);
+    Test* Test = new SSAOTest();
+	//Test* Test = new T4_Viewer(ArgC,ArgV);
     
     Test->Init    ();
     Test->Run     ();
